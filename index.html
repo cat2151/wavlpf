@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WAVLPF Synthesizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: crosshair;
+      overflow: hidden;
+    }
+    
+    .container {
+      text-align: center;
+      user-select: none;
+    }
+    
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .instructions {
+      font-size: 1.2em;
+      margin-bottom: 2em;
+      opacity: 0.9;
+    }
+    
+    #params {
+      font-size: 1.5em;
+      font-weight: bold;
+      padding: 1em 2em;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      min-width: 400px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    
+    .info {
+      margin-top: 2em;
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+    
+    .status {
+      margin-top: 1em;
+      font-size: 0.8em;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WAVLPF Synthesizer</h1>
+    <div class="instructions">
+      Click anywhere to start<br>
+      Move your mouse to control the filter
+    </div>
+    <div id="params">Cutoff: 510Hz | Q: 1.25</div>
+    <div class="info">
+      X-axis: Cutoff Frequency (20Hz - 1000Hz)<br>
+      Y-axis: Resonance Q (0.5 - 2.0)<br>
+      <br>
+      220Hz Sawtooth wave with LPF<br>
+      Cutoff decays at 1Hz/ms
+    </div>
+    <div class="status">
+      New audio generated every 500ms
+    </div>
+  </div>
+  
+  <script src="node_modules/tone/build/Tone.js"></script>
+  <script type="module" src="dist/index.js"></script>
+</body>
+</html>
