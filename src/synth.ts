@@ -1,7 +1,9 @@
-import * as Tone from 'tone';
 import { generateSawtooth } from './oscillator.js';
 import { BiquadLPF } from './filter.js';
 import { generateWav, createWavBlobUrl } from './wav.js';
+
+// Use global Tone from the UMD build
+declare const Tone: any;
 
 const SAMPLE_RATE = 44100;
 const DURATION = 0.5; // 500ms
@@ -12,7 +14,7 @@ let mouseX = 0.5;
 let mouseY = 0.5;
 
 // Track currently playing player
-let currentPlayer: Tone.Player | null = null;
+let currentPlayer: any = null;
 
 /**
  * Map mouse position to filter parameters
@@ -71,8 +73,12 @@ async function playAudio(): Promise<void> {
   
   // Stop previous player if exists
   if (currentPlayer) {
-    currentPlayer.stop();
-    currentPlayer.dispose();
+    try {
+      currentPlayer.stop();
+      currentPlayer.dispose();
+    } catch (error) {
+      // Ignore errors if already stopped/disposed
+    }
   }
   
   // Create and play new player
@@ -113,12 +119,15 @@ export async function init(): Promise<void> {
     }
   });
   
-  // Play audio every 500ms
-  setInterval(() => {
+  // Play audio every 500ms using recursive setTimeout
+  function scheduleNextPlay() {
     if (Tone.context.state === 'running') {
       playAudio();
     }
-  }, 500);
+    setTimeout(scheduleNextPlay, 500);
+  }
+  
+  setTimeout(scheduleNextPlay, 500);
   
   console.log('WAVLPF Synthesizer initialized');
   console.log('Click anywhere to start audio');
