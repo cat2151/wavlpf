@@ -5,6 +5,17 @@
  * @returns ArrayBuffer containing WAV file data
  */
 export function generateWav(samples: Float32Array, sampleRate: number): ArrayBuffer {
+  // Validate input
+  if (samples.length === 0) {
+    throw new Error('Cannot generate WAV file from empty sample array');
+  }
+  
+  // Prevent excessively large files (> 10 minutes at 44.1kHz)
+  const maxSamples = 44100 * 60 * 10;
+  if (samples.length > maxSamples) {
+    throw new Error(`Sample array too large: ${samples.length} samples (max: ${maxSamples})`);
+  }
+  
   const numChannels = 1; // Mono
   const bitsPerSample = 16;
   const bytesPerSample = bitsPerSample / 8;

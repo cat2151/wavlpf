@@ -2,8 +2,27 @@ import { generateSawtooth } from './oscillator.js';
 import { BiquadLPF } from './filter.js';
 import { generateWav, createWavBlobUrl } from './wav.js';
 
-// Use global Tone from the UMD build
-declare const Tone: any;
+// Use global Tone from the UMD build loaded via script tag
+// This provides better type safety than `any` while maintaining the UMD approach
+interface TonePlayer {
+  start(): void;
+  stop(): void;
+  dispose(): void;
+  toDestination(): TonePlayer;
+}
+
+interface ToneContext {
+  state: 'suspended' | 'running' | 'closed';
+}
+
+interface ToneStatic {
+  Player: new (url: string) => TonePlayer;
+  context: ToneContext;
+  start(): Promise<void>;
+  loaded(): Promise<void>;
+}
+
+declare const Tone: ToneStatic;
 
 const SAMPLE_RATE = 44100;
 const DURATION = 0.5; // 500ms
@@ -14,7 +33,10 @@ let mouseX = 0.5;
 let mouseY = 0.5;
 
 // Track currently playing player
-let currentPlayer: any = null;
+let currentPlayer: TonePlayer | null = null;
+
+// Track playback timeout for cleanup
+let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Map mouse position to filter parameters
@@ -42,18 +64,27 @@ function renderAudio(): Float32Array {
   const numSamples = samples.length;
   const output = new Float32Array(numSamples);
   
+  // Update filter coefficients at a lower rate (~1ms intervals)
+  // This is more efficient than per-sample updates since the 1Hz/ms decay is relatively slow
+  const updateIntervalMs = 1;
+  const samplesPerUpdate = Math.max(1, Math.floor(SAMPLE_RATE * (updateIntervalMs / 1000)));
+  
+  let currentCutoff = initialCutoff;
+  
   for (let i = 0; i < numSamples; i++) {
-    // Calculate time in ms
-    const timeMs = (i / SAMPLE_RATE) * 1000;
+    // Recalculate coefficients only every samplesPerUpdate samples
+    if (i % samplesPerUpdate === 0) {
+      // Calculate time in ms at this sample
+      const timeMs = (i / SAMPLE_RATE) * 1000;
+      
+      // Decay cutoff: 1Hz per 1ms, minimum 1Hz
+      currentCutoff = Math.max(1, initialCutoff - timeMs);
+      
+      // Update filter coefficients at this control rate
+      filter.setCoefficients(currentCutoff, q);
+    }
     
-    // Decay cutoff: 1Hz per 1ms, minimum 1Hz
-    let cutoff = initialCutoff - timeMs;
-    cutoff = Math.max(1, cutoff);
-    
-    // Update filter coefficients for this sample
-    filter.setCoefficients(cutoff, q);
-    
-    // Process sample
+    // Process sample with current filter coefficients
     output[i] = filter.processSample(samples[i]);
   }
   
@@ -77,7 +108,8 @@ async function playAudio(): Promise<void> {
       currentPlayer.stop();
       currentPlayer.dispose();
     } catch (error) {
-      // Ignore errors if already stopped/disposed
+      // Log errors instead of silently ignoring them
+      console.warn('Failed to stop or dispose previous player:', error);
     }
   }
   
@@ -86,10 +118,10 @@ async function playAudio(): Promise<void> {
   await Tone.loaded();
   currentPlayer.start();
   
-  // Clean up URL after playback
+  // Clean up URL after playback (match 500ms interval)
   setTimeout(() => {
     URL.revokeObjectURL(wavUrl);
-  }, 1000);
+  }, 500);
 }
 
 /**
@@ -111,25 +143,49 @@ export async function init(): Promise<void> {
     }
   });
   
+  // Play audio every 500ms using recursive setTimeout with error handling
+  function scheduleNextPlay() {
+    if (Tone.context.state === 'running') {
+      playAudio().catch((error: unknown) => {
+        console.error('Error while playing audio:', error);
+      });
+    }
+    playbackTimeoutId = setTimeout(scheduleNextPlay, 500);
+  }
+  
   // Start audio context on user interaction
   document.addEventListener('click', async () => {
     if (Tone.context.state !== 'running') {
       await Tone.start();
       console.log('Audio context started');
+      // Start playback loop after audio context is running
+      scheduleNextPlay();
     }
-  });
-  
-  // Play audio every 500ms using recursive setTimeout
-  function scheduleNextPlay() {
-    if (Tone.context.state === 'running') {
-      playAudio();
-    }
-    setTimeout(scheduleNextPlay, 500);
-  }
-  
-  setTimeout(scheduleNextPlay, 500);
+  }, { once: true });
   
   console.log('WAVLPF Synthesizer initialized');
   console.log('Click anywhere to start audio');
   console.log('Move mouse to control filter parameters');
+}
+
+/**
+ * Stop the synthesizer and clean up resources
+ */
+export function dispose(): void {
+  // Clear playback timeout
+  if (playbackTimeoutId !== null) {
+    clearTimeout(playbackTimeoutId);
+    playbackTimeoutId = null;
+  }
+  
+  // Stop and dispose current player
+  if (currentPlayer) {
+    try {
+      currentPlayer.stop();
+      currentPlayer.dispose();
+    } catch (error) {
+      console.warn('Failed to dispose player during cleanup:', error);
+    }
+    currentPlayer = null;
+  }
 }

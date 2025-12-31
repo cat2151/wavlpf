@@ -1,6 +1,11 @@
 /**
  * Biquad LPF filter implementation
  * Based on RBJ Audio EQ Cookbook formulas
+ * 
+ * Note: The coefficient naming follows a convention where:
+ * - a0, a1, a2 are the feedforward (numerator) coefficients
+ * - b1, b2 are the feedback (denominator) coefficients
+ * This differs from some DSP literature but matches the implementation pattern.
  */
 export class BiquadLPF {
   private a0: number = 0;
@@ -27,7 +32,11 @@ export class BiquadLPF {
    * @param q - Q value (resonance)
    */
   setCoefficients(cutoffFreq: number, q: number): void {
-    const omega = 2 * Math.PI * cutoffFreq / this.sampleRate;
+    // Validate and clamp cutoff frequency to prevent instability
+    // Safe range: 1Hz to sampleRate/2.5 (well below Nyquist)
+    const clampedCutoff = Math.max(1, Math.min(cutoffFreq, this.sampleRate / 2.5));
+    
+    const omega = 2 * Math.PI * clampedCutoff / this.sampleRate;
     const sinOmega = Math.sin(omega);
     const cosOmega = Math.cos(omega);
     const alpha = sinOmega / (2 * q);
