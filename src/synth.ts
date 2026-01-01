@@ -152,17 +152,23 @@ export async function init(): Promise<void> {
     playbackTimeoutId = setTimeout(scheduleNextPlay, 250);
   }
   
-  // Start audio context on user interaction
-  document.addEventListener('click', async () => {
+  // Click handler for starting audio
+  const handleClick = async (event: MouseEvent | TouchEvent) => {
+    // For touch events, prevent the subsequent click event from firing.
+    // This ensures handleClick is only called once per tap on touch devices.
+    // Note: This may interfere with touch scrolling, but is necessary to prevent
+    // duplicate audio context initialization on touch-enabled devices.
+    if (event.type === 'touchstart') {
+      event.preventDefault();
+    }
+    
     // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
     // Dynamic import ensures AudioContext is only created after a user gesture.
     if (!Tone && !isToneLoading) {
       isToneLoading = true;
       toneLoadingPromise = (async () => {
         try {
-          console.log('Loading Tone.js...');
           Tone = await import('tone') as typeof ToneTypes;
-          console.log('Tone.js loaded');
         } catch (error) {
           console.error('Failed to load Tone.js:', error);
           throw error;
@@ -188,7 +194,6 @@ export async function init(): Promise<void> {
     
     if (Tone.context.state !== 'running') {
       await Tone.start();
-      console.log('Audio context started');
     }
     
     // Start playback loop only once
@@ -196,11 +201,12 @@ export async function init(): Promise<void> {
       isPlaybackLoopStarted = true;
       scheduleNextPlay();
     }
-  });
+  };
   
-  console.log('WAVLPF Synthesizer initialized');
-  console.log('Click anywhere to start audio');
-  console.log('Move mouse to control filter parameters');
+  // Attach click listener only to document to avoid duplicate execution from event bubbling
+  // Touch events use { passive: false } since preventDefault() is called in the handler
+  document.addEventListener('click', handleClick as EventListener);
+  document.addEventListener('touchstart', handleClick as EventListener, { passive: false });
 }
 
 /**
