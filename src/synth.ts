@@ -11,6 +11,9 @@ let Tone: typeof ToneTypes | null = null;
 // Track whether Tone.js is currently being loaded to prevent race conditions
 let isToneLoading = false;
 
+// Promise to track the loading state for concurrent clicks
+let toneLoadingPromise: Promise<void> | null = null;
+
 const SAMPLE_RATE = 44100;
 const DURATION = 0.25; // 250ms
 const FREQUENCY = 220; // 220Hz (A3)
@@ -154,22 +157,29 @@ export async function init(): Promise<void> {
     // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
     // Dynamic import ensures AudioContext is only created after a user gesture.
     if (!Tone && !isToneLoading) {
-      try {
-        isToneLoading = true;
-        console.log('Loading Tone.js...');
-        Tone = await import('tone') as typeof ToneTypes;
-        console.log('Tone.js loaded');
-      } catch (error) {
-        console.error('Failed to load Tone.js:', error);
-        return;
-      } finally {
-        isToneLoading = false;
-      }
+      isToneLoading = true;
+      toneLoadingPromise = (async () => {
+        try {
+          console.log('Loading Tone.js...');
+          Tone = await import('tone') as typeof ToneTypes;
+          console.log('Tone.js loaded');
+        } catch (error) {
+          console.error('Failed to load Tone.js:', error);
+          throw error;
+        } finally {
+          isToneLoading = false;
+          toneLoadingPromise = null;
+        }
+      })();
     }
     
     // Wait for Tone.js to finish loading if another click initiated the load
-    while (isToneLoading) {
-      await new Promise(resolve => setTimeout(resolve, 50));
+    if (toneLoadingPromise) {
+      try {
+        await toneLoadingPromise;
+      } catch (error) {
+        return; // Loading failed
+      }
     }
     
     if (!Tone) {
