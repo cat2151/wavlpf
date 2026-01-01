@@ -20,6 +20,8 @@ This application is deployed to GitHub Pages and available at: https://cat2151.g
 
 ## Getting Started
 
+For detailed information about the development framework and testing strategy, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
 ### Prerequisites
 
 - Node.js (v14 or higher)
@@ -31,27 +33,52 @@ This application is deployed to GitHub Pages and available at: https://cat2151.g
 npm install
 ```
 
+### Development
+
+Start the development server with hot module replacement:
+
+```bash
+npm run dev
+```
+
+This will start Vite's development server with instant HMR. The browser will open automatically at http://localhost:8080.
+
 ### Build
 
 ```bash
 npm run build
 ```
 
-### Run
+This runs TypeScript type checking and builds the production bundle with Vite.
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+Serve the production build locally to test before deployment.
+
+### Testing
+
+Run the test suite:
+
+```bash
+npm test         # Watch mode
+npm run test:run # Run once
+npm run test:ui  # Visual test runner
+npm run coverage # Generate coverage report
+```
+
+### Run (Legacy)
+
+Note: The `serve` command now uses Vite's preview server:
 
 ```bash
 npm run serve
 ```
 
-Then open http://localhost:8080 in your browser.
-
-### Development
-
-```bash
-npm run dev
-```
-
-This will start TypeScript in watch mode for continuous compilation.
+Then open http://localhost:8080 in your browser (or use `npm run dev` for development).
 
 ## Usage
 

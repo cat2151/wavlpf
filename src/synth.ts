@@ -1,6 +1,6 @@
-import { generateSawtooth } from './oscillator.js';
-import { BiquadLPF } from './filter.js';
-import { generateWav, createWavBlobUrl } from './wav.js';
+import { generateSawtooth } from './oscillator';
+import { BiquadLPF } from './filter';
+import { generateWav, createWavBlobUrl } from './wav';
 
 // Use global Tone from the UMD build loaded via script tag
 // This provides better type safety than `any` while maintaining the UMD approach
