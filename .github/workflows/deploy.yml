@@ -37,8 +37,11 @@ jobs:
       - name: Prepare deployment files
         run: |
           mkdir -p _site
-          cp index.html _site/
-          cp -r dist _site/
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
+            echo "Error: dist directory is empty or does not exist"
+            exit 1
+          fi
+          cp -r dist/. _site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

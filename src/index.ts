@@ -1,4 +1,4 @@
-import { init } from './synth.js';
+import { init } from './synth';
 
 // Initialize synth when page loads
 window.addEventListener('DOMContentLoaded', () => {
