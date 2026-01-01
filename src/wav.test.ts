@@ -83,8 +83,9 @@ describe('generateWav', () => {
     expect(pcmSample0).toBe(0);
     expect(pcmSample1).toBe(0x7FFF); // Max positive
     expect(pcmSample2).toBe(-0x8000); // Max negative
-    expect(pcmSample3).toBeCloseTo(0x7FFF / 2, -1);
-    expect(pcmSample4).toBeCloseTo(-0x8000 / 2, -1);
+    // Allow 1 unit of tolerance for rounding in PCM conversion
+    expect(Math.abs(pcmSample3 - 0x7FFF / 2)).toBeLessThanOrEqual(1);
+    expect(Math.abs(pcmSample4 - (-0x8000 / 2))).toBeLessThanOrEqual(1);
   });
   
   it('should throw error for empty sample array', () => {

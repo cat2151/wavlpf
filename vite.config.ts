@@ -19,7 +19,8 @@ export default defineConfig({
     },
   },
   
-  // Test configuration (for Vitest)
+  // Vitest configuration
+  // Vitest uses Vite's configuration system for seamless integration
   test: {
     environment: 'happy-dom',
     globals: true,
