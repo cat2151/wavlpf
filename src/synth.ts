@@ -1,28 +1,10 @@
 import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
-
-// Tone.js types for type safety
-interface TonePlayer {
-  start(): void;
-  stop(): void;
-  dispose(): void;
-  toDestination(): TonePlayer;
-}
-
-interface ToneContext {
-  state: 'suspended' | 'running' | 'closed';
-}
-
-interface ToneStatic {
-  Player: new (url: string) => TonePlayer;
-  context: ToneContext;
-  start(): Promise<void>;
-  loaded(): Promise<void>;
-}
+import type * as ToneType from 'tone';
 
 // Store Tone.js module after dynamic import
-let Tone: ToneStatic | null = null;
+let Tone: typeof ToneType | null = null;
 
 const SAMPLE_RATE = 44100;
 const DURATION = 0.25; // 250ms
@@ -33,7 +15,7 @@ let mouseX = 0.5;
 let mouseY = 0.5;
 
 // Track currently playing player
-let currentPlayer: TonePlayer | null = null;
+let currentPlayer: ToneType.Player | null = null;
 
 // Track playback timeout for cleanup
 let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -166,10 +148,14 @@ export async function init(): Promise<void> {
   document.addEventListener('click', async () => {
     // Load Tone.js on first user interaction (if not already loaded)
     if (!Tone) {
-      console.log('Loading Tone.js...');
-      const ToneModule = await import('tone');
-      Tone = ToneModule as unknown as ToneStatic;
-      console.log('Tone.js loaded');
+      try {
+        console.log('Loading Tone.js...');
+        Tone = await import('tone');
+        console.log('Tone.js loaded');
+      } catch (error) {
+        console.error('Failed to load Tone.js:', error);
+        return;
+      }
     }
     
     if (Tone.context.state !== 'running') {
