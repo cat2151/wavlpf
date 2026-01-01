@@ -2,8 +2,7 @@ import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
 
-// Use global Tone from the UMD build loaded via script tag
-// This provides better type safety than `any` while maintaining the UMD approach
+// Tone.js types for type safety
 interface TonePlayer {
   start(): void;
   stop(): void;
@@ -22,7 +21,8 @@ interface ToneStatic {
   loaded(): Promise<void>;
 }
 
-declare const Tone: ToneStatic;
+// Store Tone.js module after dynamic import
+let Tone: ToneStatic | null = null;
 
 const SAMPLE_RATE = 44100;
 const DURATION = 0.25; // 250ms
@@ -98,6 +98,12 @@ function renderAudio(): Float32Array {
  * Generate and play audio
  */
 async function playAudio(): Promise<void> {
+  // Ensure Tone is loaded
+  if (!Tone) {
+    console.warn('Tone.js not loaded yet');
+    return;
+  }
+  
   // Render audio
   const samples = renderAudio();
   
@@ -148,7 +154,7 @@ export async function init(): Promise<void> {
   
   // Play audio every 250ms using recursive setTimeout with error handling
   function scheduleNextPlay() {
-    if (Tone.context.state === 'running') {
+    if (Tone && Tone.context.state === 'running') {
       playAudio().catch((error: unknown) => {
         console.error('Error while playing audio:', error);
       });
@@ -158,6 +164,14 @@ export async function init(): Promise<void> {
   
   // Start audio context on user interaction
   document.addEventListener('click', async () => {
+    // Load Tone.js on first user interaction (if not already loaded)
+    if (!Tone) {
+      console.log('Loading Tone.js...');
+      const ToneModule = await import('tone');
+      Tone = ToneModule as unknown as ToneStatic;
+      console.log('Tone.js loaded');
+    }
+    
     if (Tone.context.state !== 'running') {
       await Tone.start();
       console.log('Audio context started');
