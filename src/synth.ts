@@ -25,7 +25,7 @@ interface ToneStatic {
 declare const Tone: ToneStatic;
 
 const SAMPLE_RATE = 44100;
-const DURATION = 0.5; // 500ms
+const DURATION = 0.25; // 250ms
 const FREQUENCY = 220; // 220Hz (A3)
 
 // Mouse position state
@@ -42,10 +42,10 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
  * Map mouse position to filter parameters
  */
 function getFilterParams(): { cutoff: number; q: number } {
-  // X: Cutoff frequency 20Hz - 1000Hz
-  const cutoff = 20 + mouseX * (1000 - 20);
-  // Y: Q value 0.5 - 2
-  const q = 0.5 + mouseY * (2 - 0.5);
+  // X: Cutoff frequency 20Hz - 4000Hz
+  const cutoff = 20 + mouseX * (4000 - 20);
+  // Y: Q value 0.5 - 16 (inverted: top = high Q, bottom = low Q)
+  const q = 0.5 + (1 - mouseY) * (16 - 0.5);
   return { cutoff, q };
 }
 
@@ -118,10 +118,10 @@ async function playAudio(): Promise<void> {
   await Tone.loaded();
   currentPlayer.start();
   
-  // Clean up URL after playback (match 500ms interval)
+  // Clean up URL after playback (match 250ms interval)
   setTimeout(() => {
     URL.revokeObjectURL(wavUrl);
-  }, 500);
+  }, 250);
 }
 
 /**
@@ -134,8 +134,8 @@ export async function init(): Promise<void> {
     mouseY = e.clientY / window.innerHeight;
     
     // Update display
-    const cutoff = Math.round(20 + mouseX * (1000 - 20));
-    const q = (0.5 + mouseY * (2 - 0.5)).toFixed(2);
+    const cutoff = Math.round(20 + mouseX * (4000 - 20));
+    const q = (0.5 + (1 - mouseY) * (16 - 0.5)).toFixed(2);
     
     const display = document.getElementById('params');
     if (display) {
@@ -143,14 +143,14 @@ export async function init(): Promise<void> {
     }
   });
   
-  // Play audio every 500ms using recursive setTimeout with error handling
+  // Play audio every 250ms using recursive setTimeout with error handling
   function scheduleNextPlay() {
     if (Tone.context.state === 'running') {
       playAudio().catch((error: unknown) => {
         console.error('Error while playing audio:', error);
       });
     }
-    playbackTimeoutId = setTimeout(scheduleNextPlay, 500);
+    playbackTimeoutId = setTimeout(scheduleNextPlay, 250);
   }
   
   // Start audio context on user interaction
