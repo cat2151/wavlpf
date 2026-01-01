@@ -154,62 +154,79 @@ export async function init(): Promise<void> {
     playbackTimeoutId = setTimeout(scheduleNextPlay, 250);
   }
   
+  // Track if click handler is currently processing to prevent duplicate calls
+  let isProcessingClick = false;
+  
   // Click handler for starting audio
-  const handleClick = async () => {
+  const handleClick = async (event: MouseEvent | TouchEvent) => {
     console.log('Click detected!');
     
-    // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
-    // Dynamic import ensures AudioContext is only created after a user gesture.
-    if (!Tone && !isToneLoading) {
-      isToneLoading = true;
-      toneLoadingPromise = (async () => {
-        try {
-          console.log('Loading Tone.js...');
-          Tone = await import('tone') as typeof ToneTypes;
-          console.log('Tone.js loaded');
-        } catch (error) {
-          console.error('Failed to load Tone.js:', error);
-          throw error;
-        } finally {
-          isToneLoading = false;
-          toneLoadingPromise = null;
-        }
-      })();
+    // Prevent duplicate processing from multiple event listeners
+    if (isProcessingClick) {
+      return;
     }
+    isProcessingClick = true;
     
-    // Wait for Tone.js to finish loading if another click initiated the load
-    if (toneLoadingPromise) {
-      try {
-        await toneLoadingPromise;
-      } catch (error) {
-        return; // Loading failed
+    try {
+      // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
+      // Dynamic import ensures AudioContext is only created after a user gesture.
+      if (!Tone && !isToneLoading) {
+        isToneLoading = true;
+        toneLoadingPromise = (async () => {
+          try {
+            console.log('Loading Tone.js...');
+            Tone = await import('tone') as typeof ToneTypes;
+            console.log('Tone.js loaded');
+          } catch (error) {
+            console.error('Failed to load Tone.js:', error);
+            throw error;
+          } finally {
+            isToneLoading = false;
+            toneLoadingPromise = null;
+          }
+        })();
       }
-    }
-    
-    if (!Tone) {
-      return; // Failed to load
-    }
-    
-    if (Tone.context.state !== 'running') {
-      await Tone.start();
-      console.log('Audio context started');
-    }
-    
-    // Start playback loop only once
-    if (!isPlaybackLoopStarted) {
-      isPlaybackLoopStarted = true;
-      scheduleNextPlay();
+      
+      // Wait for Tone.js to finish loading if another click initiated the load
+      if (toneLoadingPromise) {
+        try {
+          await toneLoadingPromise;
+        } catch (error) {
+          return; // Loading failed
+        }
+      }
+      
+      if (!Tone) {
+        return; // Failed to load
+      }
+      
+      if (Tone.context.state !== 'running') {
+        await Tone.start();
+        console.log('Audio context started');
+      }
+      
+      // Start playback loop only once
+      if (!isPlaybackLoopStarted) {
+        isPlaybackLoopStarted = true;
+        scheduleNextPlay();
+      }
+    } finally {
+      // Reset flag after a short delay to allow the next click
+      setTimeout(() => {
+        isProcessingClick = false;
+      }, 100);
     }
   };
   
   // Attach click listeners to multiple targets for better browser compatibility
   // Some browsers may have issues with document click events in certain scenarios
-  document.addEventListener('click', handleClick);
-  document.body.addEventListener('click', handleClick);
+  // Using capture phase on document to catch events early
+  document.addEventListener('click', handleClick as EventListener, { capture: true });
+  document.body.addEventListener('click', handleClick as EventListener);
   
   // Also support touch events for touch-enabled devices
-  document.addEventListener('touchstart', handleClick);
-  document.body.addEventListener('touchstart', handleClick);
+  document.addEventListener('touchstart', handleClick as EventListener, { capture: true, passive: true });
+  document.body.addEventListener('touchstart', handleClick as EventListener, { passive: true });
   
   console.log('Click handlers attached to document and body');
   
