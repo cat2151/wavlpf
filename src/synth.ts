@@ -127,6 +127,8 @@ async function playAudio(): Promise<void> {
  * Initialize the synthesizer
  */
 export async function init(): Promise<void> {
+  console.log('WAVLPF Synthesizer init() called');
+  
   // Track mouse position
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX / window.innerWidth;
@@ -152,8 +154,10 @@ export async function init(): Promise<void> {
     playbackTimeoutId = setTimeout(scheduleNextPlay, 250);
   }
   
-  // Start audio context on user interaction
-  document.addEventListener('click', async () => {
+  // Click handler for starting audio
+  const handleClick = async () => {
+    console.log('Click detected!');
+    
     // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
     // Dynamic import ensures AudioContext is only created after a user gesture.
     if (!Tone && !isToneLoading) {
@@ -196,7 +200,18 @@ export async function init(): Promise<void> {
       isPlaybackLoopStarted = true;
       scheduleNextPlay();
     }
-  });
+  };
+  
+  // Attach click listeners to multiple targets for better browser compatibility
+  // Some browsers may have issues with document click events in certain scenarios
+  document.addEventListener('click', handleClick);
+  document.body.addEventListener('click', handleClick);
+  
+  // Also support touch events for touch-enabled devices
+  document.addEventListener('touchstart', handleClick);
+  document.body.addEventListener('touchstart', handleClick);
+  
+  console.log('Click handlers attached to document and body');
   
   console.log('WAVLPF Synthesizer initialized');
   console.log('Click anywhere to start audio');
