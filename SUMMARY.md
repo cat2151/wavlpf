@@ -54,7 +54,7 @@ Created comprehensive documentation:
     "vite": "^7.3.0",
     "vitest": "^4.0.16",
     "@vitest/ui": "^4.0.16",
-    "happy-dom": "^15.11.7"
+    "happy-dom": "^20.0.11"
   }
 }
 ```
