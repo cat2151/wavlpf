@@ -154,7 +154,10 @@ export async function init(): Promise<void> {
   
   // Click handler for starting audio
   const handleClick = async (event: MouseEvent | TouchEvent) => {
-    // For touch events, prevent the subsequent click event from firing
+    // For touch events, prevent the subsequent click event from firing.
+    // This ensures handleClick is only called once per tap on touch devices.
+    // Note: This may interfere with touch scrolling, but is necessary to prevent
+    // duplicate audio context initialization on touch-enabled devices.
     if (event.type === 'touchstart') {
       event.preventDefault();
     }
@@ -201,9 +204,9 @@ export async function init(): Promise<void> {
   };
   
   // Attach click listener only to document to avoid duplicate execution from event bubbling
-  // Touch events are handled separately with preventDefault to avoid triggering click events
+  // Touch events use { passive: false } since preventDefault() is called in the handler
   document.addEventListener('click', handleClick as EventListener);
-  document.addEventListener('touchstart', handleClick as EventListener);
+  document.addEventListener('touchstart', handleClick as EventListener, { passive: false });
 }
 
 /**
