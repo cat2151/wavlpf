@@ -38,6 +38,9 @@ let currentPlayer: TonePlayer | null = null;
 // Track playback timeout for cleanup
 let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
+// Track whether playback loop has started
+let isPlaybackLoopStarted = false;
+
 /**
  * Map mouse position to filter parameters
  */
@@ -158,10 +161,14 @@ export async function init(): Promise<void> {
     if (Tone.context.state !== 'running') {
       await Tone.start();
       console.log('Audio context started');
-      // Start playback loop after audio context is running
+    }
+    
+    // Start playback loop only once
+    if (!isPlaybackLoopStarted) {
+      isPlaybackLoopStarted = true;
       scheduleNextPlay();
     }
-  }, { once: true });
+  });
   
   console.log('WAVLPF Synthesizer initialized');
   console.log('Click anywhere to start audio');
@@ -177,6 +184,9 @@ export function dispose(): void {
     clearTimeout(playbackTimeoutId);
     playbackTimeoutId = null;
   }
+  
+  // Reset playback loop flag
+  isPlaybackLoopStarted = false;
   
   // Stop and dispose current player
   if (currentPlayer) {
