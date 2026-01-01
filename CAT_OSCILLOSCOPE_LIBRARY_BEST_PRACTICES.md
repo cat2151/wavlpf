@@ -14,7 +14,7 @@ cat-oscilloscopeを本格的なnpmパッケージとして公開し、TypeScript
 
 ### 主要な変更内容
 
-1. **モノレポ構造への移行** (推奨) または 独立パッケージ化
+1. **モノレポ構造への移行**
 2. **完全なTypeScript型定義** とエクスポート
 3. **プラグインアーキテクチャ** によるソース拡張
 4. **Tree-shakable** なビルド構成
@@ -75,7 +75,7 @@ wavlpf/
 
 ## ベストプラクティスに基づく推奨アーキテクチャ
 
-### オプション A: モノレポ構造（最推奨）
+### モノレポ構造
 
 プロジェクト全体を統合された開発環境として再構成します。
 
@@ -140,143 +140,6 @@ oscilloscope-monorepo/
 **ツール選択**:
 - **pnpm** + **Turborepo** (推奨): 最新のモノレポツール
 - または **Lerna** + **Yarn Workspaces**: 実績のある選択肢
-
-### オプション B: 独立したnpmパッケージ
-
-cat-oscilloscopeを独立したnpmパッケージとして公開します。
-
-```
-@cat2151/oscilloscope/
-├── src/
-│   ├── index.ts                    # Public API (メインエントリーポイント)
-│   ├── core/                       # コア機能
-│   │   ├── index.ts                # コアモジュールの再エクスポート
-│   │   ├── WaveformRenderer.ts
-│   │   ├── ZeroCrossDetector.ts
-│   │   ├── FrequencyEstimator.ts
-│   │   └── GainController.ts
-│   ├── sources/                    # データソースプラグイン
-│   │   ├── index.ts                # ソースの再エクスポート
-│   │   ├── AudioSource.ts          # 抽象インターフェース
-│   │   ├── MicrophoneSource.ts     # マイク入力
-│   │   ├── BufferSource.ts         # Float32Array入力
-│   │   └── FileSource.ts           # ファイル入力
-│   ├── renderers/                  # レンダラープラグイン
-│   │   ├── index.ts
-│   │   ├── Renderer.ts             # 抽象インターフェース
-│   │   └── Canvas2DRenderer.ts
-│   ├── plugins/                    # 機能拡張プラグイン
-│   │   ├── index.ts
-│   │   ├── Plugin.ts               # プラグインインターフェース
-│   │   ├── GridPlugin.ts
-│   │   ├── FFTPlugin.ts
-│   │   └── MeasurementPlugin.ts
-│   ├── types/                      # TypeScript型定義
-│   │   └── index.ts
-│   ├── utils/                      # ユーティリティ
-│   │   └── index.ts
-│   └── Oscilloscope.ts             # メインクラス
-├── dist/                           # ビルド出力
-│   ├── index.js                    # ESM
-│   ├── index.cjs                   # CommonJS
-│   ├── index.d.ts                  # 型定義
-│   └── index.umd.js                # UMD (ブラウザ)
-├── examples/                       # 使用例
-│   ├── microphone/
-│   ├── buffer/
-│   └── file/
-├── tests/                          # テスト
-│   ├── unit/
-│   └── integration/
-├── docs/                           # ドキュメント
-│   ├── API.md
-│   ├── GUIDE.md
-│   └── PLUGINS.md
-├── package.json
-├── tsconfig.json
-├── tsconfig.build.json
-├── vitest.config.ts
-├── vite.config.ts                  # ライブラリビルド設定
-└── README.md
-```
-
-**package.json 設定例**:
-
-```json
-{
-  "name": "@cat2151/oscilloscope",
-  "version": "1.0.0",
-  "description": "Modular oscilloscope library for browser-based waveform visualization",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
-    "./core": {
-      "import": "./dist/core/index.js",
-      "require": "./dist/core/index.cjs",
-      "types": "./dist/core/index.d.ts"
-    },
-    "./sources": {
-      "import": "./dist/sources/index.js",
-      "require": "./dist/sources/index.cjs",
-      "types": "./dist/sources/index.d.ts"
-    },
-    "./renderers": {
-      "import": "./dist/renderers/index.js",
-      "require": "./dist/renderers/index.cjs",
-      "types": "./dist/renderers/index.d.ts"
-    },
-    "./plugins": {
-      "import": "./dist/plugins/index.js",
-      "require": "./dist/plugins/index.cjs",
-      "types": "./dist/plugins/index.d.ts"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "build:types": "tsc --emitDeclarationOnly",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "prepublishOnly": "npm run build"
-  },
-  "keywords": [
-    "oscilloscope",
-    "waveform",
-    "visualization",
-    "audio",
-    "canvas",
-    "typescript"
-  ],
-  "author": "cat2151",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cat2151/oscilloscope.git"
-  },
-  "peerDependencies": {},
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@vitest/ui": "^4.0.16",
-    "happy-dom": "^20.0.11",
-    "typescript": "^5.3.3",
-    "vite": "^7.3.0",
-    "vite-plugin-dts": "^3.7.0",
-    "vitest": "^4.0.16"
-  }
-}
-```
 
 ## 詳細設計: プラグインアーキテクチャ
 
@@ -1430,7 +1293,7 @@ npm publish --registry=https://your-registry.com
 
 ### 次のステップ
 
-1. **リポジトリ構造の決定**: モノレポ vs 独立リポジトリ
+1. **モノレポ構造の確認と準備**: Turborepo + pnpm のセットアップ
 2. **パッケージ名の決定**: `@cat2151/oscilloscope` または別名
 3. **ライセンスの確認**: MIT（推奨）
 4. **実装計画の承認**: 2-3週間の開発スケジュール
