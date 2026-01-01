@@ -1,10 +1,15 @@
 import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
-import type * as ToneType from 'tone';
+import type * as ToneTypes from 'tone';
 
-// Store Tone.js module after dynamic import
-let Tone: typeof ToneType | null = null;
+// Tone.js is kept as null until the first user interaction. We dynamically import
+// the module on a user click so that the underlying AudioContext is not created
+// before a user gesture, which would violate browser autoplay policies.
+let Tone: typeof ToneTypes | null = null;
+
+// Track whether Tone.js is currently being loaded to prevent race conditions
+let isToneLoading = false;
 
 const SAMPLE_RATE = 44100;
 const DURATION = 0.25; // 250ms
@@ -15,7 +20,7 @@ let mouseX = 0.5;
 let mouseY = 0.5;
 
 // Track currently playing player
-let currentPlayer: ToneType.Player | null = null;
+let currentPlayer: ToneTypes.Player | null = null;
 
 // Track playback timeout for cleanup
 let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -146,16 +151,29 @@ export async function init(): Promise<void> {
   
   // Start audio context on user interaction
   document.addEventListener('click', async () => {
-    // Load Tone.js on first user interaction (if not already loaded)
-    if (!Tone) {
+    // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
+    // Dynamic import ensures AudioContext is only created after a user gesture.
+    if (!Tone && !isToneLoading) {
       try {
+        isToneLoading = true;
         console.log('Loading Tone.js...');
-        Tone = await import('tone');
+        Tone = await import('tone') as typeof ToneTypes;
         console.log('Tone.js loaded');
       } catch (error) {
         console.error('Failed to load Tone.js:', error);
         return;
+      } finally {
+        isToneLoading = false;
       }
+    }
+    
+    // Wait for Tone.js to finish loading if another click initiated the load
+    while (isToneLoading) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
+    if (!Tone) {
+      return; // Failed to load
     }
     
     if (Tone.context.state !== 'running') {
