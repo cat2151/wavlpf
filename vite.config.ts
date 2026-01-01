@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // Base path for GitHub Pages deployment
+  base: '/wavlpf/',
+  
   // Vite development server configuration
   server: {
     port: 8080,
