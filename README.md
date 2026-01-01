@@ -18,9 +18,26 @@ A simple software synthesizer with low-pass filter (LPF) implemented in TypeScri
 
 This application is deployed to GitHub Pages and available at: https://cat2151.github.io/wavlpf/
 
+## Documentation
+
+### cat-oscilloscope Integration Investigation
+
+**🌟 推奨** - [CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md) - **ベストプラクティス重視の包括的な分析**（日本語）
+
+**参考資料**:
+- [CAT_OSCILLOSCOPE_INTEGRATION.md](CAT_OSCILLOSCOPE_INTEGRATION.md) - 最小変更アプローチ（参考用）
+- [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) - アーキテクチャ図
+- [IMPLEMENTATION_EXAMPLES.md](IMPLEMENTATION_EXAMPLES.md) - 実装例
+
+### Development Guide
+
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development framework and testing strategy
+
 ## Getting Started
 
 For detailed information about the development framework and testing strategy, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+For information about integrating waveform visualization, see [CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md).
 
 ### Prerequisites
 
