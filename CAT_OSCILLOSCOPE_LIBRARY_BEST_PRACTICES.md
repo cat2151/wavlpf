@@ -14,11 +14,11 @@ cat-oscilloscopeを本格的なnpmパッケージとして公開し、TypeScript
 
 ### 主要な変更内容
 
-1. **モノレポ構造への移行**
+1. **npmパッケージとしての独立化**
 2. **完全なTypeScript型定義** とエクスポート
 3. **プラグインアーキテクチャ** によるソース拡張
 4. **Tree-shakable** なビルド構成
-5. **npmパッケージとして公開**
+5. **npm公開** による汎用ライブラリ化
 
 ### 期待される成果
 
@@ -75,71 +75,136 @@ wavlpf/
 
 ## ベストプラクティスに基づく推奨アーキテクチャ
 
-### モノレポ構造
+### 独立リポジトリ構造（推奨）
 
-プロジェクト全体を統合された開発環境として再構成します。
+cat-oscilloscopeを独立したnpmパッケージとして公開し、wavlpfや他のプロジェクトから利用します。
+
+#### リポジトリ構成
+
+**cat-oscilloscopeリポジトリ（独立）**:
 
 ```
-oscilloscope-monorepo/
-├── packages/
-│   ├── oscilloscope-core/          # コアライブラリ
-│   │   ├── src/
-│   │   │   ├── index.ts            # Public API
-│   │   │   ├── core/               # コア機能
-│   │   │   │   ├── WaveformRenderer.ts
-│   │   │   │   ├── ZeroCrossDetector.ts
-│   │   │   │   ├── FrequencyEstimator.ts
-│   │   │   │   └── GainController.ts
-│   │   │   ├── sources/            # データソース
-│   │   │   │   ├── AudioSource.ts  # 抽象インターフェース
-│   │   │   │   ├── MicrophoneSource.ts
-│   │   │   │   ├── BufferSource.ts
-│   │   │   │   └── FileSource.ts
-│   │   │   ├── renderers/          # レンダラー
-│   │   │   │   ├── Renderer.ts     # 抽象インターフェース
-│   │   │   │   ├── Canvas2DRenderer.ts
-│   │   │   │   └── WebGLRenderer.ts (将来)
-│   │   │   ├── types/              # TypeScript型定義
-│   │   │   │   └── index.ts
-│   │   │   └── Oscilloscope.ts     # メインクラス
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   └── README.md
-│   │
-│   ├── oscilloscope-plugins/       # プラグイン集
-│   │   ├── src/
-│   │   │   ├── index.ts
-│   │   │   ├── GridPlugin.ts
-│   │   │   ├── FFTPlugin.ts
-│   │   │   └── MeasurementPlugin.ts
-│   │   └── package.json
-│   │
-│   ├── oscilloscope-demo/          # デモアプリ（旧cat-oscilloscope）
-│   │   ├── src/
-│   │   │   └── main.ts
-│   │   ├── index.html
-│   │   └── package.json
-│   │
-│   └── wavlpf/                     # wavlpfプロジェクト
-│       ├── src/
-│       ├── index.html
-│       └── package.json
-│
-├── package.json                     # ルートpackage.json (workspace)
-├── turbo.json                       # Turboビルド設定
-└── pnpm-workspace.yaml              # pnpmワークスペース設定
+cat-oscilloscope/                        # 独立したGitリポジトリ
+├── src/
+│   ├── index.ts                         # Public API
+│   ├── core/                            # コア機能
+│   │   ├── WaveformRenderer.ts
+│   │   ├── ZeroCrossDetector.ts
+│   │   ├── FrequencyEstimator.ts
+│   │   └── GainController.ts
+│   ├── sources/                         # データソース
+│   │   ├── AudioSource.ts               # 抽象インターフェース
+│   │   ├── MicrophoneSource.ts
+│   │   ├── BufferSource.ts
+│   │   └── FileSource.ts
+│   ├── renderers/                       # レンダラー
+│   │   ├── Renderer.ts                  # 抽象インターフェース
+│   │   ├── Canvas2DRenderer.ts
+│   │   └── WebGLRenderer.ts (将来)
+│   ├── plugins/                         # プラグイン
+│   │   ├── Plugin.ts                    # プラグインインターフェース
+│   │   ├── GridPlugin.ts
+│   │   ├── FFTPlugin.ts
+│   │   └── MeasurementPlugin.ts
+│   ├── types/                           # TypeScript型定義
+│   │   └── index.ts
+│   └── Oscilloscope.ts                  # メインクラス
+├── examples/                            # 使用例
+│   ├── microphone/                      # マイク入力例
+│   ├── buffer/                          # バッファ入力例
+│   └── file/                            # ファイル入力例
+├── tests/                               # テスト
+│   ├── unit/
+│   └── integration/
+├── docs/                                # ドキュメント
+│   ├── API.md
+│   ├── GUIDE.md
+│   └── PLUGINS.md
+├── dist/                                # ビルド出力（git管理外）
+│   ├── index.js                         # ESM
+│   ├── index.cjs                        # CommonJS
+│   ├── index.d.ts                       # 型定義
+│   └── index.umd.js                     # UMD (ブラウザ)
+├── package.json                         # npm公開設定
+├── tsconfig.json
+├── vite.config.ts                       # ライブラリビルド設定
+└── README.md
+```
+
+**wavlpfリポジトリ（独立）**:
+
+```
+wavlpf/                                  # 独立したGitリポジトリ
+├── src/
+│   ├── index.ts
+│   ├── synth.ts                         # オシロスコープ統合
+│   ├── oscillator.ts
+│   ├── filter.ts
+│   └── wav.ts
+├── index.html
+├── package.json                         # dependencies: "@cat2151/oscilloscope"
+├── tsconfig.json
+└── vite.config.ts
 ```
 
 **メリット**:
-- ✅ コードの共有が容易
-- ✅ 一貫したビルド・テスト環境
-- ✅ 依存関係の管理が明確
-- ✅ バージョン管理が統一的
-- ✅ モダンなJavaScript開発のベストプラクティス
+- ✅ cat-oscilloscopeを様々なプロジェクトで再利用可能
+- ✅ 標準的なnpmパッケージの使用方法
+- ✅ 各リポジトリが独立してバージョン管理
+- ✅ アクセス権限を別々に管理可能
+- ✅ npm公開が標準的で分かりやすい
+- ✅ 他の開発者が利用しやすい
 
-**ツール選択**:
-- **pnpm** + **Turborepo** (推奨): 最新のモノレポツール
-- または **Lerna** + **Yarn Workspaces**: 実績のある選択肢
+**デメリット**:
+- ❌ cat-oscilloscopeとwavlpfを同時開発する際は`npm link`が必要
+- ❌ cat-oscilloscope更新時、npm公開→wavlpf更新の手順が必要
+
+**開発フロー**:
+
+1. **cat-oscilloscope開発時**:
+   ```bash
+   cd cat-oscilloscope
+   npm run dev       # 開発モード
+   npm run build     # ビルド
+   npm publish       # npm公開
+   ```
+
+2. **wavlpfでの利用**:
+   ```bash
+   cd wavlpf
+   npm install @cat2151/oscilloscope@latest
+   npm run dev
+   ```
+
+3. **ローカル開発時の連携**（cat-oscilloscopeとwavlpfを同時開発）:
+   ```bash
+   # cat-oscilloscope側
+   cd cat-oscilloscope
+   npm link
+   
+   # wavlpf側
+   cd wavlpf
+   npm link @cat2151/oscilloscope
+   npm run dev
+   ```
+
+### 代替案: モノレポ構造
+
+両方のプロジェクトを常に同時開発する場合のみ、モノレポも選択肢になります。
+
+```
+oscilloscope-monorepo/                   # 単一のGitリポジトリ
+├── packages/
+│   ├── oscilloscope-core/               # npmパッケージ
+│   └── wavlpf/                          # アプリケーション
+├── turbo.json
+└── pnpm-workspace.yaml
+```
+
+**メリット**: 同時開発が容易、バージョン管理不要  
+**デメリット**: セットアップが複雑、リポジトリが統合される
+
+**推奨**: 独立リポジトリを推奨します。cat-oscilloscopeを汎用ライブラリとして公開する目的に合致し、標準的なnpmパッケージの使い方になります。
 
 ## 詳細設計: プラグインアーキテクチャ
 
@@ -1046,73 +1111,132 @@ export function dispose(): void {
 
 ## 実装ロードマップ
 
-### フェーズ 1: リポジトリ構造の再編成（1-2日）
+### フェーズ 1: cat-oscilloscopeリポジトリの再構成（1-2日）
 
-#### ステップ 1.1: モノレポ構造のセットアップ
+#### ステップ 1.1: ライブラリ構造のセットアップ
 
 ```bash
-# ルートディレクトリ作成
-mkdir oscilloscope-monorepo
-cd oscilloscope-monorepo
+# cat-oscilloscopeリポジトリで作業
+cd cat-oscilloscope
 
-# pnpmのインストール（推奨）
-npm install -g pnpm
+# ディレクトリ構造の作成
+mkdir -p src/{core,sources,renderers,plugins,types,utils}
+mkdir -p examples/{microphone,buffer,file}
+mkdir -p tests/{unit,integration}
+mkdir -p docs
 
-# ワークスペース設定
-cat > pnpm-workspace.yaml << EOF
-packages:
-  - 'packages/*'
-EOF
-
-# ルートpackage.json作成
-cat > package.json << EOF
-{
-  "name": "oscilloscope-monorepo",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "test": "turbo run test",
-    "lint": "turbo run lint"
-  },
-  "devDependencies": {
-    "turbo": "^1.11.0",
-    "typescript": "^5.3.3"
-  }
-}
-EOF
-
-# Turbo設定
-cat > turbo.json << EOF
-{
-  "$schema": "https://turbo.build/schema.json",
-  "pipeline": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "test": {
-      "dependsOn": ["build"]
-    },
-    "lint": {}
-  }
-}
-EOF
+# 既存ファイルの移動
+# WaveformRenderer.ts などを src/core/ に移動
+# AudioManager.ts を src/sources/MicrophoneSource.ts にリネーム・移動
 ```
 
-#### ステップ 1.2: パッケージディレクトリの作成
+#### ステップ 1.2: package.jsonの設定
 
-```bash
-# パッケージディレクトリ構造
-mkdir -p packages/oscilloscope-core/src/{core,sources,renderers,plugins,types,utils}
-mkdir -p packages/oscilloscope-plugins/src
-mkdir -p packages/oscilloscope-demo/src
-mkdir -p packages/wavlpf/src
+```json
+{
+  "name": "@cat2151/oscilloscope",
+  "version": "1.0.0",
+  "description": "Modular oscilloscope library for browser-based waveform visualization",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./sources": {
+      "import": "./dist/sources/index.js",
+      "require": "./dist/sources/index.cjs",
+      "types": "./dist/sources/index.d.ts"
+    },
+    "./renderers": {
+      "import": "./dist/renderers/index.js",
+      "require": "./dist/renderers/index.cjs",
+      "types": "./dist/renderers/index.d.ts"
+    },
+    "./plugins": {
+      "import": "./dist/plugins/index.js",
+      "require": "./dist/plugins/index.cjs",
+      "types": "./dist/plugins/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:types": "tsc --emitDeclarationOnly",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "oscilloscope",
+    "waveform",
+    "visualization",
+    "audio",
+    "canvas",
+    "typescript"
+  ],
+  "author": "cat2151",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cat2151/cat-oscilloscope.git"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@vitest/ui": "^4.0.16",
+    "happy-dom": "^20.0.11",
+    "typescript": "^5.3.3",
+    "vite": "^7.3.0",
+    "vite-plugin-dts": "^3.7.0",
+    "vitest": "^4.0.16"
+  }
+}
+```
+
+#### ステップ 1.3: ビルド設定（vite.config.ts）
+
+```typescript
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
+import { resolve } from 'path';
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'core/index': resolve(__dirname, 'src/core/index.ts'),
+        'sources/index': resolve(__dirname, 'src/sources/index.ts'),
+        'renderers/index': resolve(__dirname, 'src/renderers/index.ts'),
+        'plugins/index': resolve(__dirname, 'src/plugins/index.ts'),
+      },
+      formats: ['es', 'cjs', 'umd'],
+      name: 'CatOscilloscope',
+    },
+    rollupOptions: {
+      external: [],
+      output: {
+        globals: {},
+      },
+    },
+  },
+  plugins: [dts()],
+});
+```
 
 # 既存プロジェクトからコードを移行
 # cat-oscilloscope -> packages/oscilloscope-core & packages/oscilloscope-demo
@@ -1282,22 +1406,52 @@ npm publish --registry=https://your-registry.com
 
 ## 結論と推奨事項
 
-### 最終推奨: モノレポ構造 + npm パッケージ公開
+### 最終推奨: 独立リポジトリ + npm パッケージ公開
 
 **理由**:
-1. ✅ **業界標準のベストプラクティス**: モダンなJavaScript開発の主流
-2. ✅ **完全なモジュラー設計**: プラグインアーキテクチャで最大の柔軟性
-3. ✅ **長期的な価値**: オープンソースコミュニティへの貢献可能
-4. ✅ **スキル向上**: 最新の開発手法を学習・実践
-5. ✅ **ポートフォリオ**: 高品質なライブラリとして公開可能
+1. ✅ **汎用性**: cat-oscilloscopeを様々なプロジェクトで利用可能
+2. ✅ **標準的**: npm標準のパッケージ配布方法
+3. ✅ **独立性**: 各プロジェクトが独立してバージョン管理
+4. ✅ **シンプル**: 複雑なモノレポツール不要
+5. ✅ **業界標準**: TypeScriptライブラリの標準的な構成
 
 ### 次のステップ
 
-1. **モノレポ構造の確認と準備**: Turborepo + pnpm のセットアップ
+1. **cat-oscilloscopeの再構成**: ライブラリ構造への変更
 2. **パッケージ名の決定**: `@cat2151/oscilloscope` または別名
 3. **ライセンスの確認**: MIT（推奨）
 4. **実装計画の承認**: 2-3週間の開発スケジュール
 5. **フェーズ1の開始**: リポジトリ構造の再編成
+6. **npm公開**: `npm publish` でパッケージ公開
+7. **wavlpf統合**: `npm install @cat2151/oscilloscope` で統合
+
+### 開発ワークフロー
+
+**通常の開発**:
+```bash
+# cat-oscilloscope側で開発
+cd cat-oscilloscope
+npm run dev
+npm run build
+npm publish
+
+# wavlpf側で利用
+cd wavlpf
+npm install @cat2151/oscilloscope@latest
+npm run dev
+```
+
+**同時開発時（ローカル）**:
+```bash
+# cat-oscilloscope側
+cd cat-oscilloscope
+npm link
+
+# wavlpf側
+cd wavlpf
+npm link @cat2151/oscilloscope
+npm run dev
+```
 
 ## 補足資料
 
