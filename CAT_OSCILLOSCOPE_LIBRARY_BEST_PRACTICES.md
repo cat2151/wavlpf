@@ -388,6 +388,11 @@ export interface Renderer {
   resize(width: number, height: number): void;
   
   /**
+   * キャンバス要素を取得
+   */
+  getCanvas(): HTMLCanvasElement;
+  
+  /**
    * リソースを解放
    */
   dispose(): void;
@@ -471,7 +476,7 @@ export interface Plugin {
 }
 
 export interface PluginContext {
-  oscilloscope: any; // Oscilloscopeクラスへの参照
+  oscilloscope: Oscilloscope; // Oscilloscopeクラスへの参照
   renderer: Renderer;
   canvas: HTMLCanvasElement;
 }
@@ -538,7 +543,7 @@ export class Oscilloscope {
     plugin.initialize({
       oscilloscope: this,
       renderer: this.renderer,
-      canvas: this.renderer['canvas'] // 内部参照
+      canvas: this.renderer.getCanvas() // Public accessor
     });
     
     this.plugins.set(plugin.name, plugin);
@@ -617,17 +622,21 @@ export class Oscilloscope {
     // ノイズゲート適用
     this.gainController.applyNoiseGate(processedData);
     
-    // ゼロクロス検出
-    const displayRange = this.zeroCrossDetector.calculateDisplayRange(
-      processedData,
-      this.frequencyEstimator.estimateFrequency(
+    // ゼロクロス検出（ノイズゲート判定後に周波数推定を実行）
+    let displayRange = null;
+    if (this.gainController.isSignalAboveNoiseGate(processedData)) {
+      const estimatedFrequency = this.frequencyEstimator.estimateFrequency(
         processedData,
         frequencyData,
         this.source.getSampleRate(),
         this.source.getFFTSize()
-      ),
-      this.source.getSampleRate()
-    );
+      );
+      displayRange = this.zeroCrossDetector.calculateDisplayRange(
+        processedData,
+        estimatedFrequency,
+        this.source.getSampleRate()
+      );
+    }
     
     // オートゲイン計算
     if (displayRange) {
@@ -756,6 +765,8 @@ export * from './types';
 export * from './utils';
 
 // バージョン情報
+// Note: In production, derive this from package.json during build
+// Example: export const VERSION = process.env.npm_package_version || '0.0.0';
 export const VERSION = '1.0.0';
 ```
 
@@ -1183,7 +1194,7 @@ mkdir -p docs
     "happy-dom": "^20.0.11",
     "typescript": "^5.3.3",
     "vite": "^7.3.0",
-    "vite-plugin-dts": "^3.7.0",
+    "vite-plugin-dts": "^4.0.0",
     "vitest": "^4.0.16"
   }
 }
@@ -1362,7 +1373,7 @@ npm publish --registry=https://your-registry.com
 
 | フェーズ | 工数 | 説明 |
 |---------|------|------|
-| 1. リポジトリ構造再編成 | 1-2日 | ライブラリ構造への変更、既存コード移行 |
+| 1. cat-oscilloscope再構成（リポジトリ構造再編成） | 1-2日 | ライブラリ構造への変更、既存コード移行 |
 | 2. コアライブラリ実装 | 3-5日 | インターフェース、データソース、レンダラー |
 | 3. テスト実装 | 2-3日 | 単体テスト、統合テスト |
 | 4. ドキュメント整備 | 1-2日 | API、ガイド、使用例 |

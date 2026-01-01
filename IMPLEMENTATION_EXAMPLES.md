@@ -29,7 +29,7 @@ This document provides concrete code examples for the proposed integration.
  * oscilloscope.render();
  * ```
  */
-export class BufferAdapter {
+export class BufferAdapter implements AudioSource {
   private buffer: Float32Array | null = null;
   private frequencyData: Uint8Array | null = null;
   private readonly bufferSize: number;
@@ -96,26 +96,27 @@ export class BufferAdapter {
 
   /**
    * Calculate FFT from time-domain data (optional feature)
-   * This is a simplified implementation - in production, use a proper FFT library
+   * 
+   * NOTE: This is a non-functional placeholder. It does NOT perform a real FFT.
+   * In production, you MUST replace this implementation with a proper FFT library.
    */
   private calculateFFT(): void {
     if (!this.buffer) return;
 
-    // For now, create a placeholder
+    // For now, only allocate/clear the frequencyData buffer so that example
+    // code can run without throwing, but do not attempt to approximate an FFT.
+    //
     // In production, use libraries like:
     // - fft.js: https://www.npmjs.com/package/fft.js
     // - dsp.js: https://github.com/corbanbrook/dsp.js
     // - kiss-fft-js: https://www.npmjs.com/package/kiss-fft-js
-    
-    this.frequencyData = new Uint8Array(this.bufferSize / 2);
-    
-    // Placeholder: convert amplitude to frequency-like representation
-    // Real implementation should use proper FFT algorithm
-    for (let i = 0; i < this.frequencyData.length; i++) {
-      const index = Math.floor(i * this.buffer.length / this.frequencyData.length);
-      const amplitude = Math.abs(this.buffer[index]);
-      this.frequencyData[i] = Math.min(255, Math.floor(amplitude * 255));
+
+    if (!this.frequencyData || this.frequencyData.length !== this.bufferSize / 2) {
+      this.frequencyData = new Uint8Array(this.bufferSize / 2);
     }
+
+    // Non-functional demo data: fill with zeros.
+    this.frequencyData.fill(0);
   }
 
   /**
@@ -190,6 +191,20 @@ export interface AudioSource {
    * Check if the audio source is ready to provide data
    */
   isReady(): boolean;
+
+  /**
+   * Register an event listener
+   * @param event - Event name ('ready', 'error', 'data')
+   * @param handler - Event handler function
+   */
+  on(event: 'ready' | 'error' | 'data', handler: (...args: any[]) => void): void;
+
+  /**
+   * Unregister an event listener
+   * @param event - Event name ('ready', 'error', 'data')
+   * @param handler - Event handler function
+   */
+  off(event: 'ready' | 'error' | 'data', handler: (...args: any[]) => void): void;
 }
 ```
 
@@ -528,8 +543,8 @@ export class Oscilloscope {
 import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
-import { Oscilloscope } from '@cat2151/oscilloscope-core';
-import { BufferAdapter } from '@cat2151/oscilloscope-core/adapters';
+import { Oscilloscope } from '@cat2151/oscilloscope';
+import { BufferAdapter } from '@cat2151/oscilloscope/sources';
 
 // ... existing Tone declarations ...
 
@@ -771,7 +786,7 @@ export function dispose(): void {
   "license": "MIT",
   "dependencies": {
     "tone": "^14.7.77",
-    "@cat2151/oscilloscope-core": "^1.0.0"
+    "@cat2151/oscilloscope": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
@@ -789,7 +804,7 @@ export function dispose(): void {
 ```typescript
 // src/__tests__/oscilloscope-integration.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { BufferAdapter } from '@cat2151/oscilloscope-core/adapters';
+import { BufferAdapter } from '@cat2151/oscilloscope/sources';
 import { generateSawtooth } from '../oscillator';
 
 describe('Oscilloscope Integration', () => {
