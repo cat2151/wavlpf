@@ -1,28 +1,18 @@
 import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
+import type * as ToneTypes from 'tone';
 
-// Use global Tone from the UMD build loaded via script tag
-// This provides better type safety than `any` while maintaining the UMD approach
-interface TonePlayer {
-  start(): void;
-  stop(): void;
-  dispose(): void;
-  toDestination(): TonePlayer;
-}
+// Tone.js is kept as null until the first user interaction. We dynamically import
+// the module on a user click so that the underlying AudioContext is not created
+// before a user gesture, which would violate browser autoplay policies.
+let Tone: typeof ToneTypes | null = null;
 
-interface ToneContext {
-  state: 'suspended' | 'running' | 'closed';
-}
+// Track whether Tone.js is currently being loaded to prevent race conditions
+let isToneLoading = false;
 
-interface ToneStatic {
-  Player: new (url: string) => TonePlayer;
-  context: ToneContext;
-  start(): Promise<void>;
-  loaded(): Promise<void>;
-}
-
-declare const Tone: ToneStatic;
+// Promise to track the loading state for concurrent clicks
+let toneLoadingPromise: Promise<void> | null = null;
 
 const SAMPLE_RATE = 44100;
 const DURATION = 0.25; // 250ms
@@ -33,7 +23,7 @@ let mouseX = 0.5;
 let mouseY = 0.5;
 
 // Track currently playing player
-let currentPlayer: TonePlayer | null = null;
+let currentPlayer: ToneTypes.Player | null = null;
 
 // Track playback timeout for cleanup
 let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -98,6 +88,12 @@ function renderAudio(): Float32Array {
  * Generate and play audio
  */
 async function playAudio(): Promise<void> {
+  // Ensure Tone is loaded
+  if (!Tone) {
+    console.warn('Tone.js not loaded yet');
+    return;
+  }
+  
   // Render audio
   const samples = renderAudio();
   
@@ -148,7 +144,7 @@ export async function init(): Promise<void> {
   
   // Play audio every 250ms using recursive setTimeout with error handling
   function scheduleNextPlay() {
-    if (Tone.context.state === 'running') {
+    if (Tone && Tone.context.state === 'running') {
       playAudio().catch((error: unknown) => {
         console.error('Error while playing audio:', error);
       });
@@ -158,6 +154,38 @@ export async function init(): Promise<void> {
   
   // Start audio context on user interaction
   document.addEventListener('click', async () => {
+    // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
+    // Dynamic import ensures AudioContext is only created after a user gesture.
+    if (!Tone && !isToneLoading) {
+      isToneLoading = true;
+      toneLoadingPromise = (async () => {
+        try {
+          console.log('Loading Tone.js...');
+          Tone = await import('tone') as typeof ToneTypes;
+          console.log('Tone.js loaded');
+        } catch (error) {
+          console.error('Failed to load Tone.js:', error);
+          throw error;
+        } finally {
+          isToneLoading = false;
+          toneLoadingPromise = null;
+        }
+      })();
+    }
+    
+    // Wait for Tone.js to finish loading if another click initiated the load
+    if (toneLoadingPromise) {
+      try {
+        await toneLoadingPromise;
+      } catch (error) {
+        return; // Loading failed
+      }
+    }
+    
+    if (!Tone) {
+      return; // Failed to load
+    }
+    
     if (Tone.context.state !== 'running') {
       await Tone.start();
       console.log('Audio context started');
