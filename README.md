@@ -20,16 +20,29 @@ This application is deployed to GitHub Pages and available at: https://cat2151.g
 
 ## Documentation
 
+### cat-oscilloscope Integration Investigation
+
+**Quick Start** - [📋 Visual Quick Reference](VISUAL_QUICK_REFERENCE.md) - Start here for a quick overview!
+
+**Summary** - [📊 Investigation Summary](INVESTIGATION_SUMMARY.md) - Executive summary in Japanese and English
+
+**Detailed Analysis**
+- [🇯🇵 Japanese Version](CAT_OSCILLOSCOPE_INTEGRATION.md) - 詳細な調査・分析レポート（日本語）
+- [🇬🇧 English Version](CAT_OSCILLOSCOPE_INTEGRATION_EN.md) - Detailed investigation and analysis report
+
+**Technical Details**
+- [🏗️ Architecture Diagrams](ARCHITECTURE_DIAGRAMS.md) - Visual architecture and data flow diagrams
+- [💻 Implementation Examples](IMPLEMENTATION_EXAMPLES.md) - Complete, production-ready code examples
+
+### Development Guide
+
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development framework and testing strategy
-- **[INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)** - cat-oscilloscope integration investigation summary
-- **[CAT_OSCILLOSCOPE_INTEGRATION.md](CAT_OSCILLOSCOPE_INTEGRATION.md)** - Detailed integration analysis (Japanese)
-- **[CAT_OSCILLOSCOPE_INTEGRATION_EN.md](CAT_OSCILLOSCOPE_INTEGRATION_EN.md)** - Detailed integration analysis (English)
-- **[ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)** - Architecture diagrams and data flow
-- **[IMPLEMENTATION_EXAMPLES.md](IMPLEMENTATION_EXAMPLES.md)** - Complete implementation code examples
 
 ## Getting Started
 
 For detailed information about the development framework and testing strategy, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+For information about integrating waveform visualization, see the [cat-oscilloscope integration documentation](#cat-oscilloscope-integration-investigation) above.
 
 ### Prerequisites
 
