@@ -1,8 +1,14 @@
-# cat-oscilloscope 組み込み調査・分析レポート
+# cat-oscilloscope 組み込み調査・分析レポート（簡易版）
+
+## ⚠️ 注意
+
+このドキュメントは最小変更アプローチの分析です。
+
+**ベストプラクティス重視の包括的な分析は [CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md) を参照してください。**
 
 ## 概要
 
-このドキュメントは、cat-oscilloscopeをwavlpfに組み込む際の最適なライブラリ構成について調査・分析した結果をまとめたものです。
+このドキュメントは、cat-oscilloscopeをwavlpfに組み込む際の「最小変更」アプローチを記録したものです。
 
 ## cat-oscilloscopeの現在の構造
 
