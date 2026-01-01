@@ -39,8 +39,6 @@ jobs:
           mkdir -p _site
           cp index.html _site/
           cp -r dist _site/
-          mkdir -p _site/node_modules/tone
-          cp -r node_modules/tone/build _site/node_modules/tone/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
