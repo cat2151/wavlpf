@@ -9,7 +9,25 @@ This document provides concrete code examples for the proposed integration.
 
 /**
  * BufferAdapter - Adapter for direct Float32Array buffer input
- * Implements AudioSource interface without requiring Web Audio API
+ * 
+ * This class implements the AudioSource interface to enable waveform visualization
+ * of programmatically generated audio buffers without requiring Web Audio API.
+ * Perfect for integrating with synthesizers, signal processors, or any application
+ * that generates audio samples as Float32Array.
+ * 
+ * @example
+ * ```typescript
+ * // Create adapter for 4096 samples at 44.1kHz
+ * const adapter = new BufferAdapter(4096, 44100, false);
+ * 
+ * // Set buffer data
+ * const samples = generateSawtooth(220, 44100, 0.25);
+ * adapter.setBuffer(samples);
+ * 
+ * // Use with Oscilloscope
+ * const oscilloscope = new Oscilloscope(canvas, adapter);
+ * oscilloscope.render();
+ * ```
  */
 export class BufferAdapter {
   private buffer: Float32Array | null = null;
@@ -118,8 +136,32 @@ export class BufferAdapter {
 // File: @cat2151/oscilloscope-core/src/core/AudioSource.ts
 
 /**
- * AudioSource interface - Abstraction for different audio input sources
- * Implementations: AudioManager (microphone), BufferAdapter (programmatic)
+ * AudioSource interface - Core abstraction for different audio input sources
+ * 
+ * This interface enables the Oscilloscope to work with multiple audio sources
+ * without being tightly coupled to any specific implementation. By programming
+ * to this interface, the oscilloscope can visualize audio from microphones,
+ * audio files, or programmatically generated buffers interchangeably.
+ * 
+ * Implementations:
+ * - **AudioManager**: For real-time microphone input via Web Audio API
+ * - **BufferAdapter**: For programmatic Float32Array buffers (no Web Audio needed)
+ * - **FileAdapter**: For audio file playback (future)
+ * 
+ * @example
+ * ```typescript
+ * // Using with microphone
+ * const audioManager = new AudioManager();
+ * await audioManager.start();
+ * const oscilloscope = new Oscilloscope(canvas, audioManager);
+ * oscilloscope.start(); // Auto-render loop
+ * 
+ * // Using with buffer
+ * const bufferAdapter = new BufferAdapter(4096, 44100);
+ * bufferAdapter.setBuffer(samples);
+ * const oscilloscope = new Oscilloscope(canvas, bufferAdapter);
+ * oscilloscope.render(); // Manual render
+ * ```
  */
 export interface AudioSource {
   /**
@@ -164,7 +206,35 @@ import { ZeroCrossDetector } from './core/ZeroCrossDetector';
 
 /**
  * Oscilloscope - Main class for waveform visualization
- * Now supports both microphone and buffer input via AudioSource interface
+ * 
+ * **Key Change from Original**: This class now accepts any AudioSource implementation
+ * rather than being tightly coupled to Web Audio API. This enables:
+ * - Visualization of microphone input (via AudioManager)
+ * - Visualization of programmatic buffers (via BufferAdapter)
+ * - Easy testing with mock audio sources
+ * - Future extensibility for other audio sources
+ * 
+ * The class supports two rendering modes:
+ * 1. **Automatic**: Continuous rendering loop for real-time sources (microphone)
+ * 2. **Manual**: Single frame rendering for buffer-based sources (synthesizers)
+ * 
+ * @example
+ * ```typescript
+ * // Microphone scenario (automatic rendering)
+ * const audioManager = new AudioManager();
+ * await audioManager.start();
+ * const oscilloscope = new Oscilloscope(canvas, audioManager);
+ * oscilloscope.start(); // Starts continuous render loop
+ * 
+ * // Buffer scenario (manual rendering)
+ * const bufferAdapter = new BufferAdapter(4096, 44100);
+ * const oscilloscope = new Oscilloscope(canvas, bufferAdapter);
+ * 
+ * function onNewAudioGenerated(samples: Float32Array) {
+ *   bufferAdapter.setBuffer(samples);
+ *   oscilloscope.render(); // Render single frame
+ * }
+ * ```
  */
 export class Oscilloscope {
   private audioSource: AudioSource;
