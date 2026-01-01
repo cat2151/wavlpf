@@ -185,6 +185,9 @@ export function dispose(): void {
     playbackTimeoutId = null;
   }
   
+  // Reset playback loop flag
+  isPlaybackLoopStarted = false;
+  
   // Stop and dispose current player
   if (currentPlayer) {
     try {
