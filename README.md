@@ -14,6 +14,10 @@ A simple software synthesizer with low-pass filter (LPF) implemented in TypeScri
 - **WAV Generation**: Converts processed audio to WAV format
 - **Tone.js Integration**: Clean audio playback
 
+## Demo
+
+This application is deployed to GitHub Pages and available at: https://cat2151.github.io/wavlpf/
+
 ## Getting Started
 
 ### Prerequisites
@@ -71,6 +75,17 @@ This will start TypeScript in watch mode for continuous compilation.
 - `src/synth.ts`: Main synthesizer logic with mouse tracking and audio playback
 - `src/index.ts`: Entry point
 - `index.html`: Web interface
+
+## Deployment
+
+The application is automatically deployed to GitHub Pages when changes are pushed to the `main` branch. The deployment workflow:
+
+1. Installs Node.js dependencies
+2. Builds TypeScript to JavaScript
+3. Copies `index.html`, `dist/`, and required files from `node_modules/` to the deployment directory
+4. Deploys to GitHub Pages
+
+The workflow is defined in `.github/workflows/deploy.yml`.
 
 ## License
 
