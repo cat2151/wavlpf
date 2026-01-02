@@ -39,54 +39,72 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let isPlaybackLoopStarted = false;
 
 /**
- * Calculate duration in seconds based on BPM and beat
+ * BPMとビート値から再生周期(秒)を計算
+ * 
+ * 4分音符の長さ = 60 / BPM [秒]
+ * ビート値はノートの長さとして解釈: 1/beat
+ *   - beat = 4 -> 4分音符
+ *   - beat = 8 -> 8分音符
+ * 
+ * 再生周期 = (60秒 / BPM) × (4 / beat)
+ * 例: BPM=120, beat=8の場合: (60/120) × (4/8) = 0.5 × 0.5 = 0.25秒 = 250ms
+ * 例: BPM=120, beat=4の場合: (60/120) × (4/4) = 0.5 × 1   = 0.5秒  = 500ms
  */
 function getDuration(): number {
-  // Duration = (60 seconds / BPM) * (beat / 8)
-  // For BPM=120, beat=8: (60/120) * (8/8) = 0.5 * 1 = 0.5s = 500ms
-  // For BPM=120, beat=4: (60/120) * (4/8) = 0.5 * 0.5 = 0.25s = 250ms
-  return (60 / bpm) * (beat / 8);
+  return (60 / bpm) * (4 / beat);
 }
 
 /**
- * Read parameters from UI
+ * textareaから数値パラメータを読み込んで検証
+ * @param id - 要素のID
+ * @param validator - 検証関数
+ * @returns 検証済みの値、または検証失敗時はnull
+ */
+function readNumericParameter(
+  id: string,
+  validator: (value: number) => boolean
+): number | null {
+  const el = document.getElementById(id) as HTMLTextAreaElement | null;
+  if (el) {
+    const value = parseFloat(el.value);
+    if (!isNaN(value) && validator(value)) {
+      return value;
+    }
+  }
+  return null;
+}
+
+/**
+ * UIからパラメータを読み込む
  */
 function readParameters(): void {
-  const bpmEl = document.getElementById('bpm') as HTMLTextAreaElement;
-  const beatEl = document.getElementById('beat') as HTMLTextAreaElement;
-  const qMaxEl = document.getElementById('qMax') as HTMLTextAreaElement;
-  const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement;
-  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement;
-  const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement;
+  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   
-  if (bpmEl) {
-    const value = parseFloat(bpmEl.value);
-    if (!isNaN(value) && value > 0) {
-      bpm = value;
-    }
+  // BPM: 30-300の範囲で検証
+  const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
+  if (bpmValue !== null) {
+    bpm = bpmValue;
   }
   
-  if (beatEl) {
-    const value = parseFloat(beatEl.value);
-    if (!isNaN(value) && value > 0) {
-      beat = value;
-    }
+  // Beat: 1-32の範囲で検証
+  const beatValue = readNumericParameter('beat', (value) => value >= 1 && value <= 32);
+  if (beatValue !== null) {
+    beat = beatValue;
   }
   
-  if (qMaxEl) {
-    const value = parseFloat(qMaxEl.value);
-    if (!isNaN(value) && value > 0) {
-      qMax = value;
-    }
+  // Q Max: 0.5-50の範囲で検証
+  const qMaxValue = readNumericParameter('qMax', (value) => value >= 0.5 && value <= 50);
+  if (qMaxValue !== null) {
+    qMax = qMaxValue;
   }
   
-  if (cutoffMaxEl) {
-    const value = parseFloat(cutoffMaxEl.value);
-    if (!isNaN(value) && value > 0) {
-      cutoffMax = value;
-    }
+  // Cutoff Max: 20-20000Hzの範囲で検証
+  const cutoffMaxValue = readNumericParameter('cutoffMax', (value) => value >= 20 && value <= 20000);
+  if (cutoffMaxValue !== null) {
+    cutoffMax = cutoffMaxValue;
   }
   
+  // Decay Unit
   if (decayUnitEl) {
     const value = decayUnitEl.value;
     if (value === 'Hz' || value === 'Cent') {
@@ -94,80 +112,81 @@ function readParameters(): void {
     }
   }
   
-  if (decayRateEl) {
-    const value = parseFloat(decayRateEl.value);
-    if (!isNaN(value) && value >= 0) {
-      decayRate = value;
-    }
+  // Decay Rate: 0.01以上で検証(0は減衰なしなので最小値を0.01に設定)
+  const decayRateValue = readNumericParameter('decayRate', (value) => value >= 0.01);
+  if (decayRateValue !== null) {
+    decayRate = decayRateValue;
   }
 }
 
 /**
- * Convert cents to frequency ratio
- * @param cents - Number of cents
- * @returns Frequency ratio
+ * セント値を周波数比に変換
+ * @param cents - セント値
+ * @returns 周波数比
  */
 function centsToRatio(cents: number): number {
   return Math.pow(2, cents / 1200);
 }
 
 /**
- * Map mouse position to filter parameters
+ * マウス位置をフィルタパラメータにマッピング
  */
 function getFilterParams(): { cutoff: number; q: number } {
-  // X: Cutoff frequency 20Hz - cutoffMax
+  // X軸: カットオフ周波数 20Hz - cutoffMax
   const cutoff = 20 + mouseX * (cutoffMax - 20);
-  // Y: Q value 0.5 - qMax (inverted: top = high Q, bottom = low Q)
+  // Y軸: Q値 0.5 - qMax (反転: 上端=高Q, 下端=低Q)
   const q = 0.5 + (1 - mouseY) * (qMax - 0.5);
   return { cutoff, q };
 }
 
 /**
- * Render audio with LPF and cutoff decay
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング
  */
 function renderAudio(): Float32Array {
   const duration = getDuration();
   
-  // Generate sawtooth wave
+  // ノコギリ波を生成
   const samples = generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
   
-  // Create filter
+  // フィルタを作成
   const filter = new BiquadLPF(SAMPLE_RATE);
   const { cutoff: initialCutoff, q } = getFilterParams();
   
-  // Process each sample with cutoff decay
+  // カットオフ減衰を適用して各サンプルを処理
   const numSamples = samples.length;
   const output = new Float32Array(numSamples);
   
-  // Update filter coefficients at a lower rate (~1ms intervals)
-  // This is more efficient than per-sample updates since the decay is relatively slow
+  // フィルタ係数を低頻度で更新(約1ms間隔)
+  // 減衰が比較的緩やかなため、サンプル毎の更新より効率的
   const updateIntervalMs = 1;
   const samplesPerUpdate = Math.max(1, Math.floor(SAMPLE_RATE * (updateIntervalMs / 1000)));
   
   let currentCutoff = initialCutoff;
   
   for (let i = 0; i < numSamples; i++) {
-    // Recalculate coefficients only every samplesPerUpdate samples
+    // samplesPerUpdateサンプル毎に係数を再計算
     if (i % samplesPerUpdate === 0) {
-      // Calculate time in ms at this sample
+      // このサンプル位置での時間(ms)を計算
       const timeMs = (i / SAMPLE_RATE) * 1000;
       
-      // Decay cutoff based on decay unit and rate
+      // 減衰単位とレートに基づいてカットオフを減衰
       if (decayUnit === 'Hz') {
-        // Decay in Hz: decayRate Hz per 1ms, minimum 1Hz
+        // Hz減衰: 1msあたりdecayRate Hz、最小1Hz
         currentCutoff = Math.max(1, initialCutoff - timeMs * decayRate);
       } else {
-        // Decay in Cent: decayRate cents per 1ms
-        const totalCentsDecay = timeMs * decayRate;
-        const ratio = centsToRatio(-totalCentsDecay); // Negative because we're decaying
+        // Cent減衰: 1msあたりdecayRate cent
+        // 減衰の上限を設定して、理論的なカットオフが1Hz未満にならないようにする
+        const maxCentsDecay = 1200 * Math.log2(initialCutoff);
+        const totalCentsDecay = Math.min(timeMs * decayRate, maxCentsDecay);
+        const ratio = centsToRatio(-totalCentsDecay); // 減衰なので負の値
         currentCutoff = Math.max(1, initialCutoff * ratio);
       }
       
-      // Update filter coefficients at this control rate
+      // この制御レートでフィルタ係数を更新
       filter.setCoefficients(currentCutoff, q);
     }
     
-    // Process sample with current filter coefficients
+    // 現在のフィルタ係数でサンプルを処理
     output[i] = filter.processSample(samples[i]);
   }
   
@@ -214,15 +233,15 @@ async function playAudio(): Promise<void> {
 }
 
 /**
- * Initialize the synthesizer
+ * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
-  // Track mouse position
+  // マウス位置を追跡
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX / window.innerWidth;
     mouseY = e.clientY / window.innerHeight;
     
-    // Update display
+    // 表示を更新
     const cutoff = Math.round(20 + mouseX * (cutoffMax - 20));
     const q = (0.5 + (1 - mouseY) * (qMax - 0.5)).toFixed(2);
     
@@ -232,23 +251,38 @@ export async function init(): Promise<void> {
     }
   });
   
-  // Add input event listeners for parameter changes
+  // パラメータ変更のための入力イベントリスナーを追加(デバウンス処理)
+  let inputDebounceTimer: number | null = null;
+  const handleInputChange = () => {
+    if (inputDebounceTimer !== null) {
+      clearTimeout(inputDebounceTimer);
+    }
+    inputDebounceTimer = window.setTimeout(() => {
+      readParameters();
+      updateStatusDisplay();
+      
+      // パラメータ変更時に既存の再生スケジュールをキャンセルして再スケジュール
+      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
+        clearTimeout(playbackTimeoutId);
+        const duration = getDuration();
+        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+      }
+    }, 150);
+  };
+  
   const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
-      element.addEventListener('input', () => {
-        readParameters();
-        updateStatusDisplay();
-      });
+      element.addEventListener('input', handleInputChange);
     }
   });
   
-  // Initial parameter read
+  // パラメータの初期読み込み
   readParameters();
   updateStatusDisplay();
   
-  // Play audio based on calculated duration using recursive setTimeout with error handling
+  // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {
     if (Tone && Tone.context.state === 'running') {
       playAudio().catch((error: unknown) => {
@@ -317,7 +351,7 @@ export async function init(): Promise<void> {
 }
 
 /**
- * Update the status display with current settings
+ * 現在の設定でステータス表示を更新
  */
 function updateStatusDisplay(): void {
   const statusEl = document.getElementById('status');
