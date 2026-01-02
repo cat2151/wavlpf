@@ -15,18 +15,20 @@
       font-family: 'Courier New', monospace;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       cursor: default;
-      overflow: hidden;
+      padding: 20px;
     }
     
     .container {
       text-align: center;
       user-select: none;
+      max-width: 800px;
+      width: 100%;
     }
     
     h1 {
@@ -51,6 +53,54 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     
+    .controls {
+      margin-top: 2em;
+      padding: 1.5em;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      text-align: left;
+    }
+    
+    .control-group {
+      margin-bottom: 1em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .control-label {
+      flex: 0 0 200px;
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    
+    .control-input {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      padding: 0.3em 0.5em;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 5px;
+      resize: vertical;
+      min-height: 30px;
+    }
+    
+    select.control-input {
+      cursor: pointer;
+    }
+    
+    textarea.control-input {
+      min-height: 30px;
+      max-height: 80px;
+    }
+    
     .info {
       margin-top: 2em;
       font-size: 0.9em;
@@ -72,15 +122,46 @@
       Move your mouse to control the filter
     </div>
     <div id="params">Cutoff: 510Hz | Q: 1.25</div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label class="control-label" for="bpm">BPM:</label>
+        <textarea id="bpm" class="control-input">120</textarea>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="beat">Beat:</label>
+        <textarea id="beat" class="control-input">8</textarea>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="qMax">Q Max Value:</label>
+        <textarea id="qMax" class="control-input">16</textarea>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="cutoffMax">Cutoff Freq Max (Hz):</label>
+        <textarea id="cutoffMax" class="control-input">4000</textarea>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="decayUnit">Decay Unit:</label>
+        <select id="decayUnit" class="control-input">
+          <option value="Hz">Hz</option>
+          <option value="Cent">Cent</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="decayRate">Decay Rate per ms:</label>
+        <textarea id="decayRate" class="control-input">1</textarea>
+      </div>
+    </div>
+    
     <div class="info">
-      X-axis: Cutoff Frequency (20Hz - 4000Hz)<br>
-      Y-axis: Resonance Q (0.5 - 16.0)<br>
+      X-axis: Cutoff Frequency (20Hz - Max)<br>
+      Y-axis: Resonance Q (0.5 - Max)<br>
       <br>
       220Hz Sawtooth wave with LPF<br>
-      Cutoff decays at 1Hz/ms
+      Cutoff decays based on settings
     </div>
-    <div class="status">
-      New audio generated every 250ms
+    <div class="status" id="status">
+      New audio generated based on BPM and beat
     </div>
   </div>
   
