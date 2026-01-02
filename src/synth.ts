@@ -88,7 +88,10 @@ function readParameters(): void {
   }
   
   if (decayUnitEl) {
-    decayUnit = decayUnitEl.value as 'Hz' | 'Cent';
+    const value = decayUnitEl.value;
+    if (value === 'Hz' || value === 'Cent') {
+      decayUnit = value;
+    }
   }
   
   if (decayRateEl) {
