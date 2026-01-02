@@ -15,12 +15,19 @@ let isToneLoading = false;
 let toneLoadingPromise: Promise<void> | null = null;
 
 const SAMPLE_RATE = 44100;
-const DURATION = 0.25; // 250ms
 const FREQUENCY = 220; // 220Hz (A3)
 
 // Mouse position state
 let mouseX = 0.5;
 let mouseY = 0.5;
+
+// Parameter state
+let bpm = 120;
+let beat = 8;
+let qMax = 16;
+let cutoffMax = 4000;
+let decayUnit: 'Hz' | 'Cent' = 'Hz';
+let decayRate = 1;
 
 // Track currently playing player
 let currentPlayer: ToneTypes.Player | null = null;
@@ -32,13 +39,83 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let isPlaybackLoopStarted = false;
 
 /**
+ * Calculate duration in seconds based on BPM and beat
+ */
+function getDuration(): number {
+  // Duration = (60 seconds / BPM) * (beat / 8)
+  // For BPM=120, beat=8: (60/120) * (8/8) = 0.5 * 1 = 0.5s = 500ms
+  // For BPM=120, beat=4: (60/120) * (4/8) = 0.5 * 0.5 = 0.25s = 250ms
+  return (60 / bpm) * (beat / 8);
+}
+
+/**
+ * Read parameters from UI
+ */
+function readParameters(): void {
+  const bpmEl = document.getElementById('bpm') as HTMLTextAreaElement;
+  const beatEl = document.getElementById('beat') as HTMLTextAreaElement;
+  const qMaxEl = document.getElementById('qMax') as HTMLTextAreaElement;
+  const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement;
+  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement;
+  const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement;
+  
+  if (bpmEl) {
+    const value = parseFloat(bpmEl.value);
+    if (!isNaN(value) && value > 0) {
+      bpm = value;
+    }
+  }
+  
+  if (beatEl) {
+    const value = parseFloat(beatEl.value);
+    if (!isNaN(value) && value > 0) {
+      beat = value;
+    }
+  }
+  
+  if (qMaxEl) {
+    const value = parseFloat(qMaxEl.value);
+    if (!isNaN(value) && value > 0) {
+      qMax = value;
+    }
+  }
+  
+  if (cutoffMaxEl) {
+    const value = parseFloat(cutoffMaxEl.value);
+    if (!isNaN(value) && value > 0) {
+      cutoffMax = value;
+    }
+  }
+  
+  if (decayUnitEl) {
+    decayUnit = decayUnitEl.value as 'Hz' | 'Cent';
+  }
+  
+  if (decayRateEl) {
+    const value = parseFloat(decayRateEl.value);
+    if (!isNaN(value) && value >= 0) {
+      decayRate = value;
+    }
+  }
+}
+
+/**
+ * Convert cents to frequency ratio
+ * @param cents - Number of cents
+ * @returns Frequency ratio
+ */
+function centsToRatio(cents: number): number {
+  return Math.pow(2, cents / 1200);
+}
+
+/**
  * Map mouse position to filter parameters
  */
 function getFilterParams(): { cutoff: number; q: number } {
-  // X: Cutoff frequency 20Hz - 4000Hz
-  const cutoff = 20 + mouseX * (4000 - 20);
-  // Y: Q value 0.5 - 16 (inverted: top = high Q, bottom = low Q)
-  const q = 0.5 + (1 - mouseY) * (16 - 0.5);
+  // X: Cutoff frequency 20Hz - cutoffMax
+  const cutoff = 20 + mouseX * (cutoffMax - 20);
+  // Y: Q value 0.5 - qMax (inverted: top = high Q, bottom = low Q)
+  const q = 0.5 + (1 - mouseY) * (qMax - 0.5);
   return { cutoff, q };
 }
 
@@ -46,8 +123,10 @@ function getFilterParams(): { cutoff: number; q: number } {
  * Render audio with LPF and cutoff decay
  */
 function renderAudio(): Float32Array {
+  const duration = getDuration();
+  
   // Generate sawtooth wave
-  const samples = generateSawtooth(FREQUENCY, SAMPLE_RATE, DURATION);
+  const samples = generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
   
   // Create filter
   const filter = new BiquadLPF(SAMPLE_RATE);
@@ -58,7 +137,7 @@ function renderAudio(): Float32Array {
   const output = new Float32Array(numSamples);
   
   // Update filter coefficients at a lower rate (~1ms intervals)
-  // This is more efficient than per-sample updates since the 1Hz/ms decay is relatively slow
+  // This is more efficient than per-sample updates since the decay is relatively slow
   const updateIntervalMs = 1;
   const samplesPerUpdate = Math.max(1, Math.floor(SAMPLE_RATE * (updateIntervalMs / 1000)));
   
@@ -70,8 +149,16 @@ function renderAudio(): Float32Array {
       // Calculate time in ms at this sample
       const timeMs = (i / SAMPLE_RATE) * 1000;
       
-      // Decay cutoff: 1Hz per 1ms, minimum 1Hz
-      currentCutoff = Math.max(1, initialCutoff - timeMs);
+      // Decay cutoff based on decay unit and rate
+      if (decayUnit === 'Hz') {
+        // Decay in Hz: decayRate Hz per 1ms, minimum 1Hz
+        currentCutoff = Math.max(1, initialCutoff - timeMs * decayRate);
+      } else {
+        // Decay in Cent: decayRate cents per 1ms
+        const totalCentsDecay = timeMs * decayRate;
+        const ratio = centsToRatio(-totalCentsDecay); // Negative because we're decaying
+        currentCutoff = Math.max(1, initialCutoff * ratio);
+      }
       
       // Update filter coefficients at this control rate
       filter.setCoefficients(currentCutoff, q);
@@ -117,10 +204,10 @@ async function playAudio(): Promise<void> {
   await Tone.loaded();
   currentPlayer.start();
   
-  // Clean up URL after playback (match 250ms interval)
+  // Clean up URL after playback (match duration)
   setTimeout(() => {
     URL.revokeObjectURL(wavUrl);
-  }, 250);
+  }, getDuration() * 1000);
 }
 
 /**
@@ -133,8 +220,8 @@ export async function init(): Promise<void> {
     mouseY = e.clientY / window.innerHeight;
     
     // Update display
-    const cutoff = Math.round(20 + mouseX * (4000 - 20));
-    const q = (0.5 + (1 - mouseY) * (16 - 0.5)).toFixed(2);
+    const cutoff = Math.round(20 + mouseX * (cutoffMax - 20));
+    const q = (0.5 + (1 - mouseY) * (qMax - 0.5)).toFixed(2);
     
     const display = document.getElementById('params');
     if (display) {
@@ -142,14 +229,31 @@ export async function init(): Promise<void> {
     }
   });
   
-  // Play audio every 250ms using recursive setTimeout with error handling
+  // Add input event listeners for parameter changes
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate'];
+  inputs.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', () => {
+        readParameters();
+        updateStatusDisplay();
+      });
+    }
+  });
+  
+  // Initial parameter read
+  readParameters();
+  updateStatusDisplay();
+  
+  // Play audio based on calculated duration using recursive setTimeout with error handling
   function scheduleNextPlay() {
     if (Tone && Tone.context.state === 'running') {
       playAudio().catch((error: unknown) => {
         console.error('Error while playing audio:', error);
       });
     }
-    playbackTimeoutId = setTimeout(scheduleNextPlay, 250);
+    const duration = getDuration();
+    playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
   }
   
   // Click handler for starting audio
@@ -207,6 +311,17 @@ export async function init(): Promise<void> {
   // Touch events use { passive: false } since preventDefault() is called in the handler
   document.addEventListener('click', handleClick);
   document.addEventListener('touchstart', handleClick, { passive: false });
+}
+
+/**
+ * Update the status display with current settings
+ */
+function updateStatusDisplay(): void {
+  const statusEl = document.getElementById('status');
+  if (statusEl) {
+    const duration = getDuration();
+    statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+  }
 }
 
 /**
