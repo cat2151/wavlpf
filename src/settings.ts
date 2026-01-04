@@ -112,6 +112,10 @@ export function importSettingsFromFile(): Promise<Settings | null> {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) {
         resolve(null); // User cancelled
+        // Clean up input element
+        if (input.parentNode) {
+          input.parentNode.removeChild(input);
+        }
         return;
       }
       
@@ -124,38 +128,16 @@ export function importSettingsFromFile(): Promise<Settings | null> {
           resolve(validated);
         } catch (error) {
           resolve(null); // Parse error
-        }
-      };
-      reader.onerror = () => resolve(null); // Read error
-      reader.readAsText(file);
-    };
-    
-    // Clean up input element after it's no longer needed
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) {
-        resolve(null);
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const text = event.target?.result as string;
-          const parsed = JSON.parse(text);
-          const validated = validateSettings(parsed);
-          resolve(validated);
-        } catch (error) {
-          resolve(null);
         } finally {
-          // Remove input from DOM if it was added
+          // Remove input from DOM after reading
           if (input.parentNode) {
             input.parentNode.removeChild(input);
           }
         }
       };
       reader.onerror = () => {
-        resolve(null);
+        resolve(null); // Read error
+        // Clean up input element on error
         if (input.parentNode) {
           input.parentNode.removeChild(input);
         }
