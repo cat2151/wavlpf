@@ -2,6 +2,13 @@ import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
 import type * as ToneTypes from 'tone';
+import {
+  Settings,
+  loadSettings,
+  saveSettings,
+  exportSettingsToFile,
+  importSettingsFromFile,
+} from './settings';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -21,13 +28,28 @@ const FREQUENCY = 220; // 220Hz (A3)
 let mouseX = 0.5;
 let mouseY = 0.5;
 
-// Parameter state
-let bpm = 120;
-let beat = 8;
-let qMax = 16;
-let cutoffMax = 4000;
-let decayUnit: 'Hz' | 'Cent' = 'Hz';
-let decayRate = 1;
+// Parameter state - loaded from settings
+const initialSettings: Settings = loadSettings();
+let bpm = initialSettings.bpm;
+let beat = initialSettings.beat;
+let qMax = initialSettings.qMax;
+let cutoffMax = initialSettings.cutoffMax;
+let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
+let decayRate = initialSettings.decayRate;
+
+/**
+ * 現在の設定を取得
+ */
+function getCurrentSettings(): Settings {
+  return {
+    bpm,
+    beat,
+    qMax,
+    cutoffMax,
+    decayUnit,
+    decayRate,
+  };
+}
 
 // Track currently playing player
 let currentPlayer: ToneTypes.Player | null = null;
@@ -117,6 +139,9 @@ function readParameters(): void {
   if (decayRateValue !== null) {
     decayRate = decayRateValue;
   }
+  
+  // Save settings to localStorage
+  saveSettings(getCurrentSettings());
 }
 
 /**
@@ -233,6 +258,25 @@ async function playAudio(): Promise<void> {
 }
 
 /**
+ * UIフィールドを現在の設定値で更新
+ */
+function updateUIFields(): void {
+  const bpmEl = document.getElementById('bpm') as HTMLTextAreaElement | null;
+  const beatEl = document.getElementById('beat') as HTMLTextAreaElement | null;
+  const qMaxEl = document.getElementById('qMax') as HTMLTextAreaElement | null;
+  const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement | null;
+  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
+  const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
+  
+  if (bpmEl) bpmEl.value = String(bpm);
+  if (beatEl) beatEl.value = String(beat);
+  if (qMaxEl) qMaxEl.value = String(qMax);
+  if (cutoffMaxEl) cutoffMaxEl.value = String(cutoffMax);
+  if (decayUnitEl) decayUnitEl.value = decayUnit;
+  if (decayRateEl) decayRateEl.value = String(decayRate);
+}
+
+/**
  * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
@@ -278,9 +322,77 @@ export async function init(): Promise<void> {
     }
   });
   
+  // UIフィールドを保存済み設定で初期化
+  updateUIFields();
+  
   // パラメータの初期読み込み
   readParameters();
   updateStatusDisplay();
+  
+  // Export settings button handler
+  const exportBtn = document.getElementById('exportSettings');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportSettingsToFile(getCurrentSettings());
+    });
+  }
+  
+  // Import settings button handler
+  const importBtn = document.getElementById('importSettings');
+  if (importBtn) {
+    importBtn.addEventListener('click', async () => {
+      const importedSettings = await importSettingsFromFile();
+      
+      if (!importedSettings) {
+        // User cancelled or error occurred
+        const statusEl = document.getElementById('status');
+        if (statusEl) {
+          const originalText = statusEl.textContent;
+          statusEl.textContent = '設定のインポートに失敗しました。ファイル形式を確認してください。';
+          setTimeout(() => {
+            if (statusEl.textContent?.includes('インポートに失敗')) {
+              statusEl.textContent = originalText;
+            }
+          }, 3000);
+        }
+        return;
+      }
+      
+      // Update state
+      bpm = importedSettings.bpm;
+      beat = importedSettings.beat;
+      qMax = importedSettings.qMax;
+      cutoffMax = importedSettings.cutoffMax;
+      decayUnit = importedSettings.decayUnit;
+      decayRate = importedSettings.decayRate;
+      
+      // Update UI
+      updateUIFields();
+      updateStatusDisplay();
+      
+      // Save to localStorage
+      saveSettings(importedSettings);
+      
+      // Show success feedback
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        const originalText = statusEl.textContent;
+        statusEl.textContent = '設定をインポートしました。';
+        setTimeout(() => {
+          if (statusEl.textContent?.includes('インポートしました')) {
+            statusEl.textContent = originalText;
+          }
+        }, 3000);
+      }
+      
+      // Reschedule playback if already playing
+      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
+        clearTimeout(playbackTimeoutId);
+        const duration = getDuration();
+        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+      }
+    });
+  }
   
   // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {

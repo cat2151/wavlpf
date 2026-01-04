@@ -101,6 +101,29 @@
       max-height: 80px;
     }
     
+    .buttons {
+      margin-top: 1.5em;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .button {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      padding: 0.5em 1.5em;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
     .info {
       margin-top: 2em;
       font-size: 0.9em;
@@ -151,6 +174,11 @@
         <label class="control-label" for="decayRate">Decay Rate per ms:</label>
         <textarea id="decayRate" class="control-input">1</textarea>
       </div>
+    </div>
+    
+    <div class="buttons">
+      <button id="exportSettings" class="button" aria-label="Export current settings to JSON file">Export Settings</button>
+      <button id="importSettings" class="button" aria-label="Import settings from JSON file">Import Settings</button>
     </div>
     
     <div class="info">
