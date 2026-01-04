@@ -1,4 +1,4 @@
-Last updated: 2026-01-03
+Last updated: 2026-01-05
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -219,19 +219,24 @@ MIT
 ## ファイル階層ツリー
 📄 .gitignore
 📖 ARCHITECTURE_DIAGRAMS.md
+📖 CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md
 📖 CAT_OSCILLOSCOPE_INTEGRATION.md
 📖 CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md
 📖 DEVELOPMENT.md
 📖 IMPLEMENTATION_EXAMPLES.md
+📖 INTEGRATION_BLOCKERS_SUMMARY.md
 📄 LICENSE
 📖 README.ja.md
 📖 README.md
+📖 README_ANALYSIS.md
 📖 SUMMARY.md
 📄 _config.yml
 📁 generated-docs/
 🌐 index.html
 📁 issue-notes/
   📖 21.md
+  📖 24.md
+  📖 25.md
 📊 package-lock.json
 📊 package.json
 📁 src/
@@ -240,6 +245,8 @@ MIT
   📘 index.ts
   📘 oscillator.test.ts
   📘 oscillator.ts
+  📘 settings.test.ts
+  📘 settings.ts
   📘 synth.ts
   📘 wav.test.ts
   📘 wav.ts
@@ -247,7 +254,7 @@ MIT
 📘 vite.config.ts
 
 ## ファイル詳細分析
-**index.html** (171行, 4205バイト)
+**index.html** (199行, 4995バイト)
   - 関数: なし
   - インポート: なし
 
@@ -271,8 +278,16 @@ MIT
   - 関数: generateSawtooth, for
   - インポート: なし
 
-**src/synth.ts** (388行, 10821バイト)
-  - 関数: getDuration, readNumericParameter, readParameters, centsToRatio, getFilterParams, renderAudio, playAudio, init, scheduleNextPlay, updateStatusDisplay, dispose, handleInputChange, handleClick, if, for, catch
+**src/settings.test.ts** (123行, 4788バイト)
+  - 関数: なし
+  - インポート: vitest
+
+**src/settings.ts** (151行, 3975バイト)
+  - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
+  - インポート: なし
+
+**src/synth.ts** (500行, 14364バイト)
+  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, centsToRatio, getFilterParams, renderAudio, playAudio, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, dispose, handleInputChange, handleClick, if, for, catch
   - インポート: ./oscillator, ./filter, ./wav
 
 **src/wav.test.ts** (172行, 5428バイト)
@@ -290,18 +305,25 @@ MIT
 ## 関数呼び出し階層
 - for (src/filter.test.ts)
   - generateSawtooth ()
-  - getDuration (src/synth.ts)
-    - readNumericParameter ()
+  - loadSettings ()
+    - validateSettings (src/settings.ts)
+      - saveSettings ()
+      - exportSettingsToFile ()
+      - importSettingsFromFile ()
+  - catch (src/settings.ts)
+    - getCurrentSettings (src/synth.ts)
+      - getDuration ()
+      - readNumericParameter ()
       - readParameters ()
       - centsToRatio ()
       - getFilterParams ()
       - renderAudio ()
       - playAudio ()
+      - updateUIFields ()
       - init ()
       - scheduleNextPlay ()
       - updateStatusDisplay ()
       - dispose ()
-      - catch ()
       - generateWav ()
       - createWavBlobUrl ()
   - writeString ()
@@ -312,15 +334,20 @@ MIT
 
 ## プロジェクト構造（ファイル一覧）
 ARCHITECTURE_DIAGRAMS.md
+CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md
 CAT_OSCILLOSCOPE_INTEGRATION.md
 CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md
 DEVELOPMENT.md
 IMPLEMENTATION_EXAMPLES.md
+INTEGRATION_BLOCKERS_SUMMARY.md
 README.ja.md
 README.md
+README_ANALYSIS.md
 SUMMARY.md
 index.html
 issue-notes/21.md
+issue-notes/24.md
+issue-notes/25.md
 package-lock.json
 package.json
 src/filter.test.ts
@@ -328,6 +355,8 @@ src/filter.ts
 src/index.ts
 src/oscillator.test.ts
 src/oscillator.ts
+src/settings.test.ts
+src/settings.ts
 src/synth.ts
 src/wav.test.ts
 src/wav.ts
@@ -344,4 +373,4 @@ vite.config.ts
 
 
 ---
-Generated at: 2026-01-03 07:03:12 JST
+Generated at: 2026-01-05 07:03:14 JST
