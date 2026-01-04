@@ -375,6 +375,7 @@ npm install cat-oscilloscope@latest
 import { Oscilloscope, BufferSource } from 'cat-oscilloscope';
 
 const SAMPLE_RATE = 44100;
+const FREQUENCY = 220;
 const DURATION = 0.25;
 const BUFFER_SIZE = Math.floor(SAMPLE_RATE * DURATION);
 
