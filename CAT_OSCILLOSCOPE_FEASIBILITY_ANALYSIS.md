@@ -521,7 +521,7 @@ PR 9 で提案された完全なプラグインアーキテクチャの実装:
 ## 参考資料
 
 ### cat-oscilloscope リポジトリ
-- URL: https://github.com/cat2151/cat-oscilloscope
+- URL: [https://github.com/cat2151/cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope)
 - ライセンス: MIT
 - ライブラリ使用方法: [LIBRARY_USAGE.md](https://github.com/cat2151/cat-oscilloscope/blob/main/LIBRARY_USAGE.md)
 

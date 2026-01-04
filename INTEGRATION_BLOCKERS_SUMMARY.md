@@ -13,7 +13,7 @@
 
 ### ✅ 実装済みの内容
 
-cat-oscilloscope リポジトリ: https://github.com/cat2151/cat-oscilloscope
+cat-oscilloscope リポジトリ: [https://github.com/cat2151/cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope)
 
 | 項目 | 状態 | 詳細 |
 |------|------|------|
@@ -172,7 +172,10 @@ cd cat-oscilloscope
 # ビルド
 npm run build:lib
 
-# npm レジストリにログイン
+# パッケージ内容確認
+npm pack --dry-run
+
+# npm レジストリにログイン（npm 公開権限が必要）
 npm login
 
 # パッケージ公開
