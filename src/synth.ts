@@ -2,6 +2,13 @@ import { generateSawtooth } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
 import type * as ToneTypes from 'tone';
+import {
+  Settings,
+  loadSettings,
+  saveSettings,
+  exportSettingsToFile,
+  importSettingsFromFile,
+} from './settings';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -21,13 +28,14 @@ const FREQUENCY = 220; // 220Hz (A3)
 let mouseX = 0.5;
 let mouseY = 0.5;
 
-// Parameter state
-let bpm = 120;
-let beat = 8;
-let qMax = 16;
-let cutoffMax = 4000;
-let decayUnit: 'Hz' | 'Cent' = 'Hz';
-let decayRate = 1;
+// Parameter state - loaded from settings
+let settings: Settings = loadSettings();
+let bpm = settings.bpm;
+let beat = settings.beat;
+let qMax = settings.qMax;
+let cutoffMax = settings.cutoffMax;
+let decayUnit: 'Hz' | 'Cent' = settings.decayUnit;
+let decayRate = settings.decayRate;
 
 // Track currently playing player
 let currentPlayer: ToneTypes.Player | null = null;
@@ -117,6 +125,16 @@ function readParameters(): void {
   if (decayRateValue !== null) {
     decayRate = decayRateValue;
   }
+  
+  // Save settings to localStorage
+  saveSettings({
+    bpm,
+    beat,
+    qMax,
+    cutoffMax,
+    decayUnit,
+    decayRate,
+  });
 }
 
 /**
@@ -233,6 +251,25 @@ async function playAudio(): Promise<void> {
 }
 
 /**
+ * UIフィールドを現在の設定値で更新
+ */
+function updateUIFields(): void {
+  const bpmEl = document.getElementById('bpm') as HTMLTextAreaElement | null;
+  const beatEl = document.getElementById('beat') as HTMLTextAreaElement | null;
+  const qMaxEl = document.getElementById('qMax') as HTMLTextAreaElement | null;
+  const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement | null;
+  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
+  const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
+  
+  if (bpmEl) bpmEl.value = String(bpm);
+  if (beatEl) beatEl.value = String(beat);
+  if (qMaxEl) qMaxEl.value = String(qMax);
+  if (cutoffMaxEl) cutoffMaxEl.value = String(cutoffMax);
+  if (decayUnitEl) decayUnitEl.value = decayUnit;
+  if (decayRateEl) decayRateEl.value = String(decayRate);
+}
+
+/**
  * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
@@ -278,9 +315,61 @@ export async function init(): Promise<void> {
     }
   });
   
+  // UIフィールドを保存済み設定で初期化
+  updateUIFields();
+  
   // パラメータの初期読み込み
   readParameters();
   updateStatusDisplay();
+  
+  // Export settings button handler
+  const exportBtn = document.getElementById('exportSettings');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportSettingsToFile({
+        bpm,
+        beat,
+        qMax,
+        cutoffMax,
+        decayUnit,
+        decayRate,
+      });
+    });
+  }
+  
+  // Import settings button handler
+  const importBtn = document.getElementById('importSettings');
+  if (importBtn) {
+    importBtn.addEventListener('click', async () => {
+      try {
+        const importedSettings = await importSettingsFromFile();
+        
+        // Update state
+        bpm = importedSettings.bpm;
+        beat = importedSettings.beat;
+        qMax = importedSettings.qMax;
+        cutoffMax = importedSettings.cutoffMax;
+        decayUnit = importedSettings.decayUnit;
+        decayRate = importedSettings.decayRate;
+        
+        // Update UI
+        updateUIFields();
+        updateStatusDisplay();
+        
+        // Save to localStorage
+        saveSettings(importedSettings);
+        
+        // Reschedule playback if already playing
+        if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
+          clearTimeout(playbackTimeoutId);
+          const duration = getDuration();
+          playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+        }
+      } catch (error) {
+        console.error('Failed to import settings:', error);
+      }
+    });
+  }
   
   // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {
