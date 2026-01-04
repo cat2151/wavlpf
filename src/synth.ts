@@ -29,13 +29,27 @@ let mouseX = 0.5;
 let mouseY = 0.5;
 
 // Parameter state - loaded from settings
-let settings: Settings = loadSettings();
-let bpm = settings.bpm;
-let beat = settings.beat;
-let qMax = settings.qMax;
-let cutoffMax = settings.cutoffMax;
-let decayUnit: 'Hz' | 'Cent' = settings.decayUnit;
-let decayRate = settings.decayRate;
+const initialSettings: Settings = loadSettings();
+let bpm = initialSettings.bpm;
+let beat = initialSettings.beat;
+let qMax = initialSettings.qMax;
+let cutoffMax = initialSettings.cutoffMax;
+let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
+let decayRate = initialSettings.decayRate;
+
+/**
+ * 現在の設定を取得
+ */
+function getCurrentSettings(): Settings {
+  return {
+    bpm,
+    beat,
+    qMax,
+    cutoffMax,
+    decayUnit,
+    decayRate,
+  };
+}
 
 // Track currently playing player
 let currentPlayer: ToneTypes.Player | null = null;
@@ -127,14 +141,7 @@ function readParameters(): void {
   }
   
   // Save settings to localStorage
-  saveSettings({
-    bpm,
-    beat,
-    qMax,
-    cutoffMax,
-    decayUnit,
-    decayRate,
-  });
+  saveSettings(getCurrentSettings());
 }
 
 /**
@@ -326,14 +333,7 @@ export async function init(): Promise<void> {
   const exportBtn = document.getElementById('exportSettings');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      exportSettingsToFile({
-        bpm,
-        beat,
-        qMax,
-        cutoffMax,
-        decayUnit,
-        decayRate,
-      });
+      exportSettingsToFile(getCurrentSettings());
     });
   }
   
@@ -341,32 +341,55 @@ export async function init(): Promise<void> {
   const importBtn = document.getElementById('importSettings');
   if (importBtn) {
     importBtn.addEventListener('click', async () => {
-      try {
-        const importedSettings = await importSettingsFromFile();
-        
-        // Update state
-        bpm = importedSettings.bpm;
-        beat = importedSettings.beat;
-        qMax = importedSettings.qMax;
-        cutoffMax = importedSettings.cutoffMax;
-        decayUnit = importedSettings.decayUnit;
-        decayRate = importedSettings.decayRate;
-        
-        // Update UI
-        updateUIFields();
-        updateStatusDisplay();
-        
-        // Save to localStorage
-        saveSettings(importedSettings);
-        
-        // Reschedule playback if already playing
-        if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
-          clearTimeout(playbackTimeoutId);
-          const duration = getDuration();
-          playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+      const importedSettings = await importSettingsFromFile();
+      
+      if (!importedSettings) {
+        // User cancelled or error occurred
+        const statusEl = document.getElementById('status');
+        if (statusEl) {
+          const originalText = statusEl.textContent;
+          statusEl.textContent = '設定のインポートに失敗しました。ファイル形式を確認してください。';
+          setTimeout(() => {
+            if (statusEl.textContent?.includes('インポートに失敗')) {
+              statusEl.textContent = originalText;
+            }
+          }, 3000);
         }
-      } catch (error) {
-        console.error('Failed to import settings:', error);
+        return;
+      }
+      
+      // Update state
+      bpm = importedSettings.bpm;
+      beat = importedSettings.beat;
+      qMax = importedSettings.qMax;
+      cutoffMax = importedSettings.cutoffMax;
+      decayUnit = importedSettings.decayUnit;
+      decayRate = importedSettings.decayRate;
+      
+      // Update UI
+      updateUIFields();
+      updateStatusDisplay();
+      
+      // Save to localStorage
+      saveSettings(importedSettings);
+      
+      // Show success feedback
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        const originalText = statusEl.textContent;
+        statusEl.textContent = '設定をインポートしました。';
+        setTimeout(() => {
+          if (statusEl.textContent?.includes('インポートしました')) {
+            statusEl.textContent = originalText;
+          }
+        }, 3000);
+      }
+      
+      // Reschedule playback if already playing
+      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
+        clearTimeout(playbackTimeoutId);
+        const duration = getDuration();
+        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
       }
     });
   }

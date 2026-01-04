@@ -57,12 +57,14 @@ describe('settings', () => {
       expect(validateSettings({ decayUnit: 'invalid' as any }).decayUnit).toBe(defaultSettings.decayUnit);
     });
 
-    it('should validate decayRate minimum (0.01)', () => {
+    it('should validate decayRate range (0.01-1000)', () => {
       expect(validateSettings({ decayRate: 1 }).decayRate).toBe(1);
       expect(validateSettings({ decayRate: 0.01 }).decayRate).toBe(0.01);
       expect(validateSettings({ decayRate: 100 }).decayRate).toBe(100);
+      expect(validateSettings({ decayRate: 1000 }).decayRate).toBe(1000);
       expect(validateSettings({ decayRate: 0 }).decayRate).toBe(defaultSettings.decayRate);
       expect(validateSettings({ decayRate: -1 }).decayRate).toBe(defaultSettings.decayRate);
+      expect(validateSettings({ decayRate: 1001 }).decayRate).toBe(defaultSettings.decayRate);
     });
 
     it('should handle partial settings', () => {

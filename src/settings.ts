@@ -48,7 +48,7 @@ export function validateSettings(settings: Partial<Settings>): Settings {
     decayUnit: settings.decayUnit === 'Hz' || settings.decayUnit === 'Cent'
       ? settings.decayUnit
       : defaultSettings.decayUnit,
-    decayRate: typeof settings.decayRate === 'number' && settings.decayRate >= 0.01
+    decayRate: typeof settings.decayRate === 'number' && settings.decayRate >= 0.01 && settings.decayRate <= 1000
       ? settings.decayRate
       : defaultSettings.decayRate,
   };
@@ -102,8 +102,8 @@ export function exportSettingsToFile(settings: Settings): void {
 /**
  * JSONファイルから設定をインポート
  */
-export function importSettingsFromFile(): Promise<Settings> {
-  return new Promise((resolve, reject) => {
+export function importSettingsFromFile(): Promise<Settings | null> {
+  return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -111,7 +111,7 @@ export function importSettingsFromFile(): Promise<Settings> {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) {
-        reject(new Error('No file selected'));
+        resolve(null); // User cancelled
         return;
       }
       
@@ -123,10 +123,43 @@ export function importSettingsFromFile(): Promise<Settings> {
           const validated = validateSettings(parsed);
           resolve(validated);
         } catch (error) {
-          reject(new Error('Failed to parse settings file'));
+          resolve(null); // Parse error
         }
       };
-      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.onerror = () => resolve(null); // Read error
+      reader.readAsText(file);
+    };
+    
+    // Clean up input element after it's no longer needed
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) {
+        resolve(null);
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const text = event.target?.result as string;
+          const parsed = JSON.parse(text);
+          const validated = validateSettings(parsed);
+          resolve(validated);
+        } catch (error) {
+          resolve(null);
+        } finally {
+          // Remove input from DOM if it was added
+          if (input.parentNode) {
+            input.parentNode.removeChild(input);
+          }
+        }
+      };
+      reader.onerror = () => {
+        resolve(null);
+        if (input.parentNode) {
+          input.parentNode.removeChild(input);
+        }
+      };
       reader.readAsText(file);
     };
     
