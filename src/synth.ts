@@ -40,8 +40,8 @@ let decayRate = initialSettings.decayRate;
 let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
 let dutyRatio = initialSettings.dutyRatio;
 
-// Processor type: TypeScript or WASM
-let processorType: 'typescript' | 'wasm' = 'typescript';
+// Processor type: TypeScript or WASM - loaded from settings
+let processorType: 'typescript' | 'wasm' = initialSettings.processorType;
 
 /**
  * 現在の設定を取得
@@ -56,6 +56,7 @@ function getCurrentSettings(): Settings {
     decayRate,
     waveformType,
     dutyRatio,
+    processorType,
   };
 }
 
@@ -349,6 +350,7 @@ function updateUIFields(): void {
   const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
   const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
+  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
   
   if (bpmEl) bpmEl.value = String(bpm);
   if (beatEl) beatEl.value = String(beat);
@@ -358,6 +360,7 @@ function updateUIFields(): void {
   if (decayRateEl) decayRateEl.value = String(decayRate);
   if (waveformTypeEl) waveformTypeEl.value = waveformType;
   if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
+  if (processorEl) processorEl.value = processorType;
 }
 
 /**
@@ -367,6 +370,24 @@ export async function init(): Promise<void> {
   // Initialize WASM module early (but don't block on it)
   initWasm().catch((error) => {
     console.error('Failed to initialize WASM module:', error);
+    
+    // Provide UI feedback when WASM initialization fails
+    const processorSelect = document.getElementById('processor') as HTMLSelectElement | null;
+    if (processorSelect) {
+      // Disable WASM option
+      const wasmOption = Array.from(processorSelect.options).find(
+        (option) => option.value === 'wasm',
+      );
+      if (wasmOption) {
+        wasmOption.disabled = true;
+        wasmOption.text = 'Rust WASM (unavailable)';
+      }
+      // If WASM is currently selected, fall back to TypeScript
+      if (processorSelect.value === 'wasm') {
+        processorSelect.value = 'typescript';
+        processorType = 'typescript';
+      }
+    }
   });
   
   // マウス位置を追跡
@@ -457,6 +478,7 @@ export async function init(): Promise<void> {
       decayRate = importedSettings.decayRate;
       waveformType = importedSettings.waveformType;
       dutyRatio = importedSettings.dutyRatio;
+      processorType = importedSettings.processorType;
       
       // Update UI
       updateUIFields();

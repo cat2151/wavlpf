@@ -10,7 +10,7 @@ export default defineConfig({
     open: true,
     fs: {
       // Allow serving files from wasm-audio/pkg directory
-      allow: ['..'],
+      allow: ['./wasm-audio/pkg'],
     },
   },
   

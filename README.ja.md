@@ -49,9 +49,9 @@ https://cat2151.github.io/wavlpf/
 
 - Node.js（v14以上）
 - npm
-- RustとWasm-pack（WASMモジュールのビルド用）
+- Rustとwasm-pack（WASMモジュールのビルド用）
 
-RustとWasm-packのインストール:
+Rustとwasm-packのインストール:
 ```bash
 # Rustのインストール
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
