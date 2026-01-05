@@ -185,8 +185,11 @@ function getFilterParams(): { cutoff: number; q: number } {
 
 /**
  * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * @returns 生成されたオーディオサンプルと生成時間(ms)
  */
-function renderAudio(): Float32Array {
+function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
+  const startTime = performance.now();
+  
   const duration = getDuration();
   
   // 選択された波形を生成
@@ -236,7 +239,10 @@ function renderAudio(): Float32Array {
     output[i] = filter.processSample(samples[i]);
   }
   
-  return output;
+  const endTime = performance.now();
+  const generationTimeMs = endTime - startTime;
+  
+  return { samples: output, generationTimeMs };
 }
 
 /**
@@ -250,7 +256,7 @@ async function playAudio(): Promise<void> {
   }
   
   // Render audio
-  const samples = renderAudio();
+  const { samples, generationTimeMs } = renderAudio();
   
   // Generate WAV
   const wavData = generateWav(samples, SAMPLE_RATE);
@@ -271,6 +277,9 @@ async function playAudio(): Promise<void> {
   currentPlayer = new Tone.Player(wavUrl).toDestination();
   await Tone.loaded();
   currentPlayer.start();
+  
+  // Update generation time display
+  updateGenerationTimeDisplay(generationTimeMs);
   
   // Clean up URL after playback (match duration)
   setTimeout(() => {
@@ -498,6 +507,17 @@ function updateStatusDisplay(): void {
   if (statusEl) {
     const duration = getDuration();
     statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+  }
+}
+
+/**
+ * 波形生成時間を表示
+ * @param generationTimeMs - 生成時間(ミリ秒)
+ */
+function updateGenerationTimeDisplay(generationTimeMs: number): void {
+  const genTimeEl = document.getElementById('generationTime');
+  if (genTimeEl) {
+    genTimeEl.textContent = `Generation time: ${generationTimeMs.toFixed(2)}ms`;
   }
 }
 
