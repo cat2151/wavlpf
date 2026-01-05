@@ -1,6 +1,6 @@
 # wavlpf
 
-A simple software synthesizer with a Low-Pass Filter (LPF) implemented in TypeScript
+A simple software synthesizer with a Low-Pass Filter (LPF) implemented in TypeScript and Rust WASM
 
 ## Demo
 
@@ -10,15 +10,19 @@ https://cat2151.github.io/wavlpf/
 
 ## Features
 
-- **220Hz Sawtooth Wave Generator**: Pure signal processing implementation
+- **Dual Signal Processors**: Choose between TypeScript or Rust WASM implementations
+  - Real-time performance comparison with millisecond precision timing
+  - Identical audio processing algorithms for accurate benchmarking
+- **220Hz Wave Generator**: Sawtooth or Pulse waveforms with configurable duty ratio
 - **Biquad LPF Filter**: Interactive filter controlled by mouse
-  - X-axis: Cutoff Frequency (20Hz - 4000Hz)
-  - Y-axis: Resonance Q-value (0.5 - 16.0, inverted: Up = High, Down = Low)
-  - Automatic cutoff decay of 1Hz per millisecond
+  - X-axis: Cutoff Frequency (20Hz - configurable max)
+  - Y-axis: Resonance Q-value (0.5 - configurable max, inverted: Up = High, Down = Low)
+  - Configurable cutoff decay (Hz or Cent per millisecond)
 - **Non-Realtime Rendering**: WebAudio-independent signal processing
-- **250ms Audio Buffer**: Generates new audio every 250ms
+- **Configurable Audio Buffer**: BPM and beat-based audio generation timing
 - **WAV Generation**: Converts processed audio to WAV format
 - **Tone.js Integration**: Clean audio playback
+- **Settings Persistence**: Import/Export settings as JSON files
 
 ## Related Documentation
 
@@ -45,6 +49,16 @@ For waveform visualization integration, please refer to [CAT_OSCILLOSCOPE_LIBRAR
 
 - Node.js (v14 or higher)
 - npm
+- Rust and wasm-pack (for building the WASM module)
+
+To install Rust and wasm-pack:
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install wasm-pack
+cargo install wasm-pack
+```
 
 ### Installation
 
@@ -64,11 +78,17 @@ This will launch a Vite development server with instant HMR. Your browser will a
 
 ### Build
 
+Build the WASM module and the entire application:
+
 ```bash
+# Build WASM module only
+npm run build:wasm
+
+# Build everything (WASM + TypeScript + Vite production bundle)
 npm run build
 ```
 
-Runs TypeScript type checking and builds the production bundle with Vite.
+Runs TypeScript type checking, builds the Rust WASM module, and creates the production bundle with Vite.
 
 ### Preview Production Build
 
@@ -103,22 +123,46 @@ Then, open http://localhost:8080 in your browser (for development, please use `n
 
 1. Open the application in your browser
 2. Click anywhere on the page to start the audio context
-3. Move your mouse to control filter parameters:
-   - **Horizontal position (X)**: Controls cutoff frequency (20Hz - 4000Hz)
-   - **Vertical position (Y)**: Controls resonance/Q value (0.5 - 16.0, inverted: Up = High, Down = Low)
-4. Listen to new audio generated every 250ms with the current filter settings
+3. **Select Signal Processor**: Choose between TypeScript or Rust WASM from the dropdown
+4. **Configure Parameters**:
+   - Waveform Type: Sawtooth or Pulse
+   - Duty Ratio: For pulse waveforms (0-100%)
+   - BPM and Beat: Control audio generation timing
+   - Q Max Value: Maximum resonance value
+   - Cutoff Freq Max: Maximum cutoff frequency
+   - Decay Unit: Hz or Cent
+   - Decay Rate: Decay rate per millisecond
+5. Move your mouse to control filter parameters in real-time:
+   - **Horizontal position (X)**: Controls cutoff frequency (20Hz - max)
+   - **Vertical position (Y)**: Controls resonance/Q value (0.5 - max, inverted: Up = High, Down = Low)
+6. Observe the **Generation time** display to compare processor performance
+7. Listen to new audio generated based on your BPM and beat settings
 
 ## Architecture
 
 ### Signal Processing (WebAudio Independent)
 
-- `src/oscillator.ts`: Sawtooth wave generator
+#### TypeScript Implementation
+- `src/oscillator.ts`: Sawtooth and pulse wave generators
 - `src/filter.ts`: Biquad LPF implementation using RBJ Audio EQ Cookbook formulas
 - `src/wav.ts`: WAV file format generation
 
+#### Rust WASM Implementation
+- `wasm-audio/src/lib.rs`: Complete signal processing pipeline in Rust
+  - Oscillator generation (sawtooth, pulse)
+  - Biquad LPF filter with the same algorithm as TypeScript
+  - Audio rendering with cutoff decay
+- `wasm-audio/pkg/`: Generated WASM bindings
+
+#### Integration
+- `src/wasmAudio.ts`: TypeScript wrapper for WASM module
+  - Dynamic WASM loading
+  - Fallback to TypeScript on errors
+
 ### Application
 
-- `src/synth.ts`: Main synthesizer logic including mouse tracking and audio playback
+- `src/synth.ts`: Main synthesizer logic including mouse tracking, processor selection, and audio playback
+- `src/settings.ts`: Settings persistence (localStorage and JSON import/export)
 - `src/index.ts`: Entry point
 - `index.html`: Web interface
 
