@@ -141,3 +141,4 @@ vite.config.ts.timestamp-*
 # Rust build artifacts
 wasm-audio/target/
 wasm-audio/Cargo.lock
+wasm-audio/pkg/
