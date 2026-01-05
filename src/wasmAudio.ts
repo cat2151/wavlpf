@@ -2,22 +2,11 @@
  * TypeScript wrapper for WASM audio processing module
  */
 
-// Type definitions for the WASM module
-interface WasmAudioModule {
-  render_audio(
-    waveformType: string,
-    frequency: number,
-    sampleRate: number,
-    duration: number,
-    dutyRatio: number,
-    initialCutoff: number,
-    q: number,
-    decayUnit: string,
-    decayRate: number,
-  ): Float64Array;
-}
+// Import types dynamically
+type WasmModule = typeof import('../wasm-audio/pkg/wasm_audio.js');
 
-let wasmModule: WasmAudioModule | null = null;
+let wasmModule: WasmModule | null = null;
+let wasmInitPromise: Promise<void> | null = null;
 
 /**
  * Initialize the WASM module
@@ -27,14 +16,31 @@ export async function initWasm(): Promise<void> {
     return; // Already initialized
   }
 
-  try {
-    // Dynamically import the WASM module
-    const wasm = await import('../wasm-audio/pkg/wasm_audio.js');
-    wasmModule = wasm as unknown as WasmAudioModule;
-  } catch (error) {
-    console.error('Failed to load WASM module:', error);
-    throw error;
+  // If already initializing, wait for that to complete
+  if (wasmInitPromise) {
+    return wasmInitPromise;
   }
+
+  wasmInitPromise = (async () => {
+    try {
+      // Dynamically import the WASM module
+      const wasm = await import('../wasm-audio/pkg/wasm_audio.js');
+      
+      // Initialize the WASM module (this loads the .wasm file)
+      if (wasm.default) {
+        await wasm.default();
+      }
+      
+      wasmModule = wasm;
+      console.log('WASM module initialized successfully');
+    } catch (error) {
+      console.error('Failed to load WASM module:', error);
+      wasmInitPromise = null;
+      throw error;
+    }
+  })();
+
+  return wasmInitPromise;
 }
 
 /**
