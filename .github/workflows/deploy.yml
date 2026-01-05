@@ -38,11 +38,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/
+            ~/.cargo/bin/wasm-pack
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('wasm-audio/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
