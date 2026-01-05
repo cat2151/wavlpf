@@ -31,7 +31,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build TypeScript
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'v0.13.1'
+
+      - name: Cache wasm-audio build
+        uses: actions/cache@v4
+        with:
+          path: wasm-audio/target
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('wasm-audio/Cargo.toml', 'wasm-audio/src/**/*.rs') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-target-
+
+      - name: Build project
         run: npm run build
 
       - name: Prepare deployment files
