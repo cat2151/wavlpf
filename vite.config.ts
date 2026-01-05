@@ -8,6 +8,10 @@ export default defineConfig({
   server: {
     port: 8080,
     open: true,
+    fs: {
+      // Allow serving files from wasm-audio/pkg directory
+      allow: ['./wasm-audio/pkg'],
+    },
   },
   
   // Build configuration
@@ -20,6 +24,11 @@ export default defineConfig({
         main: './index.html',
       },
     },
+  },
+  
+  // Optimize deps to exclude WASM from pre-bundling
+  optimizeDeps: {
+    exclude: ['wasm-audio'],
   },
   
   // Vitest configuration

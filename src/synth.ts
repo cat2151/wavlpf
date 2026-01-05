@@ -9,6 +9,7 @@ import {
   exportSettingsToFile,
   importSettingsFromFile,
 } from './settings';
+import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -39,6 +40,9 @@ let decayRate = initialSettings.decayRate;
 let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
 let dutyRatio = initialSettings.dutyRatio;
 
+// Processor type: TypeScript or WASM - loaded from settings
+let processorType: 'typescript' | 'wasm' = initialSettings.processorType;
+
 /**
  * 現在の設定を取得
  */
@@ -52,6 +56,7 @@ function getCurrentSettings(): Settings {
     decayRate,
     waveformType,
     dutyRatio,
+    processorType,
   };
 }
 
@@ -106,6 +111,15 @@ function readNumericParameter(
 function readParameters(): void {
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
+  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
+  
+  // Processor Type
+  if (processorEl) {
+    const value = processorEl.value;
+    if (value === 'typescript' || value === 'wasm') {
+      processorType = value;
+    }
+  }
   
   // BPM: 30-300の範囲で検証
   const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
@@ -184,10 +198,10 @@ function getFilterParams(): { cutoff: number; q: number } {
 }
 
 /**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング (TypeScript実装)
  * @returns 生成されたオーディオサンプルと生成時間(ms)
  */
-function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
+function renderAudioTypeScript(): { samples: Float32Array; generationTimeMs: number } {
   const startTime = performance.now();
   
   const duration = getDuration();
@@ -246,6 +260,43 @@ function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
 }
 
 /**
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * @returns 生成されたオーディオサンプルと生成時間(ms)
+ */
+function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
+  if (processorType === 'wasm') {
+    // WASM実装を使用
+    if (!isWasmInitialized()) {
+      console.warn('WASM not initialized, falling back to TypeScript');
+      return renderAudioTypeScript();
+    }
+    
+    const duration = getDuration();
+    const { cutoff: initialCutoff, q } = getFilterParams();
+    
+    try {
+      return renderAudioWasm(
+        waveformType,
+        FREQUENCY,
+        SAMPLE_RATE,
+        duration,
+        dutyRatio,
+        initialCutoff,
+        q,
+        decayUnit,
+        decayRate,
+      );
+    } catch (error) {
+      console.error('WASM rendering failed, falling back to TypeScript:', error);
+      return renderAudioTypeScript();
+    }
+  } else {
+    // TypeScript実装を使用
+    return renderAudioTypeScript();
+  }
+}
+
+/**
  * Generate and play audio
  */
 async function playAudio(): Promise<void> {
@@ -299,6 +350,7 @@ function updateUIFields(): void {
   const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
   const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
+  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
   
   if (bpmEl) bpmEl.value = String(bpm);
   if (beatEl) beatEl.value = String(beat);
@@ -308,12 +360,36 @@ function updateUIFields(): void {
   if (decayRateEl) decayRateEl.value = String(decayRate);
   if (waveformTypeEl) waveformTypeEl.value = waveformType;
   if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
+  if (processorEl) processorEl.value = processorType;
 }
 
 /**
  * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
+  // Initialize WASM module early (but don't block on it)
+  initWasm().catch((error) => {
+    console.error('Failed to initialize WASM module:', error);
+    
+    // Provide UI feedback when WASM initialization fails
+    const processorSelect = document.getElementById('processor') as HTMLSelectElement | null;
+    if (processorSelect) {
+      // Disable WASM option
+      const wasmOption = Array.from(processorSelect.options).find(
+        (option) => option.value === 'wasm',
+      );
+      if (wasmOption) {
+        wasmOption.disabled = true;
+        wasmOption.text = 'Rust WASM (unavailable)';
+      }
+      // If WASM is currently selected, fall back to TypeScript
+      if (processorSelect.value === 'wasm') {
+        processorSelect.value = 'typescript';
+        processorType = 'typescript';
+      }
+    }
+  });
+  
   // マウス位置を追跡
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX / window.innerWidth;
@@ -349,7 +425,7 @@ export async function init(): Promise<void> {
     }, 150);
   };
   
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio'];
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'processor'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -402,6 +478,7 @@ export async function init(): Promise<void> {
       decayRate = importedSettings.decayRate;
       waveformType = importedSettings.waveformType;
       dutyRatio = importedSettings.dutyRatio;
+      processorType = importedSettings.processorType;
       
       // Update UI
       updateUIFields();
@@ -517,7 +594,8 @@ function updateStatusDisplay(): void {
 function updateGenerationTimeDisplay(generationTimeMs: number): void {
   const genTimeEl = document.getElementById('generationTime');
   if (genTimeEl) {
-    genTimeEl.textContent = `Generation time: ${generationTimeMs.toFixed(2)}ms`;
+    const processorName = processorType === 'wasm' ? 'Rust WASM' : 'TypeScript';
+    genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
   }
 }
 

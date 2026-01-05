@@ -92,6 +92,7 @@ describe('settings', () => {
         decayRate: 2,
         waveformType: 'pulse',
         dutyRatio: 75,
+        processorType: 'typescript',
       };
 
       saveSettings(testSettings);
