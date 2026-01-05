@@ -134,7 +134,19 @@ src/
 └── performance-stats.test.ts  # Performance stats tests
 ```
 
-Note: DSP implementations (oscillator, filter) have been consolidated into the Rust WASM module (`wasm-audio/src/lib.rs`) and are tested through Rust's native test framework.
+Note: DSP implementations (oscillator, filter) have been consolidated into the Rust WASM module (`wasm-audio/src/lib.rs`) and are tested through Rust's native test framework. To run Rust tests:
+
+```bash
+cd wasm-audio
+cargo test
+```
+
+The Rust test suite includes 7 tests covering:
+- Biquad LPF filter creation and coefficient calculation
+- Sawtooth and pulse wave generation with proper sample ranges
+- Filter stability with high-frequency attenuation
+- Audio rendering with Hz and Cent decay modes
+- Duty ratio clamping for pulse waves
 
 ### Test Coverage
 

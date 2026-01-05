@@ -280,6 +280,14 @@ export async function init(): Promise<void> {
   // Initialize WASM module - required for all audio processing
   await initWasm().catch((error) => {
     console.error('Failed to initialize WASM module:', error);
+    
+    // WASM初期化エラーをユーザーに分かりやすく通知
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+      statusEl.textContent =
+        'シンセサイザーの初期化に失敗しました。ページを再読み込みしてください。';
+    }
+    
     throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
   
