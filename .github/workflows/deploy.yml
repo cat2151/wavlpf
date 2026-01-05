@@ -43,11 +43,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: wasm-audio/target
-          key: ${{ runner.os }}-wasm-target-${{ hashFiles('wasm-audio/Cargo.toml', 'wasm-audio/src/**') }}
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('wasm-audio/Cargo.toml', 'wasm-audio/src/**/*.rs') }}
           restore-keys: |
             ${{ runner.os }}-wasm-target-
 
-      - name: Build TypeScript
+      - name: Build project
         run: npm run build
 
       - name: Prepare deployment files
