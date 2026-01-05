@@ -303,6 +303,7 @@ export async function init(): Promise<void> {
     }
     inputDebounceTimer = window.setTimeout(() => {
       readParameters();
+      updateUIFields(); // 検証された値でUIを更新し、無効な入力との不一致を防ぐ
       updateStatusDisplay();
       
       // パラメータ変更時に既存の再生スケジュールをキャンセルして再スケジュール
