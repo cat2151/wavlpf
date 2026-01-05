@@ -662,10 +662,9 @@ function updateGenerationTimeDisplay(generationTimeMs: number): void {
     
     if (stats && stats.count > 1) {
       // Show detailed statistics when we have multiple samples
-      genTimeEl.textContent = 
-        `Generation time (${processorName}): ${stats.current.toFixed(2)}ms ` +
-        `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, ` +
-        `max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
+      const currentText = `Generation time (${processorName}): ${stats.current.toFixed(2)}ms`;
+      const statsText = `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
+      genTimeEl.textContent = `${currentText} ${statsText}`;
     } else {
       // Show simple display for first measurement
       genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
