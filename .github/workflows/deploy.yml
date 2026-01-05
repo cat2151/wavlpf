@@ -34,19 +34,18 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust dependencies
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'latest'
+
+      - name: Cache wasm-audio build
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('wasm-audio/Cargo.toml') }}
+          path: wasm-audio/target
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('wasm-audio/Cargo.toml', 'wasm-audio/src/**') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack
+            ${{ runner.os }}-wasm-target-
 
       - name: Build TypeScript
         run: npm run build
