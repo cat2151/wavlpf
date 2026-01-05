@@ -14,6 +14,8 @@ export interface Settings {
   cutoffMax: number;
   decayUnit: 'Hz' | 'Cent';
   decayRate: number;
+  waveformType: 'sawtooth' | 'pulse';
+  dutyRatio: number;
 }
 
 /**
@@ -26,6 +28,8 @@ export const defaultSettings: Settings = {
   cutoffMax: 4000,
   decayUnit: 'Hz',
   decayRate: 1,
+  waveformType: 'sawtooth',
+  dutyRatio: 50,
 };
 
 /**
@@ -51,6 +55,12 @@ export function validateSettings(settings: Partial<Settings>): Settings {
     decayRate: typeof settings.decayRate === 'number' && settings.decayRate >= 0.01 && settings.decayRate <= 1000
       ? settings.decayRate
       : defaultSettings.decayRate,
+    waveformType: settings.waveformType === 'sawtooth' || settings.waveformType === 'pulse'
+      ? settings.waveformType
+      : defaultSettings.waveformType,
+    dutyRatio: typeof settings.dutyRatio === 'number' && settings.dutyRatio >= 0 && settings.dutyRatio <= 100
+      ? settings.dutyRatio
+      : defaultSettings.dutyRatio,
   };
 }
 

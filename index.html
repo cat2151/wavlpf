@@ -148,6 +148,17 @@
     
     <div class="controls">
       <div class="control-group">
+        <label class="control-label" for="waveformType">Waveform Type:</label>
+        <select id="waveformType" class="control-input">
+          <option value="sawtooth">Sawtooth</option>
+          <option value="pulse">Pulse</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="dutyRatio">Duty Ratio (%):</label>
+        <textarea id="dutyRatio" class="control-input">50</textarea>
+      </div>
+      <div class="control-group">
         <label class="control-label" for="bpm">BPM:</label>
         <textarea id="bpm" class="control-input">120</textarea>
       </div>
@@ -185,7 +196,7 @@
       X-axis: Cutoff Frequency (20Hz - Max)<br>
       Y-axis: Resonance Q (0.5 - Max)<br>
       <br>
-      220Hz Sawtooth wave with LPF<br>
+      220Hz wave with LPF (Sawtooth or Pulse)<br>
       Cutoff decays based on settings
     </div>
     <div class="status" id="status">
