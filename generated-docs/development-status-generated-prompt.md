@@ -1,4 +1,4 @@
-Last updated: 2026-01-05
+Last updated: 2026-01-06
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -218,6 +218,14 @@ Last updated: 2026-01-05
 - issue-notes/21.md
 - issue-notes/24.md
 - issue-notes/25.md
+- issue-notes/28.md
+- issue-notes/30.md
+- issue-notes/31.md
+- issue-notes/33.md
+- issue-notes/35.md
+- issue-notes/37.md
+- issue-notes/39.md
+- issue-notes/41.md
 - package-lock.json
 - package.json
 - src/filter.test.ts
@@ -228,255 +236,809 @@ Last updated: 2026-01-05
 - src/settings.test.ts
 - src/settings.ts
 - src/synth.ts
+- src/wasmAudio.ts
 - src/wav.test.ts
 - src/wav.ts
 - tsconfig.json
 - vite.config.ts
+- wasm-audio/Cargo.toml
+- wasm-audio/src/lib.rs
 
 ## 現在のオープンIssues
-## [Issue #24](../issue-notes/24.md): Q maxに64を指定すると、入力は64と表示されても、実際の値が64にならず、userが混乱する
-[issue-notes/24.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/24.md)
+## [Issue #41](../issue-notes/41.md): 今後のDSPコアをRustでクレートでネイティブからも利用する用途を優先し、Rust処理がある部分は、Rustに一本化し、同じ機能のTypeScript部を削除する
+[issue-notes/41.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/41.md)
 
 ...
-ラベル: good first issue
---- issue-notes/24.md の内容 ---
+ラベル: 
+--- issue-notes/41.md の内容 ---
 
 ```markdown
-# issue Q maxに64を指定すると、入力は64と表示されても、実際の値が64にならず、userが混乱する #24
-[issues #24](https://github.com/cat2151/wavlpf/issues/24)
+# issue 今後の音声コアをRustでクレートでネイティブからも利用する用途を優先し、Rust処理がある部分は、Rustに一本化し、同じ機能のTypeScript部を削除する #41
+[issues #41](https://github.com/cat2151/wavlpf/issues/41)
+
+
+
+```
+
+## [Issue #40](../issue-notes/40.md): Add statistical performance tracking to improve generation time display precision
+Browser security features (timing attack mitigation) quantize `performance.now()` to 1-10ms increments, causing generation time to display only as 0ms, 10ms, 20ms, 30ms. Single measurements cannot be made more precise due to browser limitations.
+
+## Changes
+
+**Statistical tracking** (`src/synth.ts`)...
+ラベル: 
+--- issue-notes/40.md の内容 ---
+
+```markdown
+
+```
+
+## [Issue #39](../issue-notes/39.md): 波形生成処理の処理時間表示が、0ms、10ms、20ms、30msの4種類しか表示されない。より正確に処理時間を計測表示する方法があるか分析する
+[issue-notes/39.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/39.md)
+
+...
+ラベル: 
+--- issue-notes/39.md の内容 ---
+
+```markdown
+# issue 波形生成処理の処理時間表示が、0ms、10ms、20ms、30msの4種類しか表示されない。より正確に処理時間を計測表示する方法があるか分析する #39
+[issues #39](https://github.com/cat2151/wavlpf/issues/39)
+
+
+
+```
+
+## [Issue #30](../issue-notes/30.md): フィルタにLPF以外の、BPF, HPF, notch, APF, lowShelf, highShelf もプルダウンで選べるようにする
+[issue-notes/30.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/30.md)
+
+...
+ラベル: 
+--- issue-notes/30.md の内容 ---
+
+```markdown
+# issue フィルタにLPF以外の、BPF, HPF, notch, APF, lowShelf, highShelf もプルダウンで選べるようにする #30
+[issues #30](https://github.com/cat2151/wavlpf/issues/30)
 
 
 
 ```
 
 ## ドキュメントで言及されているファイルの内容
-### .github/actions-tmp/issue-notes/24.md
+### .github/actions-tmp/issue-notes/30.md
 ```md
 {% raw %}
-# issue Geminiが503で落ちたのでretryを実装する #24
-[issues #24](https://github.com/cat2151/github-actions/issues/24)
+# issue 進捗状況生成時、issueに紐付くissue-notesがないときエラー終了してしまう #30
+[issues #30](https://github.com/cat2151/github-actions/issues/30)
 
 # 何が困るの？
-- 朝起きて、development statusがgenerateされてないのは困る
-    - それをタスク実施のヒントにしているので
-    - 毎朝generatedな状態を維持したい
+- 生成されない
 
-# 方法
-- retryを実装する
-    - 現在は `this.model.generateContent(developmentPrompt);`
-    - 実装後は `this.generateContent(developmentPrompt);`
-    - BaseGenerator 側に、
-        - generateContent関数を実装する
-            - そこで、
-                - `this.model.generateContent(developmentPrompt);` する
-                - 503のとき、
-                    - retryあり
-                    - Exponential Backoff
+# 分析
+- issue紐付くissue-notesが存在しないことは普通にある
+- 今回も、そうなっていることを確認済み
+    - issue 1～8はissue-notesがあった
+    - 当該のissue 9は、issue本体のコメントに書いて進行していた
+        - issue-notesの仕組みを使う前に書いたissueなので、そうなっていた
+- こうするのがよい
+    - エラーにならず、空文字として扱う
 
-# 結果
-- 直近の実行結果をlog確認した
-    - 本番で503が発生しなかったことをlog確認した
-- 本番の503 testは、今回発生しなかったので、できず
-- ここ1週間で2回発生しているので、次の1週間で1回発生する想定
-- ソース机上確認した
-
-# どうする？
-- このissueはcloseしたほうがわかりやすい、と判断する
-- 1週間503を毎日チェック、は省略とする
-- もし今後503が発生したら別issueとする
-- 2日チェックして503なし
-
-# closeとする
-
-{% endraw %}
-```
-
-### issue-notes/24.md
-```md
-{% raw %}
-# issue Q maxに64を指定すると、入力は64と表示されても、実際の値が64にならず、userが混乱する #24
-[issues #24](https://github.com/cat2151/wavlpf/issues/24)
+# close条件
+- 当該部分で落ちなくなること
+    - 当該部分とは：
+    - https://github.com/cat2151/fighting-game-button-challenge
+        - issue 9
 
 
 
 {% endraw %}
 ```
 
-### .github/actions-tmp/issue-notes/4.md
+### issue-notes/30.md
 ```md
 {% raw %}
-# issue GitHub Actions「project概要生成」を共通ワークフロー化する #4
-[issues #4](https://github.com/cat2151/github-actions/issues/4)
+# issue フィルタにLPF以外の、BPF, HPF, notch, APF, lowShelf, highShelf もプルダウンで選べるようにする #30
+[issues #30](https://github.com/cat2151/wavlpf/issues/30)
 
-# prompt
-```
-あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-このymlファイルを、以下の2つのファイルに分割してください。
-1. 共通ワークフロー       cat2151/github-actions/.github/workflows/daily-project-summary.yml
-2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-daily-project-summary.yml
-まずplanしてください
+
+
+{% endraw %}
 ```
 
-# 結果、あちこちハルシネーションのあるymlが生成された
-- agentの挙動があからさまにハルシネーション
-    - インデントが修正できない、「失敗した」という
-    - 構文誤りを認識できない
-- 人力で修正した
+### .github/actions-tmp/issue-notes/9.md
+```md
+{% raw %}
+# issue 関数コールグラフhtmlビジュアライズが0件なので、原因を可視化する #9
+[issues #9](https://github.com/cat2151/github-actions/issues/9)
 
-# このagentによるセルフレビューが信頼できないため、別のLLMによるセカンドオピニオンを試す
-```
-あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
-
---- 呼び出し元
-
-name: Call Daily Project Summary
-
-on:
-  schedule:
-    # 日本時間 07:00 (UTC 22:00 前日)
-    - cron: '0 22 * * *'
-  workflow_dispatch:
-
-jobs:
-  call-daily-project-summary:
-    uses: cat2151/github-actions/.github/workflows/daily-project-summary.yml
-    secrets:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
---- 共通ワークフロー
-name: Daily Project Summary
-on:
-  workflow_call:
-
-jobs:
-  generate-summary:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      issues: read
-      pull-requests: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # 履歴を取得するため
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          # 一時的なディレクトリで依存関係をインストール
-          mkdir -p /tmp/summary-deps
-          cd /tmp/summary-deps
-          npm init -y
-          npm install @google/generative-ai @octokit/rest
-          # generated-docsディレクトリを作成
-          mkdir -p $GITHUB_WORKSPACE/generated-docs
-
-      - name: Generate project summary
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          NODE_PATH: /tmp/summary-deps/node_modules
-        run: |
-          node .github/scripts/generate-project-summary.cjs
-
-      - name: Check for generated summaries
-        id: check_summaries
-        run: |
-          if [ -f "generated-docs/project-overview.md" ] && [ -f "generated-docs/development-status.md" ]; then
-            echo "summaries_generated=true" >> $GITHUB_OUTPUT
-          else
-            echo "summaries_generated=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push summaries
-        if: steps.check_summaries.outputs.summaries_generated == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # package.jsonの変更のみリセット（generated-docsは保持）
-          git restore package.json 2>/dev/null || true
-          # サマリーファイルのみを追加
-          git add generated-docs/project-overview.md
-          git add generated-docs/development-status.md
-          git commit -m "Update project summaries (overview & development status)"
-          git push
-
-      - name: Summary generation result
-        run: |
-          if [ "${{ steps.check_summaries.outputs.summaries_generated }}" == "true" ]; then
-            echo "✅ Project summaries updated successfully"
-            echo "📊 Generated: project-overview.md & development-status.md"
-          else
-            echo "ℹ️ No summaries generated (likely no user commits in the last 24 hours)"
-          fi
-```
-
-# 上記promptで、2つのLLMにレビューさせ、合格した
-
-# 細部を、先行する2つのymlを参照に手直しした
-
-# ローカルtestをしてからcommitできるとよい。方法を検討する
-- ローカルtestのメリット
-    - 素早く修正のサイクルをまわせる
-    - ムダにgit historyを汚さない
-        - これまでの事例：「実装したつもり」「エラー。修正したつもり」「エラー。修正したつもり」...（以降エラー多数）
-- 方法
-    - ※検討、WSL + act を環境構築済みである。test可能であると判断する
-    - 呼び出し元のURLをコメントアウトし、相対パス記述にする
-    - ※備考、テスト成功すると結果がcommit pushされる。それでよしとする
-- 結果
-    - OK
-    - secretsを簡略化できるか試した、できなかった、現状のsecrets記述が今わかっている範囲でベストと判断する
-    - OK
+# agentに修正させたり、人力で修正したりした
+- agentがハルシネーションし、いろいろ根の深いバグにつながる、エラー隠蔽などを仕込んでいたため、検知が遅れた
+- 詳しくはcommit logを参照のこと
+- WSL + actの環境を少し変更、act起動時のコマンドライン引数を変更し、generated-docsをmountする（ほかはデフォルト挙動であるcpだけにする）ことで、デバッグ情報をコンテナ外に出力できるようにし、デバッグを効率化した
 
 # test green
 
-# commit用に、yml 呼び出し元 uses をlocal用から本番用に書き換える
-
 # closeとする
+
+{% endraw %}
+```
+
+### issue-notes/39.md
+```md
+{% raw %}
+# issue 波形生成処理の処理時間表示が、0ms、10ms、20ms、30msの4種類しか表示されない。より正確に処理時間を計測表示する方法があるか分析する #39
+[issues #39](https://github.com/cat2151/wavlpf/issues/39)
+
+
+
+{% endraw %}
+```
+
+### issue-notes/41.md
+```md
+{% raw %}
+# issue 今後の音声コアをRustでクレートでネイティブからも利用する用途を優先し、Rust処理がある部分は、Rustに一本化し、同じ機能のTypeScript部を削除する #41
+[issues #41](https://github.com/cat2151/wavlpf/issues/41)
+
+
+
+{% endraw %}
+```
+
+### src/synth.ts
+```ts
+{% raw %}
+import { generateSawtooth, generatePulse } from './oscillator';
+import { BiquadLPF } from './filter';
+import { generateWav, createWavBlobUrl } from './wav';
+import type * as ToneTypes from 'tone';
+import {
+  Settings,
+  loadSettings,
+  saveSettings,
+  exportSettingsToFile,
+  importSettingsFromFile,
+} from './settings';
+import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
+
+// Tone.js is kept as null until the first user interaction. We dynamically import
+// the module on a user click so that the underlying AudioContext is not created
+// before a user gesture, which would violate browser autoplay policies.
+let Tone: typeof ToneTypes | null = null;
+
+// Track whether Tone.js is currently being loaded to prevent race conditions
+let isToneLoading = false;
+
+// Promise to track the loading state for concurrent clicks
+let toneLoadingPromise: Promise<void> | null = null;
+
+const SAMPLE_RATE = 44100;
+const FREQUENCY = 220; // 220Hz (A3)
+
+// Mouse position state
+let mouseX = 0.5;
+let mouseY = 0.5;
+
+// Parameter state - loaded from settings
+const initialSettings: Settings = loadSettings();
+let bpm = initialSettings.bpm;
+let beat = initialSettings.beat;
+let qMax = initialSettings.qMax;
+let cutoffMax = initialSettings.cutoffMax;
+let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
+let decayRate = initialSettings.decayRate;
+let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
+let dutyRatio = initialSettings.dutyRatio;
+
+// Processor type: TypeScript or WASM - loaded from settings
+let processorType: 'typescript' | 'wasm' = initialSettings.processorType;
+
+/**
+ * 現在の設定を取得
+ */
+function getCurrentSettings(): Settings {
+  return {
+    bpm,
+    beat,
+    qMax,
+    cutoffMax,
+    decayUnit,
+    decayRate,
+    waveformType,
+    dutyRatio,
+    processorType,
+  };
+}
+
+// Track currently playing player
+let currentPlayer: ToneTypes.Player | null = null;
+
+// Track playback timeout for cleanup
+let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+// Track whether playback loop has started
+let isPlaybackLoopStarted = false;
+
+/**
+ * BPMとビート値から再生周期(秒)を計算
+ * 
+ * 4分音符の長さ = 60 / BPM [秒]
+ * ビート値はノートの長さとして解釈: 1/beat
+ *   - beat = 4 -> 4分音符
+ *   - beat = 8 -> 8分音符
+ * 
+ * 再生周期 = (60秒 / BPM) × (4 / beat)
+ * 例: BPM=120, beat=8の場合: (60/120) × (4/8) = 0.5 × 0.5 = 0.25秒 = 250ms
+ * 例: BPM=120, beat=4の場合: (60/120) × (4/4) = 0.5 × 1   = 0.5秒  = 500ms
+ */
+function getDuration(): number {
+  return (60 / bpm) * (4 / beat);
+}
+
+/**
+ * textareaから数値パラメータを読み込んで検証
+ * @param id - 要素のID
+ * @param validator - 検証関数
+ * @returns 検証済みの値、または検証失敗時はnull
+ */
+function readNumericParameter(
+  id: string,
+  validator: (value: number) => boolean
+): number | null {
+  const el = document.getElementById(id) as HTMLTextAreaElement | null;
+  if (el) {
+    const value = parseFloat(el.value);
+    if (!isNaN(value) && validator(value)) {
+      return value;
+    }
+  }
+  return null;
+}
+
+/**
+ * UIからパラメータを読み込む
+ */
+function readParameters(): void {
+  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
+  const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
+  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
+  
+  // Processor Type
+  if (processorEl) {
+    const value = processorEl.value;
+    if (value === 'typescript' || value === 'wasm') {
+      processorType = value;
+    }
+  }
+  
+  // BPM: 30-300の範囲で検証
+  const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
+  if (bpmValue !== null) {
+    bpm = bpmValue;
+  }
+  
+  // Beat: 1-32の範囲で検証
+  const beatValue = readNumericParameter('beat', (value) => value >= 1 && value <= 32);
+  if (beatValue !== null) {
+    beat = beatValue;
+  }
+  
+  // Q Max: 0.5-50の範囲で検証
+  const qMaxValue = readNumericParameter('qMax', (value) => value >= 0.5 && value <= 50);
+  if (qMaxValue !== null) {
+    qMax = qMaxValue;
+  }
+  
+  // Cutoff Max: 20-20000Hzの範囲で検証
+  const cutoffMaxValue = readNumericParameter('cutoffMax', (value) => value >= 20 && value <= 20000);
+  if (cutoffMaxValue !== null) {
+    cutoffMax = cutoffMaxValue;
+  }
+  
+  // Decay Unit
+  if (decayUnitEl) {
+    const value = decayUnitEl.value;
+    if (value === 'Hz' || value === 'Cent') {
+      decayUnit = value;
+    }
+  }
+  
+  // Decay Rate: 0.01以上で検証(0は減衰なしなので最小値を0.01に設定)
+  const decayRateValue = readNumericParameter('decayRate', (value) => value >= 0.01);
+  if (decayRateValue !== null) {
+    decayRate = decayRateValue;
+  }
+  
+  // Waveform Type
+  if (waveformTypeEl) {
+    const value = waveformTypeEl.value;
+    if (value === 'sawtooth' || value === 'pulse') {
+      waveformType = value;
+    }
+  }
+  
+  // Duty Ratio: 0-100の範囲で検証
+  const dutyRatioValue = readNumericParameter('dutyRatio', (value) => value >= 0 && value <= 100);
+  if (dutyRatioValue !== null) {
+    dutyRatio = dutyRatioValue;
+  }
+  
+  // Save settings to localStorage
+  saveSettings(getCurrentSettings());
+}
+
+/**
+ * セント値を周波数比に変換
+ * @param cents - セント値
+ * @returns 周波数比
+ */
+function centsToRatio(cents: number): number {
+  return Math.pow(2, cents / 1200);
+}
+
+/**
+ * マウス位置をフィルタパラメータにマッピング
+ */
+function getFilterParams(): { cutoff: number; q: number } {
+  // X軸: カットオフ周波数 20Hz - cutoffMax
+  const cutoff = 20 + mouseX * (cutoffMax - 20);
+  // Y軸: Q値 0.5 - qMax (反転: 上端=高Q, 下端=低Q)
+  const q = 0.5 + (1 - mouseY) * (qMax - 0.5);
+  return { cutoff, q };
+}
+
+/**
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング (TypeScript実装)
+ * @returns 生成されたオーディオサンプルと生成時間(ms)
+ */
+function renderAudioTypeScript(): { samples: Float32Array; generationTimeMs: number } {
+  const startTime = performance.now();
+  
+  const duration = getDuration();
+  
+  // 選択された波形を生成
+  const samples = waveformType === 'pulse'
+    ? generatePulse(FREQUENCY, SAMPLE_RATE, duration, dutyRatio)
+    : generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
+  
+  // フィルタを作成
+  const filter = new BiquadLPF(SAMPLE_RATE);
+  const { cutoff: initialCutoff, q } = getFilterParams();
+  
+  // カットオフ減衰を適用して各サンプルを処理
+  const numSamples = samples.length;
+  const output = new Float32Array(numSamples);
+  
+  // フィルタ係数を低頻度で更新(約1ms間隔)
+  // 減衰が比較的緩やかなため、サンプル毎の更新より効率的
+  const updateIntervalMs = 1;
+  const samplesPerUpdate = Math.max(1, Math.floor(SAMPLE_RATE * (updateIntervalMs / 1000)));
+  
+  let currentCutoff = initialCutoff;
+  
+  for (let i = 0; i < numSamples; i++) {
+    // samplesPerUpdateサンプル毎に係数を再計算
+    if (i % samplesPerUpdate === 0) {
+      // このサンプル位置での時間(ms)を計算
+      const timeMs = (i / SAMPLE_RATE) * 1000;
+      
+      // 減衰単位とレートに基づいてカットオフを減衰
+      if (decayUnit === 'Hz') {
+        // Hz減衰: 1msあたりdecayRate Hz、最小1Hz
+        currentCutoff = Math.max(1, initialCutoff - timeMs * decayRate);
+      } else {
+        // Cent減衰: 1msあたりdecayRate cent
+        // 減衰の上限を設定して、理論的なカットオフが1Hz未満にならないようにする
+        const maxCentsDecay = 1200 * Math.log2(initialCutoff);
+        const totalCentsDecay = Math.min(timeMs * decayRate, maxCentsDecay);
+        const ratio = centsToRatio(-totalCentsDecay); // 減衰なので負の値
+        currentCutoff = Math.max(1, initialCutoff * ratio);
+      }
+      
+      // この制御レートでフィルタ係数を更新
+      filter.setCoefficients(currentCutoff, q);
+    }
+    
+    // 現在のフィルタ係数でサンプルを処理
+    output[i] = filter.processSample(samples[i]);
+  }
+  
+  const endTime = performance.now();
+  const generationTimeMs = endTime - startTime;
+  
+  return { samples: output, generationTimeMs };
+}
+
+/**
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * @returns 生成されたオーディオサンプルと生成時間(ms)
+ */
+function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
+  if (processorType === 'wasm') {
+    // WASM実装を使用
+    if (!isWasmInitialized()) {
+      console.warn('WASM not initialized, falling back to TypeScript');
+      return renderAudioTypeScript();
+    }
+    
+    const duration = getDuration();
+    const { cutoff: initialCutoff, q } = getFilterParams();
+    
+    try {
+      return renderAudioWasm(
+        waveformType,
+        FREQUENCY,
+        SAMPLE_RATE,
+        duration,
+        dutyRatio,
+        initialCutoff,
+        q,
+        decayUnit,
+        decayRate,
+      );
+    } catch (error) {
+      console.error('WASM rendering failed, falling back to TypeScript:', error);
+      return renderAudioTypeScript();
+    }
+  } else {
+    // TypeScript実装を使用
+    return renderAudioTypeScript();
+  }
+}
+
+/**
+ * Generate and play audio
+ */
+async function playAudio(): Promise<void> {
+  // Ensure Tone is loaded
+  if (!Tone) {
+    console.warn('Tone.js not loaded yet');
+    return;
+  }
+  
+  // Render audio
+  const { samples, generationTimeMs } = renderAudio();
+  
+  // Generate WAV
+  const wavData = generateWav(samples, SAMPLE_RATE);
+  const wavUrl = createWavBlobUrl(wavData);
+  
+  // Stop previous player if exists
+  if (currentPlayer) {
+    try {
+      currentPlayer.stop();
+      currentPlayer.dispose();
+    } catch (error) {
+      // Log errors instead of silently ignoring them
+      console.warn('Failed to stop or dispose previous player:', error);
+    }
+  }
+  
+  // Create and play new player
+  currentPlayer = new Tone.Player(wavUrl).toDestination();
+  await Tone.loaded();
+  currentPlayer.start();
+  
+  // Update generation time display
+  updateGenerationTimeDisplay(generationTimeMs);
+  
+  // Clean up URL after playback (match duration)
+  setTimeout(() => {
+    URL.revokeObjectURL(wavUrl);
+  }, getDuration() * 1000);
+}
+
+/**
+ * UIフィールドを現在の設定値で更新
+ */
+function updateUIFields(): void {
+  const bpmEl = document.getElementById('bpm') as HTMLTextAreaElement | null;
+  const beatEl = document.getElementById('beat') as HTMLTextAreaElement | null;
+  const qMaxEl = document.getElementById('qMax') as HTMLTextAreaElement | null;
+  const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement | null;
+  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
+  const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
+  const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
+  const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
+  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
+  
+  if (bpmEl) bpmEl.value = String(bpm);
+  if (beatEl) beatEl.value = String(beat);
+  if (qMaxEl) qMaxEl.value = String(qMax);
+  if (cutoffMaxEl) cutoffMaxEl.value = String(cutoffMax);
+  if (decayUnitEl) decayUnitEl.value = decayUnit;
+  if (decayRateEl) decayRateEl.value = String(decayRate);
+  if (waveformTypeEl) waveformTypeEl.value = waveformType;
+  if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
+  if (processorEl) processorEl.value = processorType;
+}
+
+/**
+ * シンセサイザーを初期化
+ */
+export async function init(): Promise<void> {
+  // Initialize WASM module early (but don't block on it)
+  initWasm().catch((error) => {
+    console.error('Failed to initialize WASM module:', error);
+    
+    // Provide UI feedback when WASM initialization fails
+    const processorSelect = document.getElementById('processor') as HTMLSelectElement | null;
+    if (processorSelect) {
+      // Disable WASM option
+      const wasmOption = Array.from(processorSelect.options).find(
+        (option) => option.value === 'wasm',
+      );
+      if (wasmOption) {
+        wasmOption.disabled = true;
+        wasmOption.text = 'Rust WASM (unavailable)';
+      }
+      // If WASM is currently selected, fall back to TypeScript
+      if (processorSelect.value === 'wasm') {
+        processorSelect.value = 'typescript';
+        processorType = 'typescript';
+      }
+    }
+  });
+  
+  // マウス位置を追跡
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX / window.innerWidth;
+    mouseY = e.clientY / window.innerHeight;
+    
+    // 表示を更新
+    const cutoff = Math.round(20 + mouseX * (cutoffMax - 20));
+    const q = (0.5 + (1 - mouseY) * (qMax - 0.5)).toFixed(2);
+    
+    const display = document.getElementById('params');
+    if (display) {
+      display.textContent = `Cutoff: ${cutoff}Hz | Q: ${q}`;
+    }
+  });
+  
+  // パラメータ変更のための入力イベントリスナーを追加(デバウンス処理)
+  let inputDebounceTimer: number | null = null;
+  const handleInputChange = () => {
+    if (inputDebounceTimer !== null) {
+      clearTimeout(inputDebounceTimer);
+    }
+    inputDebounceTimer = window.setTimeout(() => {
+      readParameters();
+      updateUIFields(); // 検証された値でUIを更新し、無効な入力との不一致を防ぐ
+      updateStatusDisplay();
+      
+      // パラメータ変更時に既存の再生スケジュールをキャンセルして再スケジュール
+      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
+        clearTimeout(playbackTimeoutId);
+        const duration = getDuration();
+        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+      }
+    }, 150);
+  };
+  
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'processor'];
+  inputs.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', handleInputChange);
+    }
+  });
+  
+  // UIフィールドを保存済み設定で初期化
+  updateUIFields();
+  
+  // パラメータの初期読み込み
+  readParameters();
+  updateStatusDisplay();
+  
+  // Export settings button handler
+  const exportBtn = document.getElementById('exportSettings');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportSettingsToFile(getCurrentSettings());
+    });
+  }
+  
+  // Import settings button handler
+  const importBtn = document.getElementById('importSettings');
+  if (importBtn) {
+    importBtn.addEventListener('click', async () => {
+      const importedSettings = await importSettingsFromFile();
+      
+      if (!importedSettings) {
+        // User cancelled or error occurred
+        const statusEl = document.getElementById('status');
+        if (statusEl) {
+          const originalText = statusEl.textContent;
+          statusEl.textContent = '設定のインポートに失敗しました。ファイル形式を確認してください。';
+          setTimeout(() => {
+            if (statusEl.textContent?.includes('インポートに失敗')) {
+              statusEl.textContent = originalText;
+            }
+          }, 3000);
+        }
+        return;
+      }
+      
+      // Update state
+      bpm = importedSettings.bpm;
+      beat = importedSettings.beat;
+      qMax = importedSettings.qMax;
+      cutoffMax = importedSettings.cutoffMax;
+      decayUnit = importedSettings.decayUnit;
+      decayRate = importedSettings.decayRate;
+      waveformType = importedSettings.waveformType;
+      dutyRatio = importedSettings.dutyRatio;
+      processorType = importedSettings.processorType;
+      
+      // Update UI
+      updateUIFields();
+      updateStatusDisplay();
+      
+      // Save to localStorage
+      saveSettings(importedSettings);
+      
+      // Show success feedback
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        const originalText = statusEl.textContent;
+        statusEl.textContent = '設定をインポートしました。';
+        setTimeout(() => {
+          if (statusEl.textContent?.includes('インポートしました')) {
+            statusEl.textContent = originalText;
+          }
+        }, 3000);
+      }
+      
+      // Reschedule playback if already playing
+      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
+        clearTimeout(playbackTimeoutId);
+        const duration = getDuration();
+        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+      }
+    });
+  }
+  
+  // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
+  function scheduleNextPlay() {
+    if (Tone && Tone.context.state === 'running') {
+      playAudio().catch((error: unknown) => {
+        console.error('Error while playing audio:', error);
+      });
+    }
+    const duration = getDuration();
+    playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+  }
+  
+  // Click handler for starting audio
+  const handleClick = async (event: Event) => {
+    // For touch events, prevent the subsequent click event from firing.
+    // This ensures handleClick is only called once per tap on touch devices.
+    // Note: This may interfere with touch scrolling, but is necessary to prevent
+    // duplicate audio context initialization on touch-enabled devices.
+    if (event.type === 'touchstart') {
+      event.preventDefault();
+    }
+    
+    // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
+    // Dynamic import ensures AudioContext is only created after a user gesture.
+    if (!Tone && !isToneLoading) {
+      isToneLoading = true;
+      toneLoadingPromise = (async () => {
+        try {
+          Tone = await import('tone') as typeof ToneTypes;
+        } catch (error) {
+          console.error('Failed to load Tone.js:', error);
+          throw error;
+        } finally {
+          isToneLoading = false;
+          toneLoadingPromise = null;
+        }
+      })();
+    }
+    
+    // Wait for Tone.js to finish loading if another click initiated the load
+    if (toneLoadingPromise) {
+      try {
+        await toneLoadingPromise;
+      } catch (error) {
+        return; // Loading failed
+      }
+    }
+    
+    if (!Tone) {
+      return; // Failed to load
+    }
+    
+    if (Tone.context.state !== 'running') {
+      await Tone.start();
+    }
+    
+    // Start playback loop only once
+    if (!isPlaybackLoopStarted) {
+      isPlaybackLoopStarted = true;
+      scheduleNextPlay();
+    }
+  };
+  
+  // Attach click listener only to document to avoid duplicate execution from event bubbling
+  // Touch events use { passive: false } since preventDefault() is called in the handler
+  document.addEventListener('click', handleClick);
+  document.addEventListener('touchstart', handleClick, { passive: false });
+}
+
+/**
+ * 現在の設定でステータス表示を更新
+ */
+function updateStatusDisplay(): void {
+  const statusEl = document.getElementById('status');
+  if (statusEl) {
+    const duration = getDuration();
+    statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+  }
+}
+
+/**
+ * 波形生成時間を表示
+ * @param generationTimeMs - 生成時間(ミリ秒)
+ */
+function updateGenerationTimeDisplay(generationTimeMs: number): void {
+  const genTimeEl = document.getElementById('generationTime');
+  if (genTimeEl) {
+    const processorName = processorType === 'wasm' ? 'Rust WASM' : 'TypeScript';
+    genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
+  }
+}
+
+/**
+ * Stop the synthesizer and clean up resources
+ */
+export function dispose(): void {
+  // Clear playback timeout
+  if (playbackTimeoutId !== null) {
+    clearTimeout(playbackTimeoutId);
+    playbackTimeoutId = null;
+  }
+  
+  // Reset playback loop flag
+  isPlaybackLoopStarted = false;
+  
+  // Stop and dispose current player
+  if (currentPlayer) {
+    try {
+      currentPlayer.stop();
+      currentPlayer.dispose();
+    } catch (error) {
+      console.warn('Failed to dispose player during cleanup:', error);
+    }
+    currentPlayer = null;
+  }
+}
 
 {% endraw %}
 ```
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-9f83361 Merge pull request #26 from cat2151/copilot/save-settings-to-local-storage
-a66f994 重複したonchangeハンドラーを修正
-e0b43dc レビューフィードバックに対応: メモリリーク修正、状態管理改善、ユーザーフィードバック追加、アクセシビリティ改善
-0e15986 Add settings module with localStorage and JSON export/import
-53bb5b3 Initial plan
-3cd408c Merge pull request #23 from cat2151/copilot/implement-waveform-visualization
-981dc9b Fix missing FREQUENCY constant in code example
-0421eb1 Add quick reference document for analysis results
-e16b323 Address code review feedback - improve markdown formatting
-51fb3be Add executive summary of integration blockers
+6672d9f Add issue note for #41 [auto]
+b16dbb7 Merge pull request #38 from cat2151/copilot/optimize-rust-build-for-speed
+c4f6755 Enable wasm-opt for optimized Rust WASM builds
+85752da Add issue note for #39 [auto]
+28dc17a Add issue note for #37 [auto]
+3246c2a Initial plan
+402e17c Merge pull request #36 from cat2151/copilot/fix-ci-failure
+9c2ded9 PRレビューコメントに対応
+062e724 wasm-packバージョンを固定
+712cb3f wasm-pack-actionを使用して高速化
 
 ### 変更されたファイル:
-CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md
-INTEGRATION_BLOCKERS_SUMMARY.md
-README_ANALYSIS.md
-generated-docs/development-status-generated-prompt.md
-generated-docs/development-status.md
-generated-docs/project-overview-generated-prompt.md
-generated-docs/project-overview.md
-index.html
-issue-notes/21.md
-issue-notes/24.md
-issue-notes/25.md
-src/settings.test.ts
-src/settings.ts
-src/synth.ts
+.github/workflows/deploy.yml
+.gitignore
+README.md
+issue-notes/35.md
+issue-notes/37.md
+issue-notes/39.md
+issue-notes/41.md
+wasm-audio/Cargo.toml
 
 
 ---
-Generated at: 2026-01-05 07:03:14 JST
+Generated at: 2026-01-06 07:03:16 JST

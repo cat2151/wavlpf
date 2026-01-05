@@ -1,4 +1,4 @@
-Last updated: 2026-01-05
+Last updated: 2026-01-06
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -63,7 +63,7 @@ Last updated: 2026-01-05
 名前: wavlpf
 説明: # wavlpf
 
-TypeScriptで実装されたローパスフィルター（LPF）付きシンプルソフトウェアシンセサイザー
+TypeScriptとRust WASMで実装されたローパスフィルター（LPF）付きシンプルソフトウェアシンセサイザー
 
 ## デモ
 
@@ -73,15 +73,19 @@ https://cat2151.github.io/wavlpf/
 
 ## 機能
 
-- **220Hzノコギリ波ジェネレーター**: 純粋な信号処理実装
+- **デュアル信号プロセッサ**: TypeScriptまたはRust WASM実装を選択可能
+  - ミリ秒精度でのリアルタイムパフォーマンス比較
+  - 正確なベンチマークのための同一オーディオ処理アルゴリズム
+- **220Hz波形ジェネレーター**: ノコギリ波またはパルス波、デューティー比設定可能
 - **Biquad LPFフィルター**: マウス制御によるインタラクティブなフィルター
-  - X軸: カットオフ周波数（20Hz - 4000Hz）
-  - Y軸: レゾナンスQ値（0.5 - 16.0、反転: 上 = 高、下 = 低）
-  - 1ミリ秒あたり1Hzの自動カットオフ減衰
+  - X軸: カットオフ周波数（20Hz - 設定可能な最大値）
+  - Y軸: レゾナンスQ値（0.5 - 設定可能な最大値、反転: 上 = 高、下 = 低）
+  - 設定可能なカットオフ減衰（HzまたはCent/ミリ秒）
 - **非リアルタイムレンダリング**: WebAudio非依存の信号処理
-- **250msオーディオバッファ**: 250msごとに新しいオーディオを生成
+- **設定可能なオーディオバッファ**: BPMとビート基準のオーディオ生成タイミング
 - **WAV生成**: 処理済みオーディオをWAVフォーマットに変換
 - **Tone.js統合**: クリーンなオーディオ再生
+- **設定の永続化**: 設定をJSONファイルでインポート/エクスポート
 
 ## 関連ドキュメント
 
@@ -108,6 +112,16 @@ https://cat2151.github.io/wavlpf/
 
 - Node.js（v14以上）
 - npm
+- Rustとwasm-pack（WASMモジュールのビルド用）
+
+Rustとwasm-packのインストール:
+```bash
+# Rustのインストール
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# wasm-packのインストール
+cargo install wasm-pack
+```
 
 ### インストール
 
@@ -127,11 +141,17 @@ npm run dev
 
 ### ビルド
 
+WASMモジュールとアプリケーション全体をビルド:
+
 ```bash
+# WASMモジュールのみビルド
+npm run build:wasm
+
+# すべてをビルド（WASM + TypeScript + Vite本番バンドル）
 npm run build
 ```
 
-TypeScriptの型チェックを実行し、Viteで本番用バンドルをビルドします。
+TypeScriptの型チェック、Rust WASMモジュールのビルド、Viteで本番用バンドルを作成します。
 
 ### 本番ビルドのプレビュー
 
@@ -166,22 +186,46 @@ npm run serve
 
 1. ブラウザでアプリケーションを開く
 2. ページ上の任意の場所をクリックしてオーディオコンテキストを開始
-3. マウスを動かしてフィルターパラメータを制御:
-   - **水平位置（X）**: カットオフ周波数を制御（20Hz - 4000Hz）
-   - **垂直位置（Y）**: レゾナンス/Q値を制御（0.5 - 16.0、反転: 上 = 高、下 = 低）
-4. 現在のフィルター設定で250msごとに生成される新しいオーディオを聴く
+3. **信号プロセッサを選択**: ドロップダウンからTypeScriptまたはRust WASMを選択
+4. **パラメータを設定**:
+   - 波形タイプ: ノコギリ波またはパルス波
+   - デューティー比: パルス波用（0-100%）
+   - BPMとビート: オーディオ生成タイミングを制御
+   - Q最大値: 最大レゾナンス値
+   - カットオフ周波数最大値: 最大カットオフ周波数
+   - 減衰単位: HzまたはCent
+   - 減衰レート: ミリ秒あたりの減衰率
+5. マウスを動かしてリアルタイムでフィルターパラメータを制御:
+   - **水平位置（X）**: カットオフ周波数を制御（20Hz - 最大値）
+   - **垂直位置（Y）**: レゾナンス/Q値を制御（0.5 - 最大値、反転: 上 = 高、下 = 低）
+6. **生成時間**表示を確認してプロセッサのパフォーマンスを比較
+7. BPMとビート設定に基づいて生成される新しいオーディオを聴く
 
 ## アーキテクチャ
 
 ### 信号処理（WebAudio非依存）
 
-- `src/oscillator.ts`: ノコギリ波ジェネレーター
+#### TypeScript実装
+- `src/oscillator.ts`: ノコギリ波とパルス波ジェネレーター
 - `src/filter.ts`: RBJ Audio EQ Cookbook公式を使用したBiquad LPF実装
 - `src/wav.ts`: WAVファイルフォーマット生成
 
+#### Rust WASM実装
+- `wasm-audio/src/lib.rs`: Rustによる完全な信号処理パイプライン
+  - オシレーター生成（ノコギリ波、パルス波）
+  - TypeScriptと同じアルゴリズムのBiquad LPFフィルター
+  - カットオフ減衰を含むオーディオレンダリング
+- `wasm-audio/pkg/`: 生成されたWASMバインディング
+
+#### 統合
+- `src/wasmAudio.ts`: WASMモジュールのTypeScriptラッパー
+  - 動的WASMロード
+  - エラー時のTypeScript実装へのフォールバック
+
 ### アプリケーション
 
-- `src/synth.ts`: マウストラッキングとオーディオ再生を含むメインシンセサイザーロジック
+- `src/synth.ts`: マウストラッキング、プロセッサ選択、オーディオ再生を含むメインシンセサイザーロジック
+- `src/settings.ts`: 設定の永続化（localStorageとJSONインポート/エクスポート）
 - `src/index.ts`: エントリーポイント
 - `index.html`: Webインターフェース
 
@@ -237,6 +281,14 @@ MIT
   📖 21.md
   📖 24.md
   📖 25.md
+  📖 28.md
+  📖 30.md
+  📖 31.md
+  📖 33.md
+  📖 35.md
+  📖 37.md
+  📖 39.md
+  📖 41.md
 📊 package-lock.json
 📊 package.json
 📁 src/
@@ -248,13 +300,18 @@ MIT
   📘 settings.test.ts
   📘 settings.ts
   📘 synth.ts
+  📘 wasmAudio.ts
   📘 wav.test.ts
   📘 wav.ts
 📊 tsconfig.json
 📘 vite.config.ts
+📁 wasm-audio/
+  📄 Cargo.toml
+  📁 src/
+    📄 lib.rs
 
 ## ファイル詳細分析
-**index.html** (199行, 4995バイト)
+**index.html** (220行, 5887バイト)
   - 関数: なし
   - インポート: なし
 
@@ -270,25 +327,29 @@ MIT
   - 関数: if
   - インポート: ./synth
 
-**src/oscillator.test.ts** (69行, 2262バイト)
+**src/oscillator.test.ts** (178行, 5485バイト)
   - 関数: for
   - インポート: vitest, ./oscillator
 
-**src/oscillator.ts** (21行, 605バイト)
-  - 関数: generateSawtooth, for
+**src/oscillator.ts** (46行, 1411バイト)
+  - 関数: generateSawtooth, generatePulse, for
   - インポート: なし
 
-**src/settings.test.ts** (123行, 4788バイト)
+**src/settings.test.ts** (126行, 4879バイト)
   - 関数: なし
   - インポート: vitest
 
-**src/settings.ts** (151行, 3975バイト)
+**src/settings.ts** (166行, 4648バイト)
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (500行, 14364バイト)
-  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, centsToRatio, getFilterParams, renderAudio, playAudio, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, dispose, handleInputChange, handleClick, if, for, catch
+**src/synth.ts** (626行, 18781バイト)
+  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, centsToRatio, getFilterParams, renderAudioTypeScript, renderAudio, playAudio, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, for, catch
   - インポート: ./oscillator, ./filter, ./wav
+
+**src/wasmAudio.ts** (94行, 2147バイト)
+  - 関数: initWasm, isWasmInitialized, renderAudioWasm, if, catch
+  - インポート: なし
 
 **src/wav.test.ts** (172行, 5428バイト)
   - 関数: なし
@@ -298,13 +359,14 @@ MIT
   - 関数: generateWav, writeString, createWavBlobUrl, if, for
   - インポート: なし
 
-**vite.config.ts** (42行, 790バイト)
+**vite.config.ts** (51行, 1009バイト)
   - 関数: なし
   - インポート: vite
 
 ## 関数呼び出し階層
 - for (src/filter.test.ts)
   - generateSawtooth ()
+    - generatePulse ()
   - loadSettings ()
     - validateSettings (src/settings.ts)
       - saveSettings ()
@@ -317,13 +379,18 @@ MIT
       - readParameters ()
       - centsToRatio ()
       - getFilterParams ()
+      - renderAudioTypeScript ()
       - renderAudio ()
       - playAudio ()
       - updateUIFields ()
       - init ()
       - scheduleNextPlay ()
       - updateStatusDisplay ()
+      - updateGenerationTimeDisplay ()
       - dispose ()
+      - initWasm ()
+      - isWasmInitialized ()
+      - renderAudioWasm ()
       - generateWav ()
       - createWavBlobUrl ()
   - writeString ()
@@ -348,6 +415,14 @@ index.html
 issue-notes/21.md
 issue-notes/24.md
 issue-notes/25.md
+issue-notes/28.md
+issue-notes/30.md
+issue-notes/31.md
+issue-notes/33.md
+issue-notes/35.md
+issue-notes/37.md
+issue-notes/39.md
+issue-notes/41.md
 package-lock.json
 package.json
 src/filter.test.ts
@@ -355,13 +430,7 @@ src/filter.ts
 src/index.ts
 src/oscillator.test.ts
 src/oscillator.ts
-src/settings.test.ts
-src/settings.ts
-src/synth.ts
-src/wav.test.ts
-src/wav.ts
 tsconfig.json
-vite.config.ts
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
 特に以下の点を重視してください：
@@ -373,4 +442,4 @@ vite.config.ts
 
 
 ---
-Generated at: 2026-01-05 07:03:14 JST
+Generated at: 2026-01-06 07:03:15 JST

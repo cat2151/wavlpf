@@ -1,37 +1,21 @@
-Last updated: 2026-01-05
+Last updated: 2026-01-06
 
 # Project Overview
 
 ## プロジェクト概要
-- wavlpfはTypeScriptで開発された、ローパスフィルター機能を備えたシンプルなソフトウェアシンセサイザーです。
-- 純粋な信号処理実装によりノコギリ波を生成し、マウス操作でカットオフ周波数とQ値を調整できるBiquad LPFを提供します。
-- 非リアルタイムでのオーディオレンダリング、WAVファイル出力、そしてTone.jsによるクリーンな再生を特徴としています。
+- TypeScriptとRust WASMで実装された、ローパスフィルター（LPF）搭載のシンプルなソフトウェアシンセサイザーです。
+- デュアル信号プロセッサにより、TypeScriptとWASMの実装で波形生成とBiquad LPF処理のパフォーマンスを比較できます。
+- マウスによるインタラクティブなフィルター制御、WAVファイル出力、設定保存・読み込みなどの機能を備えています。
 
 ## 技術スタック
-- フロントエンド:
-  - Vite: 高速な開発サーバーとビルドツールを提供し、モダンなフロントエンド開発を支援します。
-  - `index.html`: プロジェクトのWebインターフェースのエントリーポイントです。
-- 音楽・オーディオ:
-  - Tone.js: 高度なWebオーディオ処理と音楽シーケンス機能を提供するJavaScriptフレームワークです。
-  - Biquad LPF (カスタム実装): ローパスフィルターのアルゴリズム（RBJ Audio EQ Cookbook公式に基づく）を純粋な信号処理として実装しています。
-  - 220Hzノコギリ波ジェネレーター (カスタム実装): 基本的な波形であるノコギリ波を生成する信号処理モジュールです。
-- 開発ツール:
-  - Node.js: JavaScript実行環境（前提条件として挙げられています）。
-  - npm: Node.jsのパッケージマネージャーであり、プロジェクトの依存関係を管理します。
-  - TypeScript: 静的型付けを導入し、大規模なアプリケーション開発の堅牢性と保守性を高めます。
-  - @types/node: Node.js環境における型定義を提供し、TypeScript開発を支援します。
-  - happy-dom: テスト環境でDOMをエミュレートし、ブラウザAPIに依存するコンポーネントのテストを可能にします。
-- テスト:
-  - Vitest: Viteとの連携に優れた高速なユニットテストフレームワークです。
-  - @vitest/ui: Vitestのテスト結果を視覚的に表示するユーザーインターフェースを提供します。
-- ビルドツール:
-  - Vite: 高速なビルドと開発サーバーを提供し、開発効率を向上させます。
-- 言語機能:
-  - TypeScript: JavaScriptに静的型付けを追加し、開発時のエラー検出とコードの可読性を向上させます。
-- 自動化・CI/CD:
-  - GitHub Pages: GitHubリポジトリからウェブサイトをホストするための静的サイトホスティングサービス。`main`ブランチへのプッシュで自動デプロイがトリガーされます。
-- 開発標準:
-  - TypeScript: コードの品質を保証し、一貫性のある開発を促進する基盤として利用されています。
+- フロントエンド: Tone.js (クリーンなオーディオ再生), Vite (開発サーバーおよび本番ビルド), HTML/CSS (Webインターフェース)
+- 音楽・オーディオ: TypeScript (信号処理アルゴリズム実装), Rust WASM (高性能な信号処理アルゴリズム実装), WebAudio API (Tone.js経由でのオーディオ再生)
+- 開発ツール: Node.js (実行環境), npm (パッケージ管理), Rust (WASMモジュール開発), wasm-pack (RustからWASMをビルド)
+- テスト: Vitest (テストフレームワーク), happy-dom (DOM環境シミュレーション)
+- ビルドツール: Vite (本番用バンドル生成), TypeScript (JavaScriptへのトランスパイル), wasm-pack (RustコードからWASMモジュールへのビルド)
+- 言語機能: TypeScript (型安全なJavaScript開発), Rust (高性能なシステムプログラミング言語、WASM向け)
+- 自動化・CI/CD: GitHub Pages (アプリケーションの自動デプロイ), GitHub Actions (`.github/workflows/deploy.yml`で定義されたデプロイワークフロー)
+- 開発標準: TypeScript (型定義によるコード品質向上)
 
 ## ファイル階層ツリー
 ```
@@ -55,6 +39,14 @@ Last updated: 2026-01-05
   📖 21.md
   📖 24.md
   📖 25.md
+  📖 28.md
+  📖 30.md
+  📖 31.md
+  📖 33.md
+  📖 35.md
+  📖 37.md
+  📖 39.md
+  📖 41.md
 📊 package-lock.json
 📊 package.json
 📁 src/
@@ -66,188 +58,133 @@ Last updated: 2026-01-05
   📘 settings.test.ts
   📘 settings.ts
   📘 synth.ts
+  📘 wasmAudio.ts
   📘 wav.test.ts
   📘 wav.ts
 📊 tsconfig.json
 📘 vite.config.ts
+📁 wasm-audio/
+  📄 Cargo.toml
+  📁 src/
+    📄 lib.rs
 ```
 
 ## ファイル詳細説明
--   **`.gitignore`**: Gitのバージョン管理から除外するファイルやディレクトリを指定します。
--   **`ARCHITECTURE_DIAGRAMS.md`**: プロジェクトのアーキテクチャに関する図解や詳細な説明が記述されたドキュメントです。
--   **`CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md`**: CAT Oscilloscopeライブラリを統合する際の実現可能性について分析したドキュメントです。
--   **`CAT_OSCILLOSCOPE_INTEGRATION.md`**: CAT Oscilloscopeライブラリの統合に関する具体的な情報、特に最小変更アプローチに関する参考資料です。
--   **`CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md`**: CAT Oscilloscopeライブラリを統合する際のベストプラクティスをまとめた、推奨される包括的な分析ドキュメントです。
--   **`DEVELOPMENT.md`**: プロジェクトの開発フレームワーク、テスト戦略、および具体的な開発手順に関する詳細なガイドを提供します。
--   **`IMPLEMENTATION_EXAMPLES.md`**: 実装の具体的な例やコードスニペットを含む、開発者向けの参考資料です。
--   **`INTEGRATION_BLOCKERS_SUMMARY.md`**: 統合作業における課題や阻害要因の要約をまとめたドキュメントです。
--   **`LICENSE`**: プロジェクトのライセンス情報が記載されています（MITライセンス）。
--   **`README.ja.md`**: プロジェクトの概要、機能、使い方、開発方法などを日本語で説明するメインのドキュメントです。
--   **`README.md`**: プロジェクトの概要、機能、使い方、開発方法などを英語で説明するメインのドキュメントです。
--   **`README_ANALYSIS.md`**: READMEファイルの分析または関連情報を提供します。
--   **`SUMMARY.md`**: プロジェクトに関する概要または要約情報です。
--   **`_config.yml`**: GitHub PagesのJekyll設定ファイルです。
--   **`generated-docs/`**: 自動生成されたドキュメントを格納するためのディレクトリです。
--   **`index.html`**: アプリケーションのユーザーインターフェースを提供するHTMLファイルです。ブラウザ上でシンセサイザーの操作画面を表示します。
--   **`issue-notes/`**: 開発中の課題や検討事項に関するメモを格納するディレクトリです。
--   **`package-lock.json`**: プロジェクトの依存関係の正確なバージョンと依存ツリーを記録し、ビルドの一貫性を保証するファイルです。
--   **`package.json`**: プロジェクトのメタデータ（名前、バージョン、スクリプト、依存関係など）を定義するファイルです。
--   **`src/filter.test.ts`**: `src/filter.ts`で実装されたローパスフィルター機能のユニットテストを記述するファイルです。
--   **`src/filter.ts`**: RBJ Audio EQ Cookbookの公式に基づいたBiquadローパスフィルター（LPF）の信号処理ロジックを実装します。
--   **`src/index.ts`**: アプリケーションのエントリーポイントであり、主要な初期化処理を行い、`src/synth.ts`の機能を利用してシンセサイザーを起動します。
--   **`src/oscillator.test.ts`**: `src/oscillator.ts`で実装されたオシレーター機能のユニットテストを記述するファイルです。
--   **`src/oscillator.ts`**: ノコギリ波を生成するための信号処理ロジックを実装します。
--   **`src/settings.test.ts`**: `src/settings.ts`で定義された設定管理機能のユニットテストを記述するファイルです。
--   **`src/settings.ts`**: アプリケーションの設定の検証、ロード、保存、エクスポート、インポートに関するロジックを管理します。
--   **`src/synth.ts`**: メインのシンセサイザーロジックを実装するファイルです。マウストラッキング、オーディオのレンダリングと再生、UIの更新、フィルターパラメータの制御など、アプリケーションの中核機能を担います。
--   **`src/wav.test.ts`**: `src/wav.ts`で実装されたWAVファイル生成機能のユニットテストを記述するファイルです。
--   **`src/wav.ts`**: 生成されたオーディオデータを標準的なWAVファイルフォーマットに変換する機能を提供します。
--   **`tsconfig.json`**: TypeScriptコンパイラのオプションを設定するファイルです。
--   **`vite.config.ts`**: Viteビルドツールと開発サーバーの設定ファイルです。
+- **.gitignore**: Gitがバージョン管理の対象としないファイルやディレクトリを指定します。
+- **ARCHITECTURE_DIAGRAMS.md**: プロジェクトのアーキテクチャ図に関する説明ドキュメントです。
+- **CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md**: オシロスコープ機能統合の実現可能性を分析したドキュメントです。
+- **CAT_OSCILLOSCOPE_INTEGRATION.md**: オシロスコープ機能統合のための最小変更アプローチに関する参考資料です。
+- **CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md**: オシロスコープライブラリ統合におけるベストプラクティスを包括的に分析したドキュメントです。
+- **DEVELOPMENT.md**: 開発フレームワークとテスト戦略に関する詳細なガイドドキュメントです。
+- **IMPLEMENTATION_EXAMPLES.md**: 実装例に関するドキュメントです。
+- **INTEGRATION_BLOCKERS_SUMMARY.md**: 統合における阻害要因の要約をまとめたドキュメントです。
+- **LICENSE**: プロジェクトのライセンス情報（MITライセンス）です。
+- **README.ja.md**: プロジェクトの日本語版READMEファイルです。
+- **README.md**: プロジェクトの英語版READMEファイルです。
+- **README_ANALYSIS.md**: READMEファイルの分析に関するドキュメントです。
+- **SUMMARY.md**: プロジェクト全体の概要をまとめたドキュメントです。
+- **_config.yml**: GitHub Pages（Jekyll）の設定ファイルです。
+- **generated-docs/**: ドキュメント生成ツールによって自動生成されたドキュメントが格納されます。
+- **index.html**: アプリケーションのWebインターフェースを提供するエントリーポイントとなるHTMLファイルです。
+- **issue-notes/**: 開発中の特定のIssueに関するメモを格納するディレクトリです。
+- **package-lock.json**: `package.json`に記述された依存関係の正確なバージョンと依存ツリーを記録します。
+- **package.json**: プロジェクトのメタデータ、依存関係、および実行スクリプトを定義します。
+- **src/filter.test.ts**: `src/filter.ts`で実装されたBiquad LPFフィルターの動作を検証するためのテストスイートです。
+- **src/filter.ts**: RBJ Audio EQ Cookbookの公式に基づき、BiquadローパスフィルターをTypeScriptで実装しています。シンセサイザーの信号処理コアの一部です。
+- **src/index.ts**: アプリケーションのメインエントリーポイントとなるTypeScriptファイルです。`src/synth.ts`をインポートし、Webアプリケーションを初期化します。
+- **src/oscillator.test.ts**: `src/oscillator.ts`で実装された波形ジェネレーターの動作を検証するためのテストスイートです。
+- **src/oscillator.ts**: ノコギリ波とパルス波を生成するオシレーターをTypeScriptで実装しています。シンセサイザーの波形生成コアの一部です。
+- **src/settings.test.ts**: `src/settings.ts`で実装された設定管理機能の動作を検証するためのテストスイートです。
+- **src/settings.ts**: アプリケーションの設定（パラメータなど）を管理し、localStorageへの保存/読み込み、JSONファイルとしてのインポート/エクスポート機能を提供します。
+- **src/synth.ts**: メインのシンセサイザーロジックを実装しています。マウストラッキングによるフィルター制御、信号プロセッサの選択（TS/WASM）、Tone.jsを用いたオーディオ再生、UIの更新などを担当します。
+- **src/wasmAudio.ts**: Rust WASMモジュールとの橋渡しをするTypeScriptラッパーです。WASMモジュールの動的なロード、初期化、およびエラー発生時のTypeScript実装へのフォールバックを処理します。
+- **src/wav.test.ts**: `src/wav.ts`で実装されたWAVファイル生成機能の動作を検証するためのテストスイートです。
+- **src/wav.ts**: 処理されたオーディオデータを標準的なWAVファイルフォーマットに変換する機能を提供します。
+- **tsconfig.json**: TypeScriptコンパイラの設定を定義するファイルです。
+- **vite.config.ts**: Viteビルドツールと開発サーバーに関する設定を定義するファイルです。
+- **wasm-audio/Cargo.toml**: Rust WASMモジュールプロジェクトの依存関係、メタデータ、およびビルド設定を定義します。
+- **wasm-audio/src/lib.rs**: Rustで実装された完全な信号処理パイプラインのソースファイルです。オシレーター生成とBiquad LPFフィルター処理を含みます。
 
 ## 関数詳細説明
--   **`constructor` (src/filter.ts)**:
-    -   役割: `Filter`クラスのインスタンスを初期化し、Biquadローパスフィルターの係数を設定します。
-    -   引数: LPFのカットオフ周波数やQ値などの初期フィルターパラメータ。
-    -   戻り値: なし。
--   **`for` (src/filter.test.ts, src/oscillator.test.ts, src/oscillator.ts, src/synth.ts, src/wav.ts)**:
-    -   役割: ループ処理を実行し、配列の反復処理や一定回数の処理の繰り返しに使用されます。例えば、オーディオバッファの各サンプルを処理したり、テストケースを複数実行したりします。
-    -   引数: なし (一般的なループ構文のため)。
-    -   戻り値: なし。
--   **`generateSawtooth` (src/oscillator.ts)**:
-    -   役割: 指定された周波数と期間に基づいてノコギリ波のオーディオサンプルを生成します。
-    -   引数: `frequency`: 生成するノコギリ波の周波数、`sampleRate`: サンプルレート、`durationSeconds`: 生成する期間（秒）。
-    -   戻り値: 生成されたノコギリ波のオーディオデータ（数値配列）。
--   **`validateSettings` (src/settings.ts)**:
-    -   役割: アプリケーションの設定オブジェクトが有効な形式と値を持っているかを検証します。
-    -   引数: `settings`: 検証する設定オブジェクト。
-    -   戻り値: 検証結果（ブーリアンまたはエラーオブジェクト）。
--   **`loadSettings` (src/settings.ts)**:
-    -   役割: ストレージ（例: ローカルストレージ）からアプリケーション設定を読み込みます。
-    -   引数: なし。
-    -   戻り値: 読み込まれた設定オブジェクト。
--   **`saveSettings` (src/settings.ts)**:
-    -   役割: 現在のアプリケーション設定をストレージに保存します。
-    -   引数: `settings`: 保存する設定オブジェクト。
-    -   戻り値: なし。
--   **`exportSettingsToFile` (src/settings.ts)**:
-    -   役割: 現在のアプリケーション設定をファイルとしてエクスポートします。
-    -   引数: `settings`: エクスポートする設定オブジェクト。
-    -   戻り値: なし（ファイルをダウンロードとして提供）。
--   **`importSettingsFromFile` (src/src/settings.ts)**:
-    -   役割: ファイルからアプリケーション設定をインポートし、適用します。
-    -   引数: `file`: インポートする設定ファイル。
-    -   戻り値: なし。
--   **`if` (src/index.ts, src/settings.ts, src/synth.ts, src/wav.ts)**:
-    -   役割: 条件に基づいてコードの特定のブロックを実行します。条件分岐に使用されます。
-    -   引数: なし (一般的な条件構文のため)。
-    -   戻り値: なし。
--   **`catch` (src/settings.ts, src/synth.ts)**:
-    -   役割: try-catchブロックの一部として、tryブロック内で発生したエラーを捕捉し、処理します。エラーハンドリングに使用されます。
-    -   引数: `error`: 捕捉されたエラーオブジェクト。
-    -   戻り値: なし。
--   **`getCurrentSettings` (src/synth.ts)**:
-    -   役割: アプリケーションの現在の設定状態を取得します。
-    -   引数: なし。
-    -   戻り値: 現在の設定オブジェクト。
--   **`getDuration` (src/synth.ts)**:
-    -   役割: オーディオバッファの再生時間など、特定の期間を計算します。
-    -   引数: なし。
-    -   戻り値: 時間（ミリ秒、秒など）。
--   **`readNumericParameter` (src/synth.ts)**:
-    -   役割: ユーザーインターフェースからの入力など、数値パラメータを読み取り、適切な形式に変換します。
-    -   引数: `elementId`: UI要素のID、`defaultValue`: デフォルト値。
-    -   戻り値: 読み取られた数値。
--   **`readParameters` (src/synth.ts)**:
-    -   役割: アプリケーションの複数のパラメータ（特にUIからの入力）をまとめて読み込みます。
-    -   引数: なし。
-    -   戻り値: 読み取られたパラメータのオブジェクト。
--   **`centsToRatio` (src/synth.ts)**:
-    -   役割: セント値（音程の単位）を周波数比に変換します。
-    -   引数: `cents`: 変換するセント値。
-    -   戻り値: 周波数比。
--   **`getFilterParams` (src/synth.ts)**:
-    -   役割: マウスの入力位置などに基づいて、ローパスフィルターのカットオフ周波数とQ値のパラメータを計算します。
-    -   引数: `event`: マウスイベントオブジェクト（X, Y座標を含む）。
-    -   戻り値: フィルターパラメータのオブジェクト（カットオフ周波数とQ値）。
--   **`renderAudio` (src/synth.ts)**:
-    -   役割: 現在のシンセサイザーとフィルター設定に基づいて、オーディオデータを非リアルタイムで生成します。
-    -   引数: `durationSeconds`: レンダリングする期間（秒）、`filterParams`: 使用するフィルターパラメータ。
-    -   戻り値: 生成されたオーディオデータ（数値配列）。
--   **`playAudio` (src/synth.ts)**:
-    -   役割: `Tone.js`ライブラリを使用して、生成されたオーディオデータを再生します。
-    -   引数: `audioBuffer`: 再生するオーディオデータ。
-    -   戻り値: なし。
--   **`updateUIFields` (src/synth.ts)**:
-    -   役割: アプリケーションの状態変更に応じて、ユーザーインターフェース上のフィールド（テキストボックス、スライダーなど）を更新します。
-    -   引数: `filterParams`: 現在のフィルターパラメータ。
-    -   戻り値: なし。
--   **`init` (src/synth.ts)**:
-    -   役割: シンセサイザーアプリケーションの初期化処理を実行します。イベントリスナーの設定や初期オーディオのレンダリングなどを含みます。
-    -   引数: なし。
-    -   戻り値: なし。
--   **`scheduleNextPlay` (src/synth.ts)**:
-    -   役割: 次のオーディオバッファの再生をスケジュールします。一定間隔でのオーディオ生成と再生を維持するために使用されます。
-    -   引数: なし。
-    -   戻り値: なし。
--   **`updateStatusDisplay` (src/synth.ts)**:
-    -   役割: アプリケーションのステータス情報（例: エラーメッセージ、処理状況）をUIに表示します。
-    -   引数: `message`: 表示するステータスメッセージ、`isError`: エラーメッセージかどうかを示すブーリアン。
-    -   戻り値: なし。
--   **`dispose` (src/synth.ts)**:
-    -   役割: アプリケーションが終了する際やリソースが不要になった際に、割り当てられたリソース（イベントリスナー、オーディオコンテキストなど）を解放します。
-    -   引数: なし。
-    -   戻り値: なし。
--   **`generateWav` (src/wav.ts)**:
-    -   役割: 生のオーディオデータを受け取り、それをWAVファイルフォーマットのバイナリデータに変換します。
-    -   引数: `audioData`: オーディオデータ、`sampleRate`: サンプルレート、`numChannels`: チャンネル数。
-    -   戻り値: WAVフォーマットの`Blob`または`ArrayBuffer`。
--   **`writeString` (src/wav.ts)**:
-    -   役割: WAVファイルのヘッダ部に文字列データを書き込みます（例: "RIFF", "WAVE"など）。
-    -   引数: `view`: `DataView`オブジェクト、`offset`: 書き込み開始オフセット、`s`: 書き込む文字列。
-    -   戻り値: なし。
--   **`createWavBlobUrl` (src/wav.ts)**:
-    -   役割: 生成されたWAVバイナリデータから、ダウンロード可能なBlob URLを作成します。
-    -   引数: `wavBlob`: WAVバイナリデータを含む`Blob`オブジェクト。
-    -   戻り値: Blob URL (文字列)。
--   **`handleInputChange` (src/synth.ts)**:
-    -   役割: ユーザーがUIの入力フィールドを変更した際のイベントを処理し、アプリケーションの状態を更新します。
-    -   引数: `event`: 変更イベントオブジェクト。
-    -   戻り値: なし。
--   **`handleClick` (src/synth.ts)**:
-    -   役割: ユーザーがUI要素をクリックした際のイベントを処理し、オーディオコンテキストの開始やその他のアクションをトリガーします。
-    -   引数: `event`: クリックイベントオブジェクト。
-    -   戻り値: なし。
+- **filter.ts**
+    - `constructor`: `BiquadFilter`クラスのインスタンスを初期化し、フィルターの係数などを設定します。
+- **oscillator.ts**
+    - `generateSawtooth()`: ノコギリ波のオーディオサンプルを生成します。
+    - `generatePulse()`: パルス波のオーディオサンプルを、指定されたデューティー比に基づいて生成します。
+- **settings.ts**
+    - `validateSettings(settings)`: 渡された設定オブジェクトの各プロパティが有効な値であるかを検証します。
+    - `loadSettings()`: ブラウザのlocalStorageからアプリケーション設定を読み込み、検証して返します。
+    - `saveSettings(settings)`: 現在のアプリケーション設定をJSON形式でlocalStorageに保存します。
+    - `exportSettingsToFile(settings, filename)`: 指定された設定オブジェクトをJSONファイルとしてダウンロードします。
+    - `importSettingsFromFile(file)`: ユーザーが選択したJSONファイルから設定を読み込み、アプリケーションに適用します。
+- **synth.ts**
+    - `getCurrentSettings()`: UI上の入力フィールドから現在の設定値を読み取り、オブジェクトとして返します。
+    - `getDuration(bpm, beat)`: BPMとビートに基づいてオーディオ生成の総再生時間（秒）を計算します。
+    - `readNumericParameter(id, defaultValue)`: 指定されたIDのHTML入力要素から数値を読み取り、パースして返します。
+    - `readParameters()`: UIから主要なシンセサイザーパラメータ（波形タイプ、デューティー比、BPMなど）を読み取ります。
+    - `centsToRatio(cents)`: セント値（音程の単位）を周波数比に変換します。
+    - `getFilterParams(mouseX, mouseY, qMax, cutoffMax)`: マウスのX, Y座標と最大Q値、最大カットオフ周波数に基づいてフィルターパラメータ（カットオフ周波数、Q値）を計算します。
+    - `renderAudioTypeScript(settings)`: TypeScriptで実装された信号処理パイプラインを使用してオーディオサンプルをレンダリングします。
+    - `renderAudio(settings)`: 現在選択されている信号プロセッサ（TypeScriptまたはRust WASM）に応じてオーディオをレンダリングします。
+    - `playAudio(audioBuffer, sampleRate)`: レンダリングされたオーディオバッファをTone.jsを利用してブラウザで再生します。
+    - `updateUIFields(settings)`: アプリケーションのUI上の入力フィールドを、現在の設定値で更新します。
+    - `init()`: アプリケーション全体の初期化処理を実行します。イベントリスナーの設定やUIの初期状態の構成を含みます。
+    - `scheduleNextPlay()`: 次のオーディオ生成と再生のサイクルをスケジュールし、UIのステータス表示を更新します。
+    - `updateStatusDisplay(message)`: アプリケーションのステータス表示領域にメッセージを表示します。
+    - `updateGenerationTimeDisplay(timeMs)`: オーディオ生成にかかった時間をUIに表示します。
+    - `dispose()`: アプリケーションが使用しているリソース（Tone.jsコンテキストなど）を解放します。
+    - `handleInputChange(event)`: UIの入力要素の値が変更された際のイベントを処理し、設定の保存とオーディオの再生成を行います。
+    - `handleClick(event)`: UI上のクリックイベントを処理し、オーディオコンテキストの開始やファイル操作などを行います。
+- **wasmAudio.ts**
+    - `initWasm()`: Rust WASMモジュールを動的にロードし、初期化します。ロードに失敗した場合はエラーをスローします。
+    - `isWasmInitialized()`: WASMモジュールが正常にロードされ、初期化されているかどうかを返します。
+    - `renderAudioWasm(settings)`: Rust WASM実装を通じてオーディオサンプルをレンダリングします。
+- **wav.ts**
+    - `generateWav(audioBuffer, sampleRate)`: 生のオーディオデータとサンプルレートから、WAVファイルフォーマットの`ArrayBuffer`を生成します。
+    - `writeString(view, offset, string)`: `DataView`オブジェクトの指定されたオフセットに文字列を書き込みます。WAVヘッダーの生成に使用されます。
+    - `createWavBlobUrl(wavBuffer)`: 生成されたWAVデータ（ArrayBuffer）からダウンロード可能なBlob URLを作成します。
 
 ## 関数呼び出し階層ツリー
 ```
-- for (src/filter.test.ts)
-  - generateSawtooth ()
-  - loadSettings ()
-    - validateSettings (src/settings.ts)
-      - saveSettings ()
-      - exportSettingsToFile ()
-      - importSettingsFromFile ()
-  - catch (src/settings.ts)
+- アプリケーション起動・初期化 (src/index.ts)
+  - init (src/synth.ts)
     - getCurrentSettings (src/synth.ts)
-      - getDuration ()
-      - readNumericParameter ()
-      - readParameters ()
-      - centsToRatio ()
-      - getFilterParams ()
-      - renderAudio ()
-      - playAudio ()
-      - updateUIFields ()
-      - init ()
-      - scheduleNextPlay ()
-      - updateStatusDisplay ()
-      - dispose ()
-      - generateWav ()
-      - createWavBlobUrl ()
-  - writeString ()
-- if (src/index.ts)
-- handleInputChange (src/synth.ts)
-- handleClick (src/synth.ts)
+    - updateUIFields (src/synth.ts)
+    - scheduleNextPlay (src/synth.ts)
+- ユーザー操作によるイベントハンドリング (src/synth.ts)
+  - handleClick (src/synth.ts)
+    - init (src/synth.ts) (オーディオコンテキストが未開始の場合など)
+    - scheduleNextPlay (src/synth.ts)
+  - handleInputChange (src/synth.ts)
+    - getCurrentSettings (src/synth.ts)
+    - saveSettings (src/settings.ts)
+      - validateSettings (src/settings.ts)
+    - scheduleNextPlay (src/synth.ts)
+- オーディオ生成・再生のコアロジック (src/synth.ts)
+  - scheduleNextPlay (src/synth.ts)
+    - renderAudio (src/synth.ts)
+      - getFilterParams (src/synth.ts)
+        - centsToRatio (src/synth.ts)
+      - renderAudioTypeScript (src/synth.ts) (TypeScriptによる信号処理)
+        - generateSawtooth (src/oscillator.ts)
+        - generatePulse (src/oscillator.ts)
+        - BiquadFilter (src/filter.ts) (インスタンスのメソッド呼び出し)
+      - renderAudioWasm (src/wasmAudio.ts) (Rust WASMによる信号処理)
+        - initWasm (src/wasmAudio.ts) (初回または必要に応じてWASMモジュールをロード)
+        - isWasmInitialized (src/wasmAudio.ts)
+    - playAudio (src/synth.ts)
+      - generateWav (src/wav.ts)
+        - writeString (src/wav.ts)
+        - createWavBlobUrl (src/wav.ts)
+    - updateGenerationTimeDisplay (src/synth.ts)
+    - updateStatusDisplay (src/synth.ts)
+- 設定管理機能 (src/settings.ts)
+  - loadSettings (src/settings.ts)
+    - validateSettings (src/settings.ts)
+  - exportSettingsToFile (src/settings.ts)
+  - importSettingsFromFile (src/settings.ts)
+    - validateSettings (src/settings.ts)
+```
 
 ---
-Generated at: 2026-01-05 07:03:52 JST
+Generated at: 2026-01-06 07:03:55 JST
