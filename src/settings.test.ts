@@ -90,6 +90,8 @@ describe('settings', () => {
         cutoffMax: 5000,
         decayUnit: 'Cent',
         decayRate: 2,
+        waveformType: 'pulse',
+        dutyRatio: 75,
       };
 
       saveSettings(testSettings);

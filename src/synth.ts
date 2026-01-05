@@ -1,4 +1,4 @@
-import { generateSawtooth } from './oscillator';
+import { generateSawtooth, generatePulse } from './oscillator';
 import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
 import type * as ToneTypes from 'tone';
@@ -36,6 +36,8 @@ let qMax = initialSettings.qMax;
 let cutoffMax = initialSettings.cutoffMax;
 let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
 let decayRate = initialSettings.decayRate;
+let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
+let dutyRatio = initialSettings.dutyRatio;
 
 /**
  * 現在の設定を取得
@@ -48,6 +50,8 @@ function getCurrentSettings(): Settings {
     cutoffMax,
     decayUnit,
     decayRate,
+    waveformType,
+    dutyRatio,
   };
 }
 
@@ -101,6 +105,7 @@ function readNumericParameter(
  */
 function readParameters(): void {
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
+  const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
   
   // BPM: 30-300の範囲で検証
   const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
@@ -140,6 +145,20 @@ function readParameters(): void {
     decayRate = decayRateValue;
   }
   
+  // Waveform Type
+  if (waveformTypeEl) {
+    const value = waveformTypeEl.value;
+    if (value === 'sawtooth' || value === 'pulse') {
+      waveformType = value;
+    }
+  }
+  
+  // Duty Ratio: 0-100の範囲で検証
+  const dutyRatioValue = readNumericParameter('dutyRatio', (value) => value >= 0 && value <= 100);
+  if (dutyRatioValue !== null) {
+    dutyRatio = dutyRatioValue;
+  }
+  
   // Save settings to localStorage
   saveSettings(getCurrentSettings());
 }
@@ -170,8 +189,10 @@ function getFilterParams(): { cutoff: number; q: number } {
 function renderAudio(): Float32Array {
   const duration = getDuration();
   
-  // ノコギリ波を生成
-  const samples = generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
+  // 選択された波形を生成
+  const samples = waveformType === 'pulse'
+    ? generatePulse(FREQUENCY, SAMPLE_RATE, duration, dutyRatio)
+    : generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
   
   // フィルタを作成
   const filter = new BiquadLPF(SAMPLE_RATE);
@@ -267,6 +288,8 @@ function updateUIFields(): void {
   const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement | null;
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
+  const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
+  const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
   
   if (bpmEl) bpmEl.value = String(bpm);
   if (beatEl) beatEl.value = String(beat);
@@ -274,6 +297,8 @@ function updateUIFields(): void {
   if (cutoffMaxEl) cutoffMaxEl.value = String(cutoffMax);
   if (decayUnitEl) decayUnitEl.value = decayUnit;
   if (decayRateEl) decayRateEl.value = String(decayRate);
+  if (waveformTypeEl) waveformTypeEl.value = waveformType;
+  if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
 }
 
 /**
@@ -315,7 +340,7 @@ export async function init(): Promise<void> {
     }, 150);
   };
   
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate'];
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -366,6 +391,8 @@ export async function init(): Promise<void> {
       cutoffMax = importedSettings.cutoffMax;
       decayUnit = importedSettings.decayUnit;
       decayRate = importedSettings.decayRate;
+      waveformType = importedSettings.waveformType;
+      dutyRatio = importedSettings.dutyRatio;
       
       // Update UI
       updateUIFields();
