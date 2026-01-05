@@ -1,60 +1,18 @@
 /**
- * Performance statistics tracking tests
+ * パフォーマンス統計トラッキングのテスト
  * 
- * These tests verify that the performance tracking functions
- * correctly calculate statistics from generation time samples.
+ * パフォーマンストラッキング関数が
+ * 生成時間サンプルから正しく統計を計算することを検証します。
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-
-// Since the performance tracking functions are internal to synth.ts,
-// we'll create equivalent functions here for testing the logic
-interface PerformanceStats {
-  samples: number[];
-  maxSamples: number;
-}
-
-function createPerformanceStats(maxSamples: number = 10): PerformanceStats {
-  return {
-    samples: [],
-    maxSamples,
-  };
-}
-
-function addPerformanceSample(stats: PerformanceStats, timeMs: number): void {
-  stats.samples.push(timeMs);
-  if (stats.samples.length > stats.maxSamples) {
-    stats.samples.shift();
-  }
-}
-
-function calculatePerformanceStats(stats: PerformanceStats): {
-  current: number;
-  min: number;
-  max: number;
-  avg: number;
-  count: number;
-} | null {
-  const samples = stats.samples;
-  if (samples.length === 0) return null;
-
-  const current = samples[samples.length - 1];
-  const min = Math.min(...samples);
-  const max = Math.max(...samples);
-  const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
-
-  return {
-    current,
-    min,
-    max,
-    avg,
-    count: samples.length,
-  };
-}
-
-function resetPerformanceStats(stats: PerformanceStats): void {
-  stats.samples = [];
-}
+import {
+  createPerformanceStats,
+  addPerformanceSample,
+  calculatePerformanceStats,
+  resetPerformanceStats,
+  type PerformanceStats,
+} from './performance-stats';
 
 describe('Performance Statistics', () => {
   let stats: PerformanceStats;

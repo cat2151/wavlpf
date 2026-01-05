@@ -10,6 +10,13 @@ import {
   importSettingsFromFile,
 } from './settings';
 import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
+import {
+  createPerformanceStats,
+  addPerformanceSample,
+  calculatePerformanceStats,
+  resetPerformanceStats,
+  type PerformanceStats,
+} from './performance-stats';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -69,61 +76,8 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 // Track whether playback loop has started
 let isPlaybackLoopStarted = false;
 
-// Performance statistics tracking
-interface PerformanceStats {
-  samples: number[];  // Recent generation times
-  maxSamples: number; // Maximum number of samples to keep
-}
-
-const performanceStats: PerformanceStats = {
-  samples: [],
-  maxSamples: 10, // Keep last 10 measurements
-};
-
-/**
- * Add a generation time measurement to statistics
- */
-function addPerformanceSample(timeMs: number): void {
-  performanceStats.samples.push(timeMs);
-  // Keep only the most recent samples
-  if (performanceStats.samples.length > performanceStats.maxSamples) {
-    performanceStats.samples.shift();
-  }
-}
-
-/**
- * Calculate statistics from performance samples
- */
-function calculatePerformanceStats(): {
-  current: number;
-  min: number;
-  max: number;
-  avg: number;
-  count: number;
-} | null {
-  const samples = performanceStats.samples;
-  if (samples.length === 0) return null;
-
-  const current = samples[samples.length - 1];
-  const min = Math.min(...samples);
-  const max = Math.max(...samples);
-  const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
-
-  return {
-    current,
-    min,
-    max,
-    avg,
-    count: samples.length,
-  };
-}
-
-/**
- * Reset performance statistics (e.g., when changing processor type)
- */
-function resetPerformanceStats(): void {
-  performanceStats.samples = [];
-}
+// パフォーマンス統計トラッキング
+const performanceStats: PerformanceStats = createPerformanceStats(10);
 
 /**
  * BPMとビート値から再生周期(秒)を計算
@@ -173,9 +127,9 @@ function readParameters(): void {
   if (processorEl) {
     const value = processorEl.value;
     if (value === 'typescript' || value === 'wasm') {
-      // Reset performance stats when processor type changes
+      // プロセッサタイプ変更時にパフォーマンス統計をリセット
       if (processorType !== value) {
-        resetPerformanceStats();
+        resetPerformanceStats(performanceStats);
       }
       processorType = value;
     }
@@ -652,21 +606,21 @@ function updateStatusDisplay(): void {
  * @param generationTimeMs - 生成時間(ミリ秒)
  */
 function updateGenerationTimeDisplay(generationTimeMs: number): void {
-  // Add this measurement to statistics
-  addPerformanceSample(generationTimeMs);
+  // この計測値を統計に追加
+  addPerformanceSample(performanceStats, generationTimeMs);
   
   const genTimeEl = document.getElementById('generationTime');
   if (genTimeEl) {
     const processorName = processorType === 'wasm' ? 'Rust WASM' : 'TypeScript';
-    const stats = calculatePerformanceStats();
+    const stats = calculatePerformanceStats(performanceStats);
     
     if (stats && stats.count > 1) {
-      // Show detailed statistics when we have multiple samples
+      // 複数のサンプルがある場合は詳細な統計情報を表示
       const currentText = `Generation time (${processorName}): ${stats.current.toFixed(2)}ms`;
       const statsText = `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
       genTimeEl.textContent = `${currentText} ${statsText}`;
     } else {
-      // Show simple display for first measurement
+      // 初回計測では単純表示
       genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
     }
   }
