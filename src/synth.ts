@@ -9,6 +9,7 @@ import {
   exportSettingsToFile,
   importSettingsFromFile,
 } from './settings';
+import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -38,6 +39,9 @@ let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
 let decayRate = initialSettings.decayRate;
 let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
 let dutyRatio = initialSettings.dutyRatio;
+
+// Processor type: TypeScript or WASM
+let processorType: 'typescript' | 'wasm' = 'typescript';
 
 /**
  * 現在の設定を取得
@@ -106,6 +110,15 @@ function readNumericParameter(
 function readParameters(): void {
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
+  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
+  
+  // Processor Type
+  if (processorEl) {
+    const value = processorEl.value;
+    if (value === 'typescript' || value === 'wasm') {
+      processorType = value;
+    }
+  }
   
   // BPM: 30-300の範囲で検証
   const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
@@ -184,10 +197,10 @@ function getFilterParams(): { cutoff: number; q: number } {
 }
 
 /**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング (TypeScript実装)
  * @returns 生成されたオーディオサンプルと生成時間(ms)
  */
-function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
+function renderAudioTypeScript(): { samples: Float32Array; generationTimeMs: number } {
   const startTime = performance.now();
   
   const duration = getDuration();
@@ -243,6 +256,43 @@ function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
   const generationTimeMs = endTime - startTime;
   
   return { samples: output, generationTimeMs };
+}
+
+/**
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * @returns 生成されたオーディオサンプルと生成時間(ms)
+ */
+function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
+  if (processorType === 'wasm') {
+    // WASM実装を使用
+    if (!isWasmInitialized()) {
+      console.warn('WASM not initialized, falling back to TypeScript');
+      return renderAudioTypeScript();
+    }
+    
+    const duration = getDuration();
+    const { cutoff: initialCutoff, q } = getFilterParams();
+    
+    try {
+      return renderAudioWasm(
+        waveformType,
+        FREQUENCY,
+        SAMPLE_RATE,
+        duration,
+        dutyRatio,
+        initialCutoff,
+        q,
+        decayUnit,
+        decayRate,
+      );
+    } catch (error) {
+      console.error('WASM rendering failed, falling back to TypeScript:', error);
+      return renderAudioTypeScript();
+    }
+  } else {
+    // TypeScript実装を使用
+    return renderAudioTypeScript();
+  }
 }
 
 /**
@@ -314,6 +364,11 @@ function updateUIFields(): void {
  * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
+  // Initialize WASM module early (but don't block on it)
+  initWasm().catch((error) => {
+    console.error('Failed to initialize WASM module:', error);
+  });
+  
   // マウス位置を追跡
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX / window.innerWidth;
@@ -349,7 +404,7 @@ export async function init(): Promise<void> {
     }, 150);
   };
   
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio'];
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'processor'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -517,7 +572,8 @@ function updateStatusDisplay(): void {
 function updateGenerationTimeDisplay(generationTimeMs: number): void {
   const genTimeEl = document.getElementById('generationTime');
   if (genTimeEl) {
-    genTimeEl.textContent = `Generation time: ${generationTimeMs.toFixed(2)}ms`;
+    const processorName = processorType === 'wasm' ? 'Rust WASM' : 'TypeScript';
+    genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
   }
 }
 

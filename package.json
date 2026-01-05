@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run build:wasm && tsc && vite build",
+    "build:wasm": "cd wasm-audio && wasm-pack build --target web --release",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
