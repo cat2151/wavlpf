@@ -16,7 +16,6 @@ export interface Settings {
   decayRate: number;
   waveformType: 'sawtooth' | 'pulse';
   dutyRatio: number;
-  processorType: 'typescript' | 'wasm';
 }
 
 /**
@@ -31,7 +30,6 @@ export const defaultSettings: Settings = {
   decayRate: 1,
   waveformType: 'sawtooth',
   dutyRatio: 50,
-  processorType: 'typescript',
 };
 
 /**
@@ -63,9 +61,6 @@ export function validateSettings(settings: Partial<Settings>): Settings {
     dutyRatio: typeof settings.dutyRatio === 'number' && settings.dutyRatio >= 0 && settings.dutyRatio <= 100
       ? settings.dutyRatio
       : defaultSettings.dutyRatio,
-    processorType: settings.processorType === 'typescript' || settings.processorType === 'wasm'
-      ? settings.processorType
-      : defaultSettings.processorType,
   };
 }
 

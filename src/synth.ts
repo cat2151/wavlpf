@@ -1,5 +1,3 @@
-import { generateSawtooth, generatePulse } from './oscillator';
-import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
 import type * as ToneTypes from 'tone';
 import {
@@ -47,9 +45,6 @@ let decayRate = initialSettings.decayRate;
 let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
 let dutyRatio = initialSettings.dutyRatio;
 
-// Processor type: TypeScript or WASM - loaded from settings
-let processorType: 'typescript' | 'wasm' = initialSettings.processorType;
-
 /**
  * 現在の設定を取得
  */
@@ -63,7 +58,6 @@ function getCurrentSettings(): Settings {
     decayRate,
     waveformType,
     dutyRatio,
-    processorType,
   };
 }
 
@@ -121,19 +115,6 @@ function readNumericParameter(
 function readParameters(): void {
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
-  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
-  
-  // Processor Type
-  if (processorEl) {
-    const value = processorEl.value;
-    if (value === 'typescript' || value === 'wasm') {
-      // プロセッサタイプ変更時にパフォーマンス統計をリセット
-      if (processorType !== value) {
-        resetPerformanceStats(performanceStats);
-      }
-      processorType = value;
-    }
-  }
   
   // BPM: 30-300の範囲で検証
   const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
@@ -192,15 +173,6 @@ function readParameters(): void {
 }
 
 /**
- * セント値を周波数比に変換
- * @param cents - セント値
- * @returns 周波数比
- */
-function centsToRatio(cents: number): number {
-  return Math.pow(2, cents / 1200);
-}
-
-/**
  * マウス位置をフィルタパラメータにマッピング
  */
 function getFilterParams(): { cutoff: number; q: number } {
@@ -212,102 +184,28 @@ function getFilterParams(): { cutoff: number; q: number } {
 }
 
 /**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング (TypeScript実装)
- * @returns 生成されたオーディオサンプルと生成時間(ms)
- */
-function renderAudioTypeScript(): { samples: Float32Array; generationTimeMs: number } {
-  const startTime = performance.now();
-  
-  const duration = getDuration();
-  
-  // 選択された波形を生成
-  const samples = waveformType === 'pulse'
-    ? generatePulse(FREQUENCY, SAMPLE_RATE, duration, dutyRatio)
-    : generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
-  
-  // フィルタを作成
-  const filter = new BiquadLPF(SAMPLE_RATE);
-  const { cutoff: initialCutoff, q } = getFilterParams();
-  
-  // カットオフ減衰を適用して各サンプルを処理
-  const numSamples = samples.length;
-  const output = new Float32Array(numSamples);
-  
-  // フィルタ係数を低頻度で更新(約1ms間隔)
-  // 減衰が比較的緩やかなため、サンプル毎の更新より効率的
-  const updateIntervalMs = 1;
-  const samplesPerUpdate = Math.max(1, Math.floor(SAMPLE_RATE * (updateIntervalMs / 1000)));
-  
-  let currentCutoff = initialCutoff;
-  
-  for (let i = 0; i < numSamples; i++) {
-    // samplesPerUpdateサンプル毎に係数を再計算
-    if (i % samplesPerUpdate === 0) {
-      // このサンプル位置での時間(ms)を計算
-      const timeMs = (i / SAMPLE_RATE) * 1000;
-      
-      // 減衰単位とレートに基づいてカットオフを減衰
-      if (decayUnit === 'Hz') {
-        // Hz減衰: 1msあたりdecayRate Hz、最小1Hz
-        currentCutoff = Math.max(1, initialCutoff - timeMs * decayRate);
-      } else {
-        // Cent減衰: 1msあたりdecayRate cent
-        // 減衰の上限を設定して、理論的なカットオフが1Hz未満にならないようにする
-        const maxCentsDecay = 1200 * Math.log2(initialCutoff);
-        const totalCentsDecay = Math.min(timeMs * decayRate, maxCentsDecay);
-        const ratio = centsToRatio(-totalCentsDecay); // 減衰なので負の値
-        currentCutoff = Math.max(1, initialCutoff * ratio);
-      }
-      
-      // この制御レートでフィルタ係数を更新
-      filter.setCoefficients(currentCutoff, q);
-    }
-    
-    // 現在のフィルタ係数でサンプルを処理
-    output[i] = filter.processSample(samples[i]);
-  }
-  
-  const endTime = performance.now();
-  const generationTimeMs = endTime - startTime;
-  
-  return { samples: output, generationTimeMs };
-}
-
-/**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング (Rust WASM使用)
  * @returns 生成されたオーディオサンプルと生成時間(ms)
  */
 function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
-  if (processorType === 'wasm') {
-    // WASM実装を使用
-    if (!isWasmInitialized()) {
-      console.warn('WASM not initialized, falling back to TypeScript');
-      return renderAudioTypeScript();
-    }
-    
-    const duration = getDuration();
-    const { cutoff: initialCutoff, q } = getFilterParams();
-    
-    try {
-      return renderAudioWasm(
-        waveformType,
-        FREQUENCY,
-        SAMPLE_RATE,
-        duration,
-        dutyRatio,
-        initialCutoff,
-        q,
-        decayUnit,
-        decayRate,
-      );
-    } catch (error) {
-      console.error('WASM rendering failed, falling back to TypeScript:', error);
-      return renderAudioTypeScript();
-    }
-  } else {
-    // TypeScript実装を使用
-    return renderAudioTypeScript();
+  if (!isWasmInitialized()) {
+    throw new Error('WASM module not initialized. Please wait for initialization to complete.');
   }
+  
+  const duration = getDuration();
+  const { cutoff: initialCutoff, q } = getFilterParams();
+  
+  return renderAudioWasm(
+    waveformType,
+    FREQUENCY,
+    SAMPLE_RATE,
+    duration,
+    dutyRatio,
+    initialCutoff,
+    q,
+    decayUnit,
+    decayRate,
+  );
 }
 
 /**
@@ -364,7 +262,6 @@ function updateUIFields(): void {
   const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
   const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
-  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
   
   if (bpmEl) bpmEl.value = String(bpm);
   if (beatEl) beatEl.value = String(beat);
@@ -374,34 +271,16 @@ function updateUIFields(): void {
   if (decayRateEl) decayRateEl.value = String(decayRate);
   if (waveformTypeEl) waveformTypeEl.value = waveformType;
   if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
-  if (processorEl) processorEl.value = processorType;
 }
 
 /**
  * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
-  // Initialize WASM module early (but don't block on it)
-  initWasm().catch((error) => {
+  // Initialize WASM module - required for all audio processing
+  await initWasm().catch((error) => {
     console.error('Failed to initialize WASM module:', error);
-    
-    // Provide UI feedback when WASM initialization fails
-    const processorSelect = document.getElementById('processor') as HTMLSelectElement | null;
-    if (processorSelect) {
-      // Disable WASM option
-      const wasmOption = Array.from(processorSelect.options).find(
-        (option) => option.value === 'wasm',
-      );
-      if (wasmOption) {
-        wasmOption.disabled = true;
-        wasmOption.text = 'Rust WASM (unavailable)';
-      }
-      // If WASM is currently selected, fall back to TypeScript
-      if (processorSelect.value === 'wasm') {
-        processorSelect.value = 'typescript';
-        processorType = 'typescript';
-      }
-    }
+    throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
   
   // マウス位置を追跡
@@ -439,7 +318,7 @@ export async function init(): Promise<void> {
     }, 150);
   };
   
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'processor'];
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -492,7 +371,6 @@ export async function init(): Promise<void> {
       decayRate = importedSettings.decayRate;
       waveformType = importedSettings.waveformType;
       dutyRatio = importedSettings.dutyRatio;
-      processorType = importedSettings.processorType;
       
       // Update UI
       updateUIFields();
@@ -611,17 +489,16 @@ function updateGenerationTimeDisplay(generationTimeMs: number): void {
   
   const genTimeEl = document.getElementById('generationTime');
   if (genTimeEl) {
-    const processorName = processorType === 'wasm' ? 'Rust WASM' : 'TypeScript';
     const stats = calculatePerformanceStats(performanceStats);
     
     if (stats && stats.count > 1) {
       // 複数のサンプルがある場合は詳細な統計情報を表示
-      const currentText = `Generation time (${processorName}): ${stats.current.toFixed(2)}ms`;
+      const currentText = `Generation time (Rust WASM): ${stats.current.toFixed(2)}ms`;
       const statsText = `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
       genTimeEl.textContent = `${currentText} ${statsText}`;
     } else {
       // 初回計測では単純表示
-      genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
+      genTimeEl.textContent = `Generation time (Rust WASM): ${generationTimeMs.toFixed(2)}ms`;
     }
   }
 }
