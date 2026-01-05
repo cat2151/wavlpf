@@ -34,11 +34,10 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust cargo
+      - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/wasm-pack
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
@@ -47,10 +46,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install wasm-pack
-        run: |
-          if ! command -v wasm-pack > /dev/null 2>&1; then
-            cargo install wasm-pack
-          fi
+        run: cargo install wasm-pack
 
       - name: Build TypeScript
         run: npm run build
