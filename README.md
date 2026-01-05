@@ -1,6 +1,6 @@
 # wavlpf
 
-A simple software synthesizer with a Low-Pass Filter (LPF) implemented in TypeScript and Rust WASM.
+A simple software synthesizer with a Low-Pass Filter (LPF) implemented in Rust WASM.
 
 ## Demo
 
@@ -10,9 +10,9 @@ https://cat2151.github.io/wavlpf/
 
 ## Features
 
-- **Dual Signal Processors**: Selectable TypeScript or Rust WASM implementation
-  - Real-time performance comparison with millisecond precision
-  - Identical audio processing algorithms for accurate benchmarking
+- **Rust WASM Signal Processor**: High-performance DSP processing implemented in Rust
+  - Millisecond precision performance measurement
+  - Implemented as a Rust crate that can also be used from native code
 - **220Hz Waveform Generator**: Saw or pulse wave, with configurable duty cycle
 - **Biquad LPF Filter**: Interactive, mouse-controlled filter
   - X-axis: Cutoff frequency (20Hz - configurable max value)
@@ -123,8 +123,7 @@ Then, open http://localhost:8080 in your browser (for development, please use `n
 
 1. Open the application in your browser
 2. Click anywhere on the page to start the audio context
-3. **Select Signal Processor**: Choose TypeScript or Rust WASM from the dropdown
-4. **Configure Parameters**:
+3. **Configure Parameters**:
    - Waveform Type: Saw or Pulse
    - Duty Cycle: For pulse waves (0-100%)
    - BPM and Beats: Control audio generation timing
@@ -132,36 +131,32 @@ Then, open http://localhost:8080 in your browser (for development, please use `n
    - Cutoff Frequency Max: Maximum cutoff frequency
    - Decay Unit: Hz or Cents
    - Decay Rate: Decay rate per millisecond
-5. Move your mouse to control filter parameters in real-time:
+4. Move your mouse to control filter parameters in real-time:
    - **Horizontal Position (X)**: Controls cutoff frequency (20Hz - Max value)
    - **Vertical Position (Y)**: Controls resonance/Q value (0.5 - Max value, inverted: Up = high, Down = low)
-6. Check the **Generation Time** display to compare processor performance
-7. Listen to new audio generated based on BPM and beat settings
+5. Check the **Generation Time** display to monitor performance
+6. Listen to new audio generated based on BPM and beat settings
 
 ## Architecture
 
 ### Signal Processing (WebAudio Independent)
 
-#### TypeScript Implementation
-- `src/oscillator.ts`: Saw and pulse wave generators
-- `src/filter.ts`: Biquad LPF implementation using RBJ Audio EQ Cookbook formulas
-- `src/wav.ts`: WAV file format generation
-
 #### Rust WASM Implementation
 - `wasm-audio/src/lib.rs`: Complete signal processing pipeline in Rust
   - Oscillator generation (saw, pulse waves)
-  - Biquad LPF filter using the same algorithm as TypeScript
+  - Biquad LPF filter using RBJ Audio EQ Cookbook formulas
   - Audio rendering including cutoff decay
 - `wasm-audio/pkg/`: Generated WASM bindings
 
 #### Integration
 - `src/wasmAudio.ts`: TypeScript wrapper for the WASM module
   - Dynamic WASM loading
-  - Fallback to TypeScript implementation on error
+  - Performance measurement
 
 ### Application
 
-- `src/synth.ts`: Main synthesizer logic including mouse tracking, processor selection, and audio playback
+- `src/synth.ts`: Main synthesizer logic including mouse tracking and audio playback
+- `src/wav.ts`: WAV file format generation
 - `src/settings.ts`: Settings persistence (localStorage and JSON import/export)
 - `src/index.ts`: Entry point
 - `index.html`: Web interface
