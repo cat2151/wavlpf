@@ -34,17 +34,21 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache wasm-pack
+      - name: Cache Rust cargo
         uses: actions/cache@v4
         with:
-          path: ~/.cargo/bin/wasm-pack
-          key: ${{ runner.os }}-wasm-pack-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-wasm-pack-
+            ${{ runner.os }}-cargo-
 
       - name: Install wasm-pack
         run: |
-          if ! command -v wasm-pack &> /dev/null; then
+          if ! command -v wasm-pack > /dev/null 2>&1; then
             cargo install wasm-pack
           fi
 
