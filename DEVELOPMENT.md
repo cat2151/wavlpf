@@ -30,16 +30,17 @@ This starts the Vite development server with:
 - Automatic browser opening
 - TypeScript compilation on-the-fly
 
-#### Building for Production
+### Building for Production
 
 ```bash
 npm run build
 ```
 
 This:
-1. Compiles TypeScript with `tsc` for type checking
-2. Bundles the application with Vite for optimized production output
-3. Generates source maps for debugging
+1. Builds the Rust WASM module with `wasm-pack`
+2. Compiles TypeScript with `tsc` for type checking
+3. Bundles the application with Vite for optimized production output
+4. Generates source maps for debugging
 
 #### Preview Production Build
 
@@ -125,36 +126,43 @@ Tests are colocated with source files:
 
 ```
 src/
-├── oscillator.ts       # Implementation
-├── oscillator.test.ts  # Tests
-├── filter.ts           # Implementation
-├── filter.test.ts      # Tests
-├── wav.ts              # Implementation
-└── wav.test.ts         # Tests
+├── wav.ts              # WAV generation implementation
+├── wav.test.ts         # WAV generation tests
+├── settings.ts         # Settings implementation
+├── settings.test.ts    # Settings tests
+├── performance-stats.ts    # Performance stats implementation
+└── performance-stats.test.ts  # Performance stats tests
 ```
+
+Note: DSP implementations (oscillator, filter) have been consolidated into the Rust WASM module (`wasm-audio/src/lib.rs`) and are tested through Rust's native test framework.
 
 ### Test Coverage
 
 Current test coverage includes:
 
-1. **oscillator.test.ts**: Tests sawtooth wave generation
-   - Sample count validation
-   - Value range checking
-   - Periodicity verification
-   - Edge case handling
-
-2. **filter.test.ts**: Tests biquad low-pass filter
-   - Filter creation and initialization
-   - High-frequency attenuation
-   - Low-frequency pass-through
-   - State management and reset
-   - Stability with parameter changes
-
-3. **wav.test.ts**: Tests WAV file generation
+1. **wav.test.ts**: Tests WAV file generation
    - File format structure validation
    - Audio parameter encoding
    - Float to PCM conversion
    - Error handling for edge cases
+
+2. **settings.test.ts**: Tests settings management
+   - Settings validation
+   - localStorage persistence
+   - Import/export functionality
+   - Default settings handling
+
+3. **performance-stats.test.ts**: Tests performance monitoring
+   - Statistics calculation
+   - Sample tracking
+   - Reset functionality
+
+4. **Rust Tests** (in `wasm-audio/src/lib.rs`): Tests signal processing
+   - Biquad LPF filter creation and stability
+   - High-frequency attenuation
+   - Sawtooth wave generation
+   - Pulse wave generation with duty ratio clamping
+   - Audio rendering with Hz and Cent decay
 
 ## Benefits for Rapid Prototyping
 
