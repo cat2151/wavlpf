@@ -90,6 +90,8 @@ npm run build
 
 TypeScriptの型チェック、Rust WASMモジュールのビルド、Viteで本番用バンドルを作成します。
 
+**wasm-optに関する注意**: ビルドはデフォルトで`wasm-opt`（binaryenから）を使用して追加のWASM最適化を行います。これはCI環境で正常に動作することが検証されています。`wasm-opt`を無効にする必要がある場合（デバッグやネットワーク制限のため）、`wasm-audio/Cargo.toml`の設定をコメント解除できます。
+
 ### 本番ビルドのプレビュー
 
 ```bash
