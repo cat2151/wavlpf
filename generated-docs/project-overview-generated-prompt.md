@@ -1,4 +1,4 @@
-Last updated: 2026-01-06
+Last updated: 2026-01-07
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -63,7 +63,7 @@ Last updated: 2026-01-06
 名前: wavlpf
 説明: # wavlpf
 
-TypeScriptとRust WASMで実装されたローパスフィルター（LPF）付きシンプルソフトウェアシンセサイザー
+Rust WASMで実装されたローパスフィルター（LPF）付きシンプルソフトウェアシンセサイザー
 
 ## デモ
 
@@ -73,9 +73,9 @@ https://cat2151.github.io/wavlpf/
 
 ## 機能
 
-- **デュアル信号プロセッサ**: TypeScriptまたはRust WASM実装を選択可能
-  - ミリ秒精度でのリアルタイムパフォーマンス比較
-  - 正確なベンチマークのための同一オーディオ処理アルゴリズム
+- **Rust WASM信号プロセッサ**: 高速なDSP処理をRustで実装
+  - ミリ秒精度でのパフォーマンス測定
+  - ネイティブからも利用可能なRustクレートとして実装
 - **220Hz波形ジェネレーター**: ノコギリ波またはパルス波、デューティー比設定可能
 - **Biquad LPFフィルター**: マウス制御によるインタラクティブなフィルター
   - X軸: カットオフ周波数（20Hz - 設定可能な最大値）
@@ -153,6 +153,8 @@ npm run build
 
 TypeScriptの型チェック、Rust WASMモジュールのビルド、Viteで本番用バンドルを作成します。
 
+**wasm-optに関する注意**: ビルドはデフォルトで`wasm-opt`（binaryenから）を使用して追加のWASM最適化を行います。これはCI環境で正常に動作することが検証されています。`wasm-opt`を無効にする必要がある場合（デバッグやネットワーク制限のため）、`wasm-audio/Cargo.toml`の設定をコメント解除できます。
+
 ### 本番ビルドのプレビュー
 
 ```bash
@@ -186,8 +188,7 @@ npm run serve
 
 1. ブラウザでアプリケーションを開く
 2. ページ上の任意の場所をクリックしてオーディオコンテキストを開始
-3. **信号プロセッサを選択**: ドロップダウンからTypeScriptまたはRust WASMを選択
-4. **パラメータを設定**:
+3. **パラメータを設定**:
    - 波形タイプ: ノコギリ波またはパルス波
    - デューティー比: パルス波用（0-100%）
    - BPMとビート: オーディオ生成タイミングを制御
@@ -195,36 +196,32 @@ npm run serve
    - カットオフ周波数最大値: 最大カットオフ周波数
    - 減衰単位: HzまたはCent
    - 減衰レート: ミリ秒あたりの減衰率
-5. マウスを動かしてリアルタイムでフィルターパラメータを制御:
+4. マウスを動かしてリアルタイムでフィルターパラメータを制御:
    - **水平位置（X）**: カットオフ周波数を制御（20Hz - 最大値）
    - **垂直位置（Y）**: レゾナンス/Q値を制御（0.5 - 最大値、反転: 上 = 高、下 = 低）
-6. **生成時間**表示を確認してプロセッサのパフォーマンスを比較
-7. BPMとビート設定に基づいて生成される新しいオーディオを聴く
+5. **生成時間**表示を確認してパフォーマンスを監視
+6. BPMとビート設定に基づいて生成される新しいオーディオを聴く
 
 ## アーキテクチャ
 
 ### 信号処理（WebAudio非依存）
 
-#### TypeScript実装
-- `src/oscillator.ts`: ノコギリ波とパルス波ジェネレーター
-- `src/filter.ts`: RBJ Audio EQ Cookbook公式を使用したBiquad LPF実装
-- `src/wav.ts`: WAVファイルフォーマット生成
-
 #### Rust WASM実装
 - `wasm-audio/src/lib.rs`: Rustによる完全な信号処理パイプライン
   - オシレーター生成（ノコギリ波、パルス波）
-  - TypeScriptと同じアルゴリズムのBiquad LPFフィルター
+  - RBJ Audio EQ Cookbook公式を使用したBiquad LPFフィルター
   - カットオフ減衰を含むオーディオレンダリング
 - `wasm-audio/pkg/`: 生成されたWASMバインディング
 
 #### 統合
 - `src/wasmAudio.ts`: WASMモジュールのTypeScriptラッパー
   - 動的WASMロード
-  - エラー時のTypeScript実装へのフォールバック
+  - パフォーマンス測定
 
 ### アプリケーション
 
-- `src/synth.ts`: マウストラッキング、プロセッサ選択、オーディオ再生を含むメインシンセサイザーロジック
+- `src/synth.ts`: マウストラッキング、オーディオ再生を含むメインシンセサイザーロジック
+- `src/wav.ts`: WAVファイルフォーマット生成
 - `src/settings.ts`: 設定の永続化（localStorageとJSONインポート/エクスポート）
 - `src/index.ts`: エントリーポイント
 - `index.html`: Webインターフェース
@@ -269,7 +266,10 @@ MIT
 📖 DEVELOPMENT.md
 📖 IMPLEMENTATION_EXAMPLES.md
 📖 INTEGRATION_BLOCKERS_SUMMARY.md
+📖 ISSUE_39_SUMMARY.md
 📄 LICENSE
+📖 PERFORMANCE_DISPLAY_DEMO.md
+📖 PERFORMANCE_TIMING_ANALYSIS.md
 📖 README.ja.md
 📖 README.md
 📖 README_ANALYSIS.md
@@ -289,14 +289,15 @@ MIT
   📖 37.md
   📖 39.md
   📖 41.md
+  📖 44.md
+  📖 46.md
+  📖 48.md
 📊 package-lock.json
 📊 package.json
 📁 src/
-  📘 filter.test.ts
-  📘 filter.ts
   📘 index.ts
-  📘 oscillator.test.ts
-  📘 oscillator.ts
+  📘 performance-stats.test.ts
+  📘 performance-stats.ts
   📘 settings.test.ts
   📘 settings.ts
   📘 synth.ts
@@ -311,43 +312,35 @@ MIT
     📄 lib.rs
 
 ## ファイル詳細分析
-**index.html** (220行, 5887バイト)
+**index.html** (225行, 6176バイト)
   - 関数: なし
-  - インポート: なし
-
-**src/filter.test.ts** (137行, 4050バイト)
-  - 関数: for
-  - インポート: vitest, ./filter
-
-**src/filter.ts** (87行, 2249バイト)
-  - 関数: constructor
   - インポート: なし
 
 **src/index.ts** (21行, 450バイト)
   - 関数: if
   - インポート: ./synth
 
-**src/oscillator.test.ts** (178行, 5485バイト)
-  - 関数: for
-  - インポート: vitest, ./oscillator
-
-**src/oscillator.ts** (46行, 1411バイト)
-  - 関数: generateSawtooth, generatePulse, for
-  - インポート: なし
-
-**src/settings.test.ts** (126行, 4879バイト)
+**src/performance-stats.test.ts** (208行, 6502バイト)
   - 関数: なし
   - インポート: vitest
 
-**src/settings.ts** (166行, 4648バイト)
+**src/performance-stats.ts** (75行, 1556バイト)
+  - 関数: createPerformanceStats, addPerformanceSample, calculatePerformanceStats, resetPerformanceStats, if
+  - インポート: なし
+
+**src/settings.test.ts** (126行, 4869バイト)
+  - 関数: なし
+  - インポート: vitest
+
+**src/settings.ts** (168行, 4804バイト)
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (626行, 18781バイト)
-  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, centsToRatio, getFilterParams, renderAudioTypeScript, renderAudio, playAudio, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, for, catch
-  - インポート: ./oscillator, ./filter, ./wav
+**src/synth.ts** (554行, 16683バイト)
+  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, getFilterParams, renderAudio, playAudio, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
+  - インポート: ./wav, tone, ./wasmAudio
 
-**src/wasmAudio.ts** (94行, 2147バイト)
+**src/wasmAudio.ts** (96行, 2245バイト)
   - 関数: initWasm, isWasmInitialized, renderAudioWasm, if, catch
   - インポート: なし
 
@@ -359,31 +352,31 @@ MIT
   - 関数: generateWav, writeString, createWavBlobUrl, if, for
   - インポート: なし
 
-**vite.config.ts** (51行, 1009バイト)
+**vite.config.ts** (52行, 1081バイト)
   - 関数: なし
   - インポート: vite
 
 ## 関数呼び出し階層
-- for (src/filter.test.ts)
-  - generateSawtooth ()
-    - generatePulse ()
-  - loadSettings ()
-    - validateSettings (src/settings.ts)
+- if (src/index.ts)
+  - init ()
+    - createPerformanceStats (src/performance-stats.ts)
+      - addPerformanceSample ()
+      - calculatePerformanceStats ()
+      - resetPerformanceStats ()
+    - loadSettings ()
+      - validateSettings (src/settings.ts)
       - saveSettings ()
       - exportSettingsToFile ()
       - importSettingsFromFile ()
-  - catch (src/settings.ts)
-    - getCurrentSettings (src/synth.ts)
+    - catch (src/settings.ts)
+      - getCurrentSettings (src/synth.ts)
       - getDuration ()
       - readNumericParameter ()
       - readParameters ()
-      - centsToRatio ()
       - getFilterParams ()
-      - renderAudioTypeScript ()
       - renderAudio ()
       - playAudio ()
       - updateUIFields ()
-      - init ()
       - scheduleNextPlay ()
       - updateStatusDisplay ()
       - updateGenerationTimeDisplay ()
@@ -394,9 +387,9 @@ MIT
       - generateWav ()
       - createWavBlobUrl ()
   - writeString ()
-- if (src/index.ts)
 - handleInputChange (src/synth.ts)
 - handleClick (src/synth.ts)
+- for (src/wav.ts)
 
 
 ## プロジェクト構造（ファイル一覧）
@@ -407,6 +400,9 @@ CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md
 DEVELOPMENT.md
 IMPLEMENTATION_EXAMPLES.md
 INTEGRATION_BLOCKERS_SUMMARY.md
+ISSUE_39_SUMMARY.md
+PERFORMANCE_DISPLAY_DEMO.md
+PERFORMANCE_TIMING_ANALYSIS.md
 README.ja.md
 README.md
 README_ANALYSIS.md
@@ -423,14 +419,10 @@ issue-notes/35.md
 issue-notes/37.md
 issue-notes/39.md
 issue-notes/41.md
+issue-notes/44.md
+issue-notes/46.md
+issue-notes/48.md
 package-lock.json
-package.json
-src/filter.test.ts
-src/filter.ts
-src/index.ts
-src/oscillator.test.ts
-src/oscillator.ts
-tsconfig.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
 特に以下の点を重視してください：
@@ -442,4 +434,4 @@ tsconfig.json
 
 
 ---
-Generated at: 2026-01-06 07:03:15 JST
+Generated at: 2026-01-07 07:03:27 JST

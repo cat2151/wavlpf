@@ -1,4 +1,4 @@
-Last updated: 2026-01-06
+Last updated: 2026-01-07
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -207,7 +207,10 @@ Last updated: 2026-01-06
 - DEVELOPMENT.md
 - IMPLEMENTATION_EXAMPLES.md
 - INTEGRATION_BLOCKERS_SUMMARY.md
+- ISSUE_39_SUMMARY.md
 - LICENSE
+- PERFORMANCE_DISPLAY_DEMO.md
+- PERFORMANCE_TIMING_ANALYSIS.md
 - README.ja.md
 - README.md
 - README_ANALYSIS.md
@@ -226,13 +229,14 @@ Last updated: 2026-01-06
 - issue-notes/37.md
 - issue-notes/39.md
 - issue-notes/41.md
+- issue-notes/44.md
+- issue-notes/46.md
+- issue-notes/48.md
 - package-lock.json
 - package.json
-- src/filter.test.ts
-- src/filter.ts
 - src/index.ts
-- src/oscillator.test.ts
-- src/oscillator.ts
+- src/performance-stats.test.ts
+- src/performance-stats.ts
 - src/settings.test.ts
 - src/settings.ts
 - src/synth.ts
@@ -245,101 +249,113 @@ Last updated: 2026-01-06
 - wasm-audio/src/lib.rs
 
 ## 現在のオープンIssues
-## [Issue #41](../issue-notes/41.md): 今後のDSPコアをRustでクレートでネイティブからも利用する用途を優先し、Rust処理がある部分は、Rustに一本化し、同じ機能のTypeScript部を削除する
-[issue-notes/41.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/41.md)
-
-...
-ラベル: 
---- issue-notes/41.md の内容 ---
-
-```markdown
-# issue 今後の音声コアをRustでクレートでネイティブからも利用する用途を優先し、Rust処理がある部分は、Rustに一本化し、同じ機能のTypeScript部を削除する #41
-[issues #41](https://github.com/cat2151/wavlpf/issues/41)
-
-
-
-```
-
-## [Issue #40](../issue-notes/40.md): Add statistical performance tracking to improve generation time display precision
-Browser security features (timing attack mitigation) quantize `performance.now()` to 1-10ms increments, causing generation time to display only as 0ms, 10ms, 20ms, 30ms. Single measurements cannot be made more precise due to browser limitations.
+## [Issue #49](../issue-notes/49.md): Add Tone.js direct synthesis mode with tab switching for UX prototyping
+Implements dual-mode audio playback: existing WASM→WAV rendering and new Tone.js direct synthesis, switchable via tabs for UX comparison testing.
 
 ## Changes
 
-**Statistical tracking** (`src/synth.ts`)...
+### New Module: `src/tonejs-synth.ts`
+- Tone.js MonoSynth + Filter for 220Hz synthesis
+- Real-time filter parameter updates (50ms throttled)
+...
 ラベル: 
---- issue-notes/40.md の内容 ---
+--- issue-notes/49.md の内容 ---
 
 ```markdown
 
 ```
 
-## [Issue #39](../issue-notes/39.md): 波形生成処理の処理時間表示が、0ms、10ms、20ms、30msの4種類しか表示されない。より正確に処理時間を計測表示する方法があるか分析する
-[issue-notes/39.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/39.md)
+## [Issue #48](../issue-notes/48.md): UX検証用プロトタイピングのため、これまでの波形生成モードにくわえて、Tone.jsによる生成波形演奏モードを実装し、画面上部のタブでそれぞれを切り替える
+[issue-notes/48.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/48.md)
 
 ...
 ラベル: 
---- issue-notes/39.md の内容 ---
+--- issue-notes/48.md の内容 ---
 
 ```markdown
-# issue 波形生成処理の処理時間表示が、0ms、10ms、20ms、30msの4種類しか表示されない。より正確に処理時間を計測表示する方法があるか分析する #39
-[issues #39](https://github.com/cat2151/wavlpf/issues/39)
-
-
-
-```
-
-## [Issue #30](../issue-notes/30.md): フィルタにLPF以外の、BPF, HPF, notch, APF, lowShelf, highShelf もプルダウンで選べるようにする
-[issue-notes/30.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/30.md)
-
-...
-ラベル: 
---- issue-notes/30.md の内容 ---
-
-```markdown
-# issue フィルタにLPF以外の、BPF, HPF, notch, APF, lowShelf, highShelf もプルダウンで選べるようにする #30
-[issues #30](https://github.com/cat2151/wavlpf/issues/30)
+# issue UX検証用プロトタイピングのため、これまでの波形生成モードにくわえて、Tone.jsによる生成波形演奏モードを実装し、画面上部のタブでそれぞれを切り替える #48
+[issues #48](https://github.com/cat2151/wavlpf/issues/48)
 
 
 
 ```
 
 ## ドキュメントで言及されているファイルの内容
-### .github/actions-tmp/issue-notes/30.md
+### .github/actions-tmp/issue-notes/8.md
 ```md
 {% raw %}
-# issue 進捗状況生成時、issueに紐付くissue-notesがないときエラー終了してしまう #30
-[issues #30](https://github.com/cat2151/github-actions/issues/30)
+# issue 関数コールグラフhtmlビジュアライズ生成の対象ソースファイルを、呼び出し元ymlで指定できるようにする #8
+[issues #8](https://github.com/cat2151/github-actions/issues/8)
 
-# 何が困るの？
-- 生成されない
-
-# 分析
-- issue紐付くissue-notesが存在しないことは普通にある
-- 今回も、そうなっていることを確認済み
-    - issue 1～8はissue-notesがあった
-    - 当該のissue 9は、issue本体のコメントに書いて進行していた
-        - issue-notesの仕組みを使う前に書いたissueなので、そうなっていた
-- こうするのがよい
-    - エラーにならず、空文字として扱う
-
-# close条件
-- 当該部分で落ちなくなること
-    - 当該部分とは：
-    - https://github.com/cat2151/fighting-game-button-challenge
-        - issue 9
-
-
-
-{% endraw %}
+# これまでの課題
+- 以下が決め打ちになっていた
+```
+  const allowedFiles = [
+    'src/main.js',
+    'src/mml2json.js',
+    'src/play.js'
+  ];
 ```
 
-### issue-notes/30.md
-```md
-{% raw %}
-# issue フィルタにLPF以外の、BPF, HPF, notch, APF, lowShelf, highShelf もプルダウンで選べるようにする #30
-[issues #30](https://github.com/cat2151/wavlpf/issues/30)
+# 対策
+- 呼び出し元ymlで指定できるようにする
 
+# agent
+- agentにやらせることができれば楽なので、初手agentを試した
+- 失敗
+    - ハルシネーションしてscriptを大量破壊した
+- 分析
+    - 修正対象scriptはagentが生成したもの
+    - 低品質な生成結果でありソースが巨大
+    - ハルシネーションで破壊されやすいソース
+    - AIの生成したソースは、必ずしもAIフレンドリーではない
 
+# 人力リファクタリング
+- 低品質コードを、最低限agentが扱えて、ハルシネーションによる大量破壊を防止できる内容、にする
+- 手短にやる
+    - そもそもビジュアライズは、agentに雑に指示してやらせたもので、
+    - 今後別のビジュアライザを選ぶ可能性も高い
+    - 今ここで手間をかけすぎてコンコルド効果（サンクコストバイアス）を増やすのは、project群をトータルで俯瞰して見たとき、損
+- 対象
+    - allowedFiles のあるソース
+        - callgraph-utils.cjs
+            - たかだか300行未満のソースである
+            - この程度でハルシネーションされるのは予想外
+            - やむなし、リファクタリングでソース分割を進める
+
+# agentに修正させる
+## prompt
+```
+allowedFilesを引数で受け取るようにしたいです。
+ないならエラー。
+最終的に呼び出し元すべてに波及して修正したいです。
+
+呼び出し元をたどってエントリポイントも見つけて、
+エントリポイントにおいては、
+引数で受け取ったjsonファイル名 allowedFiles.js から
+jsonファイル allowedFiles.jsonの内容をreadして
+変数 allowedFilesに格納、
+後続処理に引き渡す、としたいです。
+
+まずplanしてください。
+planにおいては、修正対象のソースファイル名と関数名を、呼び出し元を遡ってすべて特定し、listしてください。
+```
+
+# 修正が順調にできた
+- コマンドライン引数から受け取る作りになっていなかったので、そこだけ指示して修正させた
+- yml側は人力で修正した
+
+# 他のリポジトリから呼び出した場合にバグらないよう修正する
+- 気付いた
+    - 共通ワークフローとして他のリポジトリから使った場合はバグるはず。
+        - ymlから、共通ワークフロー側リポジトリのcheckoutが漏れているので。
+- 他のyml同様に修正する
+- あわせて全体にymlをリファクタリングし、修正しやすくし、今後のyml読み書きの学びにしやすくする
+
+# local WSL + act : test green
+
+# closeとする
+- もし生成されたhtmlがNGの場合は、別issueとするつもり
 
 {% endraw %}
 ```
@@ -362,22 +378,11 @@ Browser security features (timing attack mitigation) quantize `performance.now()
 {% endraw %}
 ```
 
-### issue-notes/39.md
+### issue-notes/48.md
 ```md
 {% raw %}
-# issue 波形生成処理の処理時間表示が、0ms、10ms、20ms、30msの4種類しか表示されない。より正確に処理時間を計測表示する方法があるか分析する #39
-[issues #39](https://github.com/cat2151/wavlpf/issues/39)
-
-
-
-{% endraw %}
-```
-
-### issue-notes/41.md
-```md
-{% raw %}
-# issue 今後の音声コアをRustでクレートでネイティブからも利用する用途を優先し、Rust処理がある部分は、Rustに一本化し、同じ機能のTypeScript部を削除する #41
-[issues #41](https://github.com/cat2151/wavlpf/issues/41)
+# issue UX検証用プロトタイピングのため、これまでの波形生成モードにくわえて、Tone.jsによる生成波形演奏モードを実装し、画面上部のタブでそれぞれを切り替える #48
+[issues #48](https://github.com/cat2151/wavlpf/issues/48)
 
 
 
@@ -387,8 +392,6 @@ Browser security features (timing attack mitigation) quantize `performance.now()
 ### src/synth.ts
 ```ts
 {% raw %}
-import { generateSawtooth, generatePulse } from './oscillator';
-import { BiquadLPF } from './filter';
 import { generateWav, createWavBlobUrl } from './wav';
 import type * as ToneTypes from 'tone';
 import {
@@ -399,6 +402,13 @@ import {
   importSettingsFromFile,
 } from './settings';
 import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
+import {
+  createPerformanceStats,
+  addPerformanceSample,
+  calculatePerformanceStats,
+  resetPerformanceStats,
+  type PerformanceStats,
+} from './performance-stats';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -428,9 +438,7 @@ let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
 let decayRate = initialSettings.decayRate;
 let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
 let dutyRatio = initialSettings.dutyRatio;
-
-// Processor type: TypeScript or WASM - loaded from settings
-let processorType: 'typescript' | 'wasm' = initialSettings.processorType;
+let filterType: 'lpf' | 'hpf' | 'bpf' | 'notch' | 'apf' | 'lowshelf' | 'highshelf' = initialSettings.filterType;
 
 /**
  * 現在の設定を取得
@@ -445,7 +453,7 @@ function getCurrentSettings(): Settings {
     decayRate,
     waveformType,
     dutyRatio,
-    processorType,
+    filterType,
   };
 }
 
@@ -457,6 +465,9 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 // Track whether playback loop has started
 let isPlaybackLoopStarted = false;
+
+// パフォーマンス統計トラッキング
+const performanceStats: PerformanceStats = createPerformanceStats(10);
 
 /**
  * BPMとビート値から再生周期(秒)を計算
@@ -500,15 +511,7 @@ function readNumericParameter(
 function readParameters(): void {
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
-  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
-  
-  // Processor Type
-  if (processorEl) {
-    const value = processorEl.value;
-    if (value === 'typescript' || value === 'wasm') {
-      processorType = value;
-    }
-  }
+  const filterTypeEl = document.getElementById('filterType') as HTMLSelectElement | null;
   
   // BPM: 30-300の範囲で検証
   const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
@@ -562,17 +565,17 @@ function readParameters(): void {
     dutyRatio = dutyRatioValue;
   }
   
+  // Filter Type
+  if (filterTypeEl) {
+    const value = filterTypeEl.value;
+    const validFilterTypes = ['lpf', 'hpf', 'bpf', 'notch', 'apf', 'lowshelf', 'highshelf'];
+    if (validFilterTypes.includes(value)) {
+      filterType = value as typeof filterType;
+    }
+  }
+  
   // Save settings to localStorage
   saveSettings(getCurrentSettings());
-}
-
-/**
- * セント値を周波数比に変換
- * @param cents - セント値
- * @returns 周波数比
- */
-function centsToRatio(cents: number): number {
-  return Math.pow(2, cents / 1200);
 }
 
 /**
@@ -587,102 +590,29 @@ function getFilterParams(): { cutoff: number; q: number } {
 }
 
 /**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング (TypeScript実装)
- * @returns 生成されたオーディオサンプルと生成時間(ms)
- */
-function renderAudioTypeScript(): { samples: Float32Array; generationTimeMs: number } {
-  const startTime = performance.now();
-  
-  const duration = getDuration();
-  
-  // 選択された波形を生成
-  const samples = waveformType === 'pulse'
-    ? generatePulse(FREQUENCY, SAMPLE_RATE, duration, dutyRatio)
-    : generateSawtooth(FREQUENCY, SAMPLE_RATE, duration);
-  
-  // フィルタを作成
-  const filter = new BiquadLPF(SAMPLE_RATE);
-  const { cutoff: initialCutoff, q } = getFilterParams();
-  
-  // カットオフ減衰を適用して各サンプルを処理
-  const numSamples = samples.length;
-  const output = new Float32Array(numSamples);
-  
-  // フィルタ係数を低頻度で更新(約1ms間隔)
-  // 減衰が比較的緩やかなため、サンプル毎の更新より効率的
-  const updateIntervalMs = 1;
-  const samplesPerUpdate = Math.max(1, Math.floor(SAMPLE_RATE * (updateIntervalMs / 1000)));
-  
-  let currentCutoff = initialCutoff;
-  
-  for (let i = 0; i < numSamples; i++) {
-    // samplesPerUpdateサンプル毎に係数を再計算
-    if (i % samplesPerUpdate === 0) {
-      // このサンプル位置での時間(ms)を計算
-      const timeMs = (i / SAMPLE_RATE) * 1000;
-      
-      // 減衰単位とレートに基づいてカットオフを減衰
-      if (decayUnit === 'Hz') {
-        // Hz減衰: 1msあたりdecayRate Hz、最小1Hz
-        currentCutoff = Math.max(1, initialCutoff - timeMs * decayRate);
-      } else {
-        // Cent減衰: 1msあたりdecayRate cent
-        // 減衰の上限を設定して、理論的なカットオフが1Hz未満にならないようにする
-        const maxCentsDecay = 1200 * Math.log2(initialCutoff);
-        const totalCentsDecay = Math.min(timeMs * decayRate, maxCentsDecay);
-        const ratio = centsToRatio(-totalCentsDecay); // 減衰なので負の値
-        currentCutoff = Math.max(1, initialCutoff * ratio);
-      }
-      
-      // この制御レートでフィルタ係数を更新
-      filter.setCoefficients(currentCutoff, q);
-    }
-    
-    // 現在のフィルタ係数でサンプルを処理
-    output[i] = filter.processSample(samples[i]);
-  }
-  
-  const endTime = performance.now();
-  const generationTimeMs = endTime - startTime;
-  
-  return { samples: output, generationTimeMs };
-}
-
-/**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング
+ * LPFとカットオフ減衰を適用してオーディオをレンダリング (Rust WASM使用)
  * @returns 生成されたオーディオサンプルと生成時間(ms)
  */
 function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
-  if (processorType === 'wasm') {
-    // WASM実装を使用
-    if (!isWasmInitialized()) {
-      console.warn('WASM not initialized, falling back to TypeScript');
-      return renderAudioTypeScript();
-    }
-    
-    const duration = getDuration();
-    const { cutoff: initialCutoff, q } = getFilterParams();
-    
-    try {
-      return renderAudioWasm(
-        waveformType,
-        FREQUENCY,
-        SAMPLE_RATE,
-        duration,
-        dutyRatio,
-        initialCutoff,
-        q,
-        decayUnit,
-        decayRate,
-      );
-    } catch (error) {
-      console.error('WASM rendering failed, falling back to TypeScript:', error);
-      return renderAudioTypeScript();
-    }
-  } else {
-    // TypeScript実装を使用
-    return renderAudioTypeScript();
+  if (!isWasmInitialized()) {
+    throw new Error('WASM module not initialized. Please wait for initialization to complete.');
   }
+  
+  const duration = getDuration();
+  const { cutoff: initialCutoff, q } = getFilterParams();
+  
+  return renderAudioWasm(
+    waveformType,
+    FREQUENCY,
+    SAMPLE_RATE,
+    duration,
+    dutyRatio,
+    filterType,
+    initialCutoff,
+    q,
+    decayUnit,
+    decayRate,
+  );
 }
 
 /**
@@ -739,7 +669,7 @@ function updateUIFields(): void {
   const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
   const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
-  const processorEl = document.getElementById('processor') as HTMLSelectElement | null;
+  const filterTypeEl = document.getElementById('filterType') as HTMLSelectElement | null;
   
   if (bpmEl) bpmEl.value = String(bpm);
   if (beatEl) beatEl.value = String(beat);
@@ -749,34 +679,25 @@ function updateUIFields(): void {
   if (decayRateEl) decayRateEl.value = String(decayRate);
   if (waveformTypeEl) waveformTypeEl.value = waveformType;
   if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
-  if (processorEl) processorEl.value = processorType;
+  if (filterTypeEl) filterTypeEl.value = filterType;
 }
 
 /**
  * シンセサイザーを初期化
  */
 export async function init(): Promise<void> {
-  // Initialize WASM module early (but don't block on it)
-  initWasm().catch((error) => {
+  // Initialize WASM module - required for all audio processing
+  await initWasm().catch((error) => {
     console.error('Failed to initialize WASM module:', error);
     
-    // Provide UI feedback when WASM initialization fails
-    const processorSelect = document.getElementById('processor') as HTMLSelectElement | null;
-    if (processorSelect) {
-      // Disable WASM option
-      const wasmOption = Array.from(processorSelect.options).find(
-        (option) => option.value === 'wasm',
-      );
-      if (wasmOption) {
-        wasmOption.disabled = true;
-        wasmOption.text = 'Rust WASM (unavailable)';
-      }
-      // If WASM is currently selected, fall back to TypeScript
-      if (processorSelect.value === 'wasm') {
-        processorSelect.value = 'typescript';
-        processorType = 'typescript';
-      }
+    // WASM初期化エラーをユーザーに分かりやすく通知
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+      statusEl.textContent =
+        'シンセサイザーの初期化に失敗しました。ページを再読み込みしてください。';
     }
+    
+    throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
   
   // マウス位置を追跡
@@ -814,7 +735,7 @@ export async function init(): Promise<void> {
     }, 150);
   };
   
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'processor'];
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'filterType'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -867,7 +788,7 @@ export async function init(): Promise<void> {
       decayRate = importedSettings.decayRate;
       waveformType = importedSettings.waveformType;
       dutyRatio = importedSettings.dutyRatio;
-      processorType = importedSettings.processorType;
+      filterType = importedSettings.filterType;
       
       // Update UI
       updateUIFields();
@@ -981,10 +902,22 @@ function updateStatusDisplay(): void {
  * @param generationTimeMs - 生成時間(ミリ秒)
  */
 function updateGenerationTimeDisplay(generationTimeMs: number): void {
+  // この計測値を統計に追加
+  addPerformanceSample(performanceStats, generationTimeMs);
+  
   const genTimeEl = document.getElementById('generationTime');
   if (genTimeEl) {
-    const processorName = processorType === 'wasm' ? 'Rust WASM' : 'TypeScript';
-    genTimeEl.textContent = `Generation time (${processorName}): ${generationTimeMs.toFixed(2)}ms`;
+    const stats = calculatePerformanceStats(performanceStats);
+    
+    if (stats && stats.count > 1) {
+      // 複数のサンプルがある場合は詳細な統計情報を表示
+      const currentText = `Generation time (Rust WASM): ${stats.current.toFixed(2)}ms`;
+      const statsText = `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
+      genTimeEl.textContent = `${currentText} ${statsText}`;
+    } else {
+      // 初回計測では単純表示
+      genTimeEl.textContent = `Generation time (Rust WASM): ${generationTimeMs.toFixed(2)}ms`;
+    }
   }
 }
 
@@ -1018,27 +951,32 @@ export function dispose(): void {
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-6672d9f Add issue note for #41 [auto]
-b16dbb7 Merge pull request #38 from cat2151/copilot/optimize-rust-build-for-speed
-c4f6755 Enable wasm-opt for optimized Rust WASM builds
-85752da Add issue note for #39 [auto]
-28dc17a Add issue note for #37 [auto]
-3246c2a Initial plan
-402e17c Merge pull request #36 from cat2151/copilot/fix-ci-failure
-9c2ded9 PRレビューコメントに対応
-062e724 wasm-packバージョンを固定
-712cb3f wasm-pack-actionを使用して高速化
+b021635 Auto-translate README.ja.md to README.md [auto]
+773034e Merge pull request #47 from cat2151/copilot/update-readme-comments
+422473c Improve Japanese clarity in Cargo.toml comments
+1eb0a32 Document wasm-opt verification results in README and Cargo.toml
+834fedc Add issue note for #48 [auto]
+141fdbe Add issue note for #46 [auto]
+9ad3f43 Initial plan
+13f7373 Merge pull request #45 from cat2151/copilot/remove-wasm-opt-flag
+3d4c622 コメントを日本語に変更（レビューフィードバックに対応）
+e8dc47b Add clarifying comment about wasm-opt verification test
 
 ### 変更されたファイル:
-.github/workflows/deploy.yml
-.gitignore
+README.ja.md
 README.md
-issue-notes/35.md
-issue-notes/37.md
-issue-notes/39.md
-issue-notes/41.md
+index.html
+issue-notes/44.md
+issue-notes/46.md
+issue-notes/48.md
+src/settings.test.ts
+src/settings.ts
+src/synth.ts
+src/wasmAudio.ts
+vite.config.ts
 wasm-audio/Cargo.toml
+wasm-audio/src/lib.rs
 
 
 ---
-Generated at: 2026-01-06 07:03:16 JST
+Generated at: 2026-01-07 07:03:28 JST
