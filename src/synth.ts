@@ -22,6 +22,8 @@ import {
   updateToneJsFilter,
   disposeToneJs,
   isToneJsInitialized,
+  isSynthSetup,
+  setToneInstance,
 } from './tonejs-synth';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
@@ -320,14 +322,14 @@ async function playAudio(): Promise<void> {
 /**
  * Switch between WAV and Tone.js modes
  */
-function switchMode(mode: PlaybackMode): void {
+async function switchMode(mode: PlaybackMode): Promise<void> {
   if (mode === currentMode) {
     return; // Already in this mode
   }
   
   currentMode = mode;
   
-  // Update tab UI
+  // Update tab UI and ARIA attributes
   const tabWav = document.getElementById('tabWav');
   const tabTonejs = document.getElementById('tabTonejs');
   
@@ -335,16 +337,31 @@ function switchMode(mode: PlaybackMode): void {
     if (mode === 'wav') {
       tabWav.classList.add('active');
       tabTonejs.classList.remove('active');
+      tabWav.setAttribute('aria-selected', 'true');
+      tabTonejs.setAttribute('aria-selected', 'false');
     } else {
       tabWav.classList.remove('active');
       tabTonejs.classList.add('active');
+      tabWav.setAttribute('aria-selected', 'false');
+      tabTonejs.setAttribute('aria-selected', 'true');
     }
   }
   
   // Clean up resources from previous mode
+  // Note: playback timeout is not cleared - the continuous playback loop
+  // will automatically use the new mode on the next iteration
   if (mode === 'wav') {
     disposeToneJs();
   } else {
+    // Initialize Tone.js synth if switching to Tone.js mode and not yet initialized
+    if (!isToneJsInitialized() && Tone) {
+      try {
+        await initToneJs();
+      } catch (error) {
+        console.error('Failed to initialize Tone.js synth on mode switch:', error);
+      }
+    }
+    
     // Stop WAV player if running
     if (currentPlayer) {
       try {
@@ -427,7 +444,8 @@ export async function init(): Promise<void> {
     }
     
     // Update Tone.js filter in real-time if in Tone.js mode (throttled)
-    if (currentMode === 'tonejs' && isToneJsInitialized()) {
+    // Only update if synth and filter instances are already created
+    if (currentMode === 'tonejs' && isToneJsInitialized() && isSynthSetup()) {
       const now = Date.now();
       if (now - lastFilterUpdateTime >= FILTER_UPDATE_INTERVAL) {
         const { cutoff: cutoffValue, q: qValue } = getFilterParams();
@@ -545,14 +563,14 @@ export async function init(): Promise<void> {
   const tabTonejs = document.getElementById('tabTonejs');
   
   if (tabWav) {
-    tabWav.addEventListener('click', () => {
-      switchMode('wav');
+    tabWav.addEventListener('click', async () => {
+      await switchMode('wav');
     });
   }
   
   if (tabTonejs) {
-    tabTonejs.addEventListener('click', () => {
-      switchMode('tonejs');
+    tabTonejs.addEventListener('click', async () => {
+      await switchMode('tonejs');
     });
   }
   
@@ -584,6 +602,8 @@ export async function init(): Promise<void> {
       toneLoadingPromise = (async () => {
         try {
           Tone = await import('tone') as typeof ToneTypes;
+          // Share Tone instance with tonejs-synth module to avoid duplicate imports
+          setToneInstance(Tone);
         } catch (error) {
           console.error('Failed to load Tone.js:', error);
           throw error;

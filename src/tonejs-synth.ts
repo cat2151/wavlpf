@@ -7,6 +7,7 @@
 
 import type * as ToneTypes from 'tone';
 
+// Tone instance is shared from synth.ts to avoid duplicate imports
 let Tone: typeof ToneTypes | null = null;
 let currentSynth: ToneTypes.MonoSynth | null = null;
 let currentFilter: ToneTypes.Filter | null = null;
@@ -25,11 +26,20 @@ export interface ToneJsSynthParams {
 }
 
 /**
- * Initialize Tone.js (lazy load on first user interaction)
+ * Set the Tone.js instance (called from synth.ts after loading)
+ * This avoids duplicate imports and ensures a single Tone.js instance
+ */
+export function setToneInstance(toneInstance: typeof ToneTypes): void {
+  Tone = toneInstance;
+}
+
+/**
+ * Initialize Tone.js (starts the audio context)
+ * Requires Tone instance to be set first via setToneInstance()
  */
 export async function initToneJs(): Promise<void> {
   if (!Tone) {
-    Tone = await import('tone') as typeof ToneTypes;
+    throw new Error('Tone.js instance not set. Call setToneInstance() first.');
   }
   
   if (Tone.context.state !== 'running') {
@@ -54,50 +64,84 @@ function mapFilterType(filterType: string): 'lowpass' | 'highpass' | 'bandpass' 
 }
 
 /**
- * Create or update synth with current parameters
+ * Check if Tone.js is initialized
  */
+export function isToneJsInitialized(): boolean {
+  return Tone !== null;
+}
+
+/**
+ * Check if synth and filter instances are set up and ready
+ */
+export function isSynthSetup(): boolean {
+  return currentSynth !== null && currentFilter !== null;
+}
+
+/**
+ * Create or update synth with current parameters
+ * Only recreates instances if waveform type or filter type changes
+ */
+let lastWaveformType: 'sawtooth' | 'pulse' | null = null;
+let lastFilterType: string | null = null;
+
 export function setupToneJsSynth(params: ToneJsSynthParams): void {
   if (!Tone) {
     throw new Error('Tone.js not initialized');
   }
   
-  // Dispose old synth and filter if they exist
-  if (currentSynth) {
-    currentSynth.triggerRelease();
-    currentSynth.dispose();
+  const needsRecreate = 
+    !currentSynth || 
+    !currentFilter || 
+    lastWaveformType !== params.waveformType || 
+    lastFilterType !== params.filterType;
+  
+  if (needsRecreate) {
+    // Dispose old synth and filter if they exist
+    if (currentSynth) {
+      currentSynth.triggerRelease();
+      currentSynth.dispose();
+    }
+    if (currentFilter) {
+      currentFilter.dispose();
+    }
+    
+    // Create filter
+    currentFilter = new Tone.Filter({
+      frequency: params.cutoff,
+      type: mapFilterType(params.filterType),
+      Q: params.q,
+    });
+    
+    // Create synth with sawtooth or pulse wave
+    const oscillatorType = params.waveformType === 'sawtooth' ? 'sawtooth' : 'pulse';
+    
+    currentSynth = new Tone.MonoSynth({
+      oscillator: {
+        type: oscillatorType,
+        // Note: Tone.js pulse oscillator uses a fixed 50% duty cycle
+        // The dutyRatio parameter from params is ignored due to Tone.js API limitations
+        // For UX testing: pulse waves will sound different compared to WAV mode with custom duty ratios
+      },
+      envelope: {
+        attack: 0.001,
+        decay: 0,
+        sustain: 1,
+        release: 0.001,
+      },
+    });
+    
+    // Connect synth -> filter -> destination
+    currentSynth.connect(currentFilter);
+    currentFilter.toDestination();
+    
+    // Remember current configuration
+    lastWaveformType = params.waveformType;
+    lastFilterType = params.filterType;
+  } else {
+    // Just update filter parameters without recreating
+    currentFilter.frequency.value = params.cutoff;
+    currentFilter.Q.value = params.q;
   }
-  if (currentFilter) {
-    currentFilter.dispose();
-  }
-  
-  // Create filter
-  currentFilter = new Tone.Filter({
-    frequency: params.cutoff,
-    type: mapFilterType(params.filterType),
-    Q: params.q,
-  });
-  
-  // Create synth with sawtooth or pulse wave
-  const oscillatorType = params.waveformType === 'sawtooth' ? 'sawtooth' : 'pulse';
-  
-  currentSynth = new Tone.MonoSynth({
-    oscillator: {
-      type: oscillatorType,
-      // Note: Tone.js pulse oscillator uses a fixed 50% duty cycle
-      // The dutyRatio parameter from params is ignored due to Tone.js API limitations
-      // For UX testing: pulse waves will sound different compared to WAV mode with custom duty ratios
-    },
-    envelope: {
-      attack: 0.001,
-      decay: 0,
-      sustain: 1,
-      release: 0.001,
-    },
-  });
-  
-  // Connect synth -> filter -> destination
-  currentSynth.connect(currentFilter);
-  currentFilter.toDestination();
 }
 
 /**
@@ -142,13 +186,6 @@ export function updateToneJsFilter(cutoff: number, q: number): void {
   const rampTime = 0.05; // 50ms ramp for smooth changes
   currentFilter.frequency.rampTo(cutoff, rampTime);
   currentFilter.Q.rampTo(q, rampTime);
-}
-
-/**
- * Check if Tone.js is initialized
- */
-export function isToneJsInitialized(): boolean {
-  return Tone !== null;
 }
 
 /**
