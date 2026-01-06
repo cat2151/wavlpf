@@ -13,7 +13,10 @@ wasm-bindgen = "0.2"
 opt-level = 3
 lto = true
 
-[package.metadata.wasm-pack.profile.release]
+# 注: 以下の設定は実際に必要かどうかを検証するためにコメントアウトされています。
+# 制限されたネットワーク環境でbinaryenのダウンロードが失敗するという仮定は検証されていませんでした。
+# CIでテストして、wasm-optを無効にする必要があるか、デフォルトの動作で問題ないかを確認します。
+# [package.metadata.wasm-pack.profile.release]
 # Disable wasm-opt because the binaryen download from GitHub fails in restricted network environments.
 # The Rust compiler already applies optimizations via opt-level=3 and lto=true above.
-wasm-opt = false
+# wasm-opt = false
