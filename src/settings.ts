@@ -16,6 +16,7 @@ export interface Settings {
   decayRate: number;
   waveformType: 'sawtooth' | 'pulse';
   dutyRatio: number;
+  filterType: 'lpf' | 'hpf' | 'bpf' | 'notch' | 'apf' | 'lowshelf' | 'highshelf';
 }
 
 /**
@@ -30,12 +31,15 @@ export const defaultSettings: Settings = {
   decayRate: 1,
   waveformType: 'sawtooth',
   dutyRatio: 50,
+  filterType: 'lpf',
 };
 
 /**
  * 設定値のバリデーション
  */
 export function validateSettings(settings: Partial<Settings>): Settings {
+  const validFilterTypes = ['lpf', 'hpf', 'bpf', 'notch', 'apf', 'lowshelf', 'highshelf'];
+  
   return {
     bpm: typeof settings.bpm === 'number' && settings.bpm >= 30 && settings.bpm <= 300
       ? settings.bpm
@@ -61,6 +65,9 @@ export function validateSettings(settings: Partial<Settings>): Settings {
     dutyRatio: typeof settings.dutyRatio === 'number' && settings.dutyRatio >= 0 && settings.dutyRatio <= 100
       ? settings.dutyRatio
       : defaultSettings.dutyRatio,
+    filterType: typeof settings.filterType === 'string' && validFilterTypes.includes(settings.filterType)
+      ? settings.filterType as Settings['filterType']
+      : defaultSettings.filterType,
   };
 }
 

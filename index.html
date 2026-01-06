@@ -155,6 +155,18 @@
         </select>
       </div>
       <div class="control-group">
+        <label class="control-label" for="filterType">Filter Type:</label>
+        <select id="filterType" class="control-input">
+          <option value="lpf">LPF (Low-pass)</option>
+          <option value="hpf">HPF (High-pass)</option>
+          <option value="bpf">BPF (Band-pass)</option>
+          <option value="notch">Notch (Band-reject)</option>
+          <option value="apf">APF (All-pass)</option>
+          <option value="lowshelf">Low Shelf</option>
+          <option value="highshelf">High Shelf</option>
+        </select>
+      </div>
+      <div class="control-group">
         <label class="control-label" for="dutyRatio">Duty Ratio (%):</label>
         <textarea id="dutyRatio" class="control-input">50</textarea>
       </div>
@@ -196,7 +208,7 @@
       X-axis: Cutoff Frequency (20Hz - Max)<br>
       Y-axis: Resonance Q (0.5 - Max)<br>
       <br>
-      220Hz wave with LPF (Sawtooth or Pulse)<br>
+      220Hz wave with biquad filter (Sawtooth or Pulse)<br>
       Cutoff decays based on settings
     </div>
     <div class="status" id="status">

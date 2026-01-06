@@ -44,6 +44,7 @@ let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
 let decayRate = initialSettings.decayRate;
 let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
 let dutyRatio = initialSettings.dutyRatio;
+let filterType: 'lpf' | 'hpf' | 'bpf' | 'notch' | 'apf' | 'lowshelf' | 'highshelf' = initialSettings.filterType;
 
 /**
  * 現在の設定を取得
@@ -58,6 +59,7 @@ function getCurrentSettings(): Settings {
     decayRate,
     waveformType,
     dutyRatio,
+    filterType,
   };
 }
 
@@ -115,6 +117,7 @@ function readNumericParameter(
 function readParameters(): void {
   const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
+  const filterTypeEl = document.getElementById('filterType') as HTMLSelectElement | null;
   
   // BPM: 30-300の範囲で検証
   const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
@@ -168,6 +171,15 @@ function readParameters(): void {
     dutyRatio = dutyRatioValue;
   }
   
+  // Filter Type
+  if (filterTypeEl) {
+    const value = filterTypeEl.value;
+    const validFilterTypes = ['lpf', 'hpf', 'bpf', 'notch', 'apf', 'lowshelf', 'highshelf'];
+    if (validFilterTypes.includes(value)) {
+      filterType = value as typeof filterType;
+    }
+  }
+  
   // Save settings to localStorage
   saveSettings(getCurrentSettings());
 }
@@ -201,6 +213,7 @@ function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
     SAMPLE_RATE,
     duration,
     dutyRatio,
+    filterType,
     initialCutoff,
     q,
     decayUnit,
@@ -262,6 +275,7 @@ function updateUIFields(): void {
   const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
   const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
   const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
+  const filterTypeEl = document.getElementById('filterType') as HTMLSelectElement | null;
   
   if (bpmEl) bpmEl.value = String(bpm);
   if (beatEl) beatEl.value = String(beat);
@@ -271,6 +285,7 @@ function updateUIFields(): void {
   if (decayRateEl) decayRateEl.value = String(decayRate);
   if (waveformTypeEl) waveformTypeEl.value = waveformType;
   if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
+  if (filterTypeEl) filterTypeEl.value = filterType;
 }
 
 /**
@@ -326,7 +341,7 @@ export async function init(): Promise<void> {
     }, 150);
   };
   
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio'];
+  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'filterType'];
   inputs.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -379,6 +394,7 @@ export async function init(): Promise<void> {
       decayRate = importedSettings.decayRate;
       waveformType = importedSettings.waveformType;
       dutyRatio = importedSettings.dutyRatio;
+      filterType = importedSettings.filterType;
       
       // Update UI
       updateUIFields();
