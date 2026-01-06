@@ -1,10 +1,10 @@
 use wasm_bindgen::prelude::*;
 use std::f64::consts::PI;
 
-/// Biquad LPF filter implementation
+/// Biquad filter implementation supporting multiple filter types
 /// Based on RBJ Audio EQ Cookbook formulas
 #[wasm_bindgen]
-pub struct BiquadLPF {
+pub struct BiquadFilter {
     a0: f64,
     a1: f64,
     a2: f64,
@@ -18,10 +18,10 @@ pub struct BiquadLPF {
 }
 
 #[wasm_bindgen]
-impl BiquadLPF {
+impl BiquadFilter {
     #[wasm_bindgen(constructor)]
-    pub fn new(sample_rate: f64) -> BiquadLPF {
-        BiquadLPF {
+    pub fn new(sample_rate: f64) -> BiquadFilter {
+        BiquadFilter {
             a0: 0.0,
             a1: 0.0,
             a2: 0.0,
@@ -35,8 +35,9 @@ impl BiquadLPF {
         }
     }
 
-    /// Calculate filter coefficients
-    pub fn set_coefficients(&mut self, cutoff_freq: f64, q: f64) {
+    /// Calculate filter coefficients based on filter type
+    /// filter_type: "lpf", "hpf", "bpf", "notch", "apf", "lowshelf", "highshelf"
+    pub fn set_coefficients(&mut self, filter_type: &str, cutoff_freq: f64, q: f64) {
         // Clamp cutoff frequency to prevent instability
         let clamped_cutoff = cutoff_freq.max(1.0).min(self.sample_rate / 2.5);
         
@@ -45,12 +46,93 @@ impl BiquadLPF {
         let cos_omega = omega.cos();
         let alpha = sin_omega / (2.0 * q);
         
-        let b0 = (1.0 - cos_omega) / 2.0;
-        let b1 = 1.0 - cos_omega;
-        let b2 = (1.0 - cos_omega) / 2.0;
-        let a0 = 1.0 + alpha;
-        let a1 = -2.0 * cos_omega;
-        let a2 = 1.0 - alpha;
+        // Calculate coefficients based on filter type (RBJ Audio EQ Cookbook)
+        let (b0, b1, b2, a0, a1, a2) = match filter_type {
+            "lpf" => {
+                // Low-pass filter
+                let b0 = (1.0 - cos_omega) / 2.0;
+                let b1 = 1.0 - cos_omega;
+                let b2 = (1.0 - cos_omega) / 2.0;
+                let a0 = 1.0 + alpha;
+                let a1 = -2.0 * cos_omega;
+                let a2 = 1.0 - alpha;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            "hpf" => {
+                // High-pass filter
+                let b0 = (1.0 + cos_omega) / 2.0;
+                let b1 = -(1.0 + cos_omega);
+                let b2 = (1.0 + cos_omega) / 2.0;
+                let a0 = 1.0 + alpha;
+                let a1 = -2.0 * cos_omega;
+                let a2 = 1.0 - alpha;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            "bpf" => {
+                // Band-pass filter (constant skirt gain, peak gain = Q)
+                let b0 = alpha;
+                let b1 = 0.0;
+                let b2 = -alpha;
+                let a0 = 1.0 + alpha;
+                let a1 = -2.0 * cos_omega;
+                let a2 = 1.0 - alpha;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            "notch" => {
+                // Notch filter (band-reject)
+                let b0 = 1.0;
+                let b1 = -2.0 * cos_omega;
+                let b2 = 1.0;
+                let a0 = 1.0 + alpha;
+                let a1 = -2.0 * cos_omega;
+                let a2 = 1.0 - alpha;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            "apf" => {
+                // All-pass filter
+                let b0 = 1.0 - alpha;
+                let b1 = -2.0 * cos_omega;
+                let b2 = 1.0 + alpha;
+                let a0 = 1.0 + alpha;
+                let a1 = -2.0 * cos_omega;
+                let a2 = 1.0 - alpha;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            "lowshelf" => {
+                // Low-shelf filter (using Q as shelf slope, defaulting to A=1.0 for 0dB gain)
+                let a: f64 = 1.0; // Gain factor (A = 10^(dBGain/40)), using 0dB for now
+                let beta = a.sqrt() * (2.0 * alpha).sqrt();
+                let b0 = a * ((a + 1.0) - (a - 1.0) * cos_omega + beta);
+                let b1 = 2.0 * a * ((a - 1.0) - (a + 1.0) * cos_omega);
+                let b2 = a * ((a + 1.0) - (a - 1.0) * cos_omega - beta);
+                let a0 = (a + 1.0) + (a - 1.0) * cos_omega + beta;
+                let a1 = -2.0 * ((a - 1.0) + (a + 1.0) * cos_omega);
+                let a2 = (a + 1.0) + (a - 1.0) * cos_omega - beta;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            "highshelf" => {
+                // High-shelf filter (using Q as shelf slope, defaulting to A=1.0 for 0dB gain)
+                let a: f64 = 1.0; // Gain factor (A = 10^(dBGain/40)), using 0dB for now
+                let beta = a.sqrt() * (2.0 * alpha).sqrt();
+                let b0 = a * ((a + 1.0) + (a - 1.0) * cos_omega + beta);
+                let b1 = -2.0 * a * ((a - 1.0) + (a + 1.0) * cos_omega);
+                let b2 = a * ((a + 1.0) + (a - 1.0) * cos_omega - beta);
+                let a0 = (a + 1.0) - (a - 1.0) * cos_omega + beta;
+                let a1 = 2.0 * ((a - 1.0) - (a + 1.0) * cos_omega);
+                let a2 = (a + 1.0) - (a - 1.0) * cos_omega - beta;
+                (b0, b1, b2, a0, a1, a2)
+            },
+            _ => {
+                // Default to LPF for unknown filter types
+                let b0 = (1.0 - cos_omega) / 2.0;
+                let b1 = 1.0 - cos_omega;
+                let b2 = (1.0 - cos_omega) / 2.0;
+                let a0 = 1.0 + alpha;
+                let a1 = -2.0 * cos_omega;
+                let a2 = 1.0 - alpha;
+                (b0, b1, b2, a0, a1, a2)
+            }
+        };
         
         // Normalize coefficients
         self.a0 = b0 / a0;
@@ -117,7 +199,7 @@ pub fn generate_pulse(frequency: f64, sample_rate: f64, duration: f64, duty_rati
     samples
 }
 
-/// Render audio with LPF and cutoff decay
+/// Render audio with biquad filter and cutoff decay
 /// Returns the filtered audio samples
 #[wasm_bindgen]
 pub fn render_audio(
@@ -126,6 +208,7 @@ pub fn render_audio(
     sample_rate: f64,
     duration: f64,
     duty_ratio: f64,
+    filter_type: &str,
     initial_cutoff: f64,
     q: f64,
     decay_unit: &str,
@@ -140,7 +223,7 @@ pub fn render_audio(
     
     let num_samples = samples.len();
     let mut output = Vec::with_capacity(num_samples);
-    let mut filter = BiquadLPF::new(sample_rate);
+    let mut filter = BiquadFilter::new(sample_rate);
     
     // Update filter coefficients approximately every 1ms
     let update_interval_ms = 1.0;
@@ -166,7 +249,7 @@ pub fn render_audio(
                 current_cutoff = (initial_cutoff * ratio).max(1.0);
             }
             
-            filter.set_coefficients(current_cutoff, q);
+            filter.set_coefficients(filter_type, current_cutoff, q);
         }
         
         output.push(filter.process_sample(sample));
@@ -181,7 +264,7 @@ mod tests {
 
     #[test]
     fn test_biquad_lpf_creation() {
-        let filter = BiquadLPF::new(44100.0);
+        let filter = BiquadFilter::new(44100.0);
         assert_eq!(filter.sample_rate, 44100.0);
     }
 
@@ -210,8 +293,8 @@ mod tests {
         let sample_rate = 44100.0;
         let cutoff = 500.0;
         let q = 1.0;
-        let mut filter = BiquadLPF::new(sample_rate);
-        filter.set_coefficients(cutoff, q);
+        let mut filter = BiquadFilter::new(sample_rate);
+        filter.set_coefficients("lpf", cutoff, q);
         
         // Generate high-frequency oscillation (5kHz, well above cutoff)
         let frequency = 5000.0;
@@ -240,6 +323,7 @@ mod tests {
             44100.0,
             0.1,
             50.0,
+            "lpf",
             1000.0,
             1.0,
             "Hz",
@@ -263,6 +347,7 @@ mod tests {
             44100.0,
             0.1,
             25.0,
+            "lpf",
             2000.0,
             2.0,
             "Cent",
@@ -289,5 +374,249 @@ mod tests {
         assert!(samples_negative.len() > 0);
         assert!(samples_over.len() > 0);
         assert!(samples_50.len() > 0);
+    }
+
+    #[test]
+    fn test_filter_types_hpf() {
+        let result = render_audio(
+            "sawtooth",
+            220.0,
+            44100.0,
+            0.1,
+            50.0,
+            "hpf",
+            1000.0,
+            1.0,
+            "Hz",
+            10.0,
+        );
+        
+        assert_eq!(result.len(), 4410);
+        for sample in result.iter() {
+            assert!(sample.is_finite());
+        }
+    }
+
+    #[test]
+    fn test_hpf_attenuates_low_frequencies() {
+        let sample_rate = 44100.0;
+        let cutoff = 500.0;
+        let q = 1.0;
+        let mut filter = BiquadFilter::new(sample_rate);
+        filter.set_coefficients("hpf", cutoff, q);
+        
+        // Generate low-frequency oscillation (100Hz, well below cutoff)
+        let frequency = 100.0;
+        let num_samples = 1000;
+        let mut sum_input_squared = 0.0;
+        let mut sum_output_squared = 0.0;
+        
+        for i in 0..num_samples {
+            let t = i as f64 / sample_rate;
+            let input = (2.0 * PI * frequency * t).sin();
+            let output = filter.process_sample(input);
+            
+            sum_input_squared += input * input;
+            sum_output_squared += output * output;
+        }
+        
+        // Output power should be significantly less than input power
+        assert!(sum_output_squared < sum_input_squared * 0.1);
+    }
+
+    #[test]
+    fn test_filter_types_bpf() {
+        let result = render_audio(
+            "sawtooth",
+            220.0,
+            44100.0,
+            0.1,
+            50.0,
+            "bpf",
+            1000.0,
+            2.0,
+            "Hz",
+            10.0,
+        );
+        
+        assert_eq!(result.len(), 4410);
+        for sample in result.iter() {
+            assert!(sample.is_finite());
+        }
+    }
+
+    #[test]
+    fn test_bpf_attenuates_outside_band() {
+        let sample_rate = 44100.0;
+        let cutoff = 1000.0;
+        let q = 2.0;
+        let mut filter = BiquadFilter::new(sample_rate);
+        filter.set_coefficients("bpf", cutoff, q);
+        
+        // Test low frequency (well below cutoff)
+        let low_freq = 200.0;
+        let mut sum_input_squared_low = 0.0;
+        let mut sum_output_squared_low = 0.0;
+        
+        filter.reset();
+        for i in 0..1000 {
+            let t = i as f64 / sample_rate;
+            let input = (2.0 * PI * low_freq * t).sin();
+            let output = filter.process_sample(input);
+            sum_input_squared_low += input * input;
+            sum_output_squared_low += output * output;
+        }
+        
+        // Test high frequency (well above cutoff)
+        let high_freq = 5000.0;
+        let mut sum_input_squared_high = 0.0;
+        let mut sum_output_squared_high = 0.0;
+        
+        filter.reset();
+        for i in 0..1000 {
+            let t = i as f64 / sample_rate;
+            let input = (2.0 * PI * high_freq * t).sin();
+            let output = filter.process_sample(input);
+            sum_input_squared_high += input * input;
+            sum_output_squared_high += output * output;
+        }
+        
+        // Both low and high frequencies should be attenuated
+        assert!(sum_output_squared_low < sum_input_squared_low * 0.1);
+        assert!(sum_output_squared_high < sum_input_squared_high * 0.1);
+    }
+
+    #[test]
+    fn test_filter_types_notch() {
+        let result = render_audio(
+            "sawtooth",
+            220.0,
+            44100.0,
+            0.1,
+            50.0,
+            "notch",
+            1000.0,
+            4.0,
+            "Hz",
+            10.0,
+        );
+        
+        assert_eq!(result.len(), 4410);
+        for sample in result.iter() {
+            assert!(sample.is_finite());
+        }
+    }
+
+    #[test]
+    fn test_notch_attenuates_cutoff_frequency() {
+        let sample_rate = 44100.0;
+        let cutoff = 1000.0;
+        let q = 4.0;
+        let mut filter = BiquadFilter::new(sample_rate);
+        filter.set_coefficients("notch", cutoff, q);
+        
+        // Test at cutoff frequency - should be attenuated
+        let mut sum_input_squared = 0.0;
+        let mut sum_output_squared = 0.0;
+        
+        for i in 0..1000 {
+            let t = i as f64 / sample_rate;
+            let input = (2.0 * PI * cutoff * t).sin();
+            let output = filter.process_sample(input);
+            sum_input_squared += input * input;
+            sum_output_squared += output * output;
+        }
+        
+        // Cutoff frequency should be significantly attenuated
+        assert!(sum_output_squared < sum_input_squared * 0.1);
+    }
+
+    #[test]
+    fn test_filter_types_apf() {
+        let result = render_audio(
+            "sawtooth",
+            220.0,
+            44100.0,
+            0.1,
+            50.0,
+            "apf",
+            1000.0,
+            1.0,
+            "Hz",
+            10.0,
+        );
+        
+        assert_eq!(result.len(), 4410);
+        for sample in result.iter() {
+            assert!(sample.is_finite());
+        }
+    }
+
+    #[test]
+    fn test_apf_preserves_magnitude() {
+        let sample_rate = 44100.0;
+        let cutoff = 1000.0;
+        let q = 1.0;
+        let mut filter = BiquadFilter::new(sample_rate);
+        filter.set_coefficients("apf", cutoff, q);
+        
+        // Test that APF doesn't change magnitude significantly
+        let frequency = 1000.0;
+        let mut sum_input_squared = 0.0;
+        let mut sum_output_squared = 0.0;
+        
+        for i in 0..1000 {
+            let t = i as f64 / sample_rate;
+            let input = (2.0 * PI * frequency * t).sin();
+            let output = filter.process_sample(input);
+            sum_input_squared += input * input;
+            sum_output_squared += output * output;
+        }
+        
+        // Output power should be similar to input power (within 20%)
+        let ratio = sum_output_squared / sum_input_squared;
+        assert!(ratio > 0.8 && ratio < 1.2);
+    }
+
+    #[test]
+    fn test_filter_types_lowshelf() {
+        let result = render_audio(
+            "sawtooth",
+            220.0,
+            44100.0,
+            0.1,
+            50.0,
+            "lowshelf",
+            1000.0,
+            1.0,
+            "Hz",
+            10.0,
+        );
+        
+        assert_eq!(result.len(), 4410);
+        for sample in result.iter() {
+            assert!(sample.is_finite());
+        }
+    }
+
+    #[test]
+    fn test_filter_types_highshelf() {
+        let result = render_audio(
+            "sawtooth",
+            220.0,
+            44100.0,
+            0.1,
+            50.0,
+            "highshelf",
+            1000.0,
+            1.0,
+            "Hz",
+            10.0,
+        );
+        
+        assert_eq!(result.len(), 4410);
+        for sample in result.iter() {
+            assert!(sample.is_finite());
+        }
     }
 }

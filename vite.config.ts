@@ -9,7 +9,8 @@ export default defineConfig({
     port: 8080,
     open: true,
     fs: {
-      // Allow serving files from wasm-audio/pkg directory
+      // Allow serving files from wasm-audio/pkg directory only
+      // This is needed for WASM module imports during development
       allow: ['./wasm-audio/pkg'],
     },
   },
