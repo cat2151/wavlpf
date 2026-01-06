@@ -37,6 +37,35 @@
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.5em;
+      justify-content: center;
+    }
+    
+    .tab {
+      font-family: 'Courier New', monospace;
+      font-size: 1em;
+      padding: 0.7em 1.5em;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .tab:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .tab.active {
+      background: rgba(255,255,255,0.4);
+      border-color: rgba(255,255,255,0.6);
+      font-weight: bold;
+    }
+    
     .instructions {
       font-size: 1.2em;
       margin-bottom: 2em;
@@ -140,6 +169,10 @@
 <body>
   <div class="container">
     <h1>WAVLPF Synthesizer</h1>
+    <div class="tabs">
+      <button id="tabWav" class="tab active">WAV Generation Mode</button>
+      <button id="tabTonejs" class="tab">Tone.js Playback Mode</button>
+    </div>
     <div class="instructions">
       Click anywhere to start<br>
       Move your mouse to control the filter

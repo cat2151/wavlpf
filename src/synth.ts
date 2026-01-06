@@ -15,6 +15,14 @@ import {
   resetPerformanceStats,
   type PerformanceStats,
 } from './performance-stats';
+import {
+  initToneJs,
+  setupToneJsSynth,
+  playToneJsNote,
+  updateToneJsFilter,
+  disposeToneJs,
+  isToneJsInitialized,
+} from './tonejs-synth';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -26,6 +34,10 @@ let isToneLoading = false;
 
 // Promise to track the loading state for concurrent clicks
 let toneLoadingPromise: Promise<void> | null = null;
+
+// Mode tracking: 'wav' or 'tonejs'
+type PlaybackMode = 'wav' | 'tonejs';
+let currentMode: PlaybackMode = 'wav';
 
 const SAMPLE_RATE = 44100;
 const FREQUENCY = 220; // 220Hz (A3)
@@ -222,9 +234,9 @@ function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
 }
 
 /**
- * Generate and play audio
+ * Generate and play audio (WAV mode)
  */
-async function playAudio(): Promise<void> {
+async function playAudioWav(): Promise<void> {
   // Ensure Tone is loaded
   if (!Tone) {
     console.warn('Tone.js not loaded yet');
@@ -261,6 +273,97 @@ async function playAudio(): Promise<void> {
   setTimeout(() => {
     URL.revokeObjectURL(wavUrl);
   }, getDuration() * 1000);
+}
+
+/**
+ * Play audio using Tone.js direct synthesis (Tone.js mode)
+ */
+async function playAudioTonejs(): Promise<void> {
+  if (!isToneJsInitialized()) {
+    console.warn('Tone.js synth not initialized yet');
+    return;
+  }
+  
+  const { cutoff, q } = getFilterParams();
+  
+  // Setup synth with current parameters
+  setupToneJsSynth({
+    cutoff,
+    q,
+    waveformType,
+    dutyRatio,
+    filterType,
+  });
+  
+  // Play the note
+  const duration = getDuration();
+  playToneJsNote(FREQUENCY, duration);
+  
+  // Clear generation time display for Tone.js mode
+  const genTimeEl = document.getElementById('generationTime');
+  if (genTimeEl) {
+    genTimeEl.textContent = 'Generation time: N/A (Tone.js direct playback)';
+  }
+}
+
+/**
+ * Play audio based on current mode
+ */
+async function playAudio(): Promise<void> {
+  if (currentMode === 'wav') {
+    await playAudioWav();
+  } else {
+    await playAudioTonejs();
+  }
+}
+
+/**
+ * Switch between WAV and Tone.js modes
+ */
+function switchMode(mode: PlaybackMode): void {
+  if (mode === currentMode) {
+    return; // Already in this mode
+  }
+  
+  currentMode = mode;
+  
+  // Update tab UI
+  const tabWav = document.getElementById('tabWav');
+  const tabTonejs = document.getElementById('tabTonejs');
+  
+  if (tabWav && tabTonejs) {
+    if (mode === 'wav') {
+      tabWav.classList.add('active');
+      tabTonejs.classList.remove('active');
+    } else {
+      tabWav.classList.remove('active');
+      tabTonejs.classList.add('active');
+    }
+  }
+  
+  // Clean up resources from previous mode
+  if (mode === 'wav') {
+    disposeToneJs();
+  } else {
+    // Stop WAV player if running
+    if (currentPlayer) {
+      try {
+        currentPlayer.stop();
+        currentPlayer.dispose();
+      } catch (error) {
+        console.warn('Failed to stop player during mode switch:', error);
+      }
+      currentPlayer = null;
+    }
+  }
+  
+  // Update status display
+  const statusEl = document.getElementById('status');
+  if (statusEl) {
+    const duration = getDuration();
+    const modeText = mode === 'wav' ? 'WAV Generation' : 'Tone.js Direct';
+    statusEl.textContent = `Mode: ${modeText} | Audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+  }
 }
 
 /**
@@ -318,6 +421,12 @@ export async function init(): Promise<void> {
     const display = document.getElementById('params');
     if (display) {
       display.textContent = `Cutoff: ${cutoff}Hz | Q: ${q}`;
+    }
+    
+    // Update Tone.js filter in real-time if in Tone.js mode
+    if (currentMode === 'tonejs' && isToneJsInitialized()) {
+      const { cutoff: cutoffValue, q: qValue } = getFilterParams();
+      updateToneJsFilter(cutoffValue, qValue);
     }
   });
   
@@ -424,6 +533,22 @@ export async function init(): Promise<void> {
     });
   }
   
+  // Tab switching handlers
+  const tabWav = document.getElementById('tabWav');
+  const tabTonejs = document.getElementById('tabTonejs');
+  
+  if (tabWav) {
+    tabWav.addEventListener('click', () => {
+      switchMode('wav');
+    });
+  }
+  
+  if (tabTonejs) {
+    tabTonejs.addEventListener('click', () => {
+      switchMode('tonejs');
+    });
+  }
+  
   // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {
     if (Tone && Tone.context.state === 'running') {
@@ -479,6 +604,16 @@ export async function init(): Promise<void> {
       await Tone.start();
     }
     
+    // Initialize Tone.js synth module if not already initialized
+    if (!isToneJsInitialized()) {
+      try {
+        await initToneJs();
+      } catch (error) {
+        console.error('Failed to initialize Tone.js synth:', error);
+        return;
+      }
+    }
+    
     // Start playback loop only once
     if (!isPlaybackLoopStarted) {
       isPlaybackLoopStarted = true;
@@ -499,7 +634,8 @@ function updateStatusDisplay(): void {
   const statusEl = document.getElementById('status');
   if (statusEl) {
     const duration = getDuration();
-    statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+    const modeText = currentMode === 'wav' ? 'WAV Generation' : 'Tone.js Direct';
+    statusEl.textContent = `Mode: ${modeText} | Audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
   }
 }
 
