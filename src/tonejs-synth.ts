@@ -17,7 +17,9 @@ export interface ToneJsSynthParams {
   q: number;
   waveformType: 'sawtooth' | 'pulse';
   // Note: dutyRatio is included for API compatibility but not currently used
-  // Tone.js pulse oscillator doesn't support custom duty ratios in the same way
+  // Tone.js pulse oscillator doesn't support custom duty ratios in the same way as the WASM implementation
+  // This means pulse waves in Tone.js mode will have a fixed 50% duty cycle,
+  // which may result in different sound characteristics compared to WAV mode during UX testing
   dutyRatio: number;
   filterType: 'lpf' | 'hpf' | 'bpf' | 'notch' | 'apf' | 'lowshelf' | 'highshelf';
 }
@@ -81,8 +83,9 @@ export function setupToneJsSynth(params: ToneJsSynthParams): void {
   currentSynth = new Tone.MonoSynth({
     oscillator: {
       type: oscillatorType,
-      // Note: Tone.js doesn't support duty ratio for pulse waves directly
-      // This is a limitation compared to the WASM implementation
+      // Note: Tone.js pulse oscillator uses a fixed 50% duty cycle
+      // The dutyRatio parameter from params is ignored due to Tone.js API limitations
+      // For UX testing: pulse waves will sound different compared to WAV mode with custom duty ratios
     },
     envelope: {
       attack: 0.001,
