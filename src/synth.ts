@@ -409,12 +409,15 @@ export async function init(): Promise<void> {
     throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
   
-  // マウス位置を追跡
+  // マウス位置を追跡（Tone.jsフィルタ更新のスロットリング付き）
+  let lastFilterUpdateTime = 0;
+  const FILTER_UPDATE_INTERVAL = 50; // 50ms = 20Hz更新レート
+  
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX / window.innerWidth;
     mouseY = e.clientY / window.innerHeight;
     
-    // 表示を更新
+    // 表示を更新（常に更新）
     const cutoff = Math.round(20 + mouseX * (cutoffMax - 20));
     const q = (0.5 + (1 - mouseY) * (qMax - 0.5)).toFixed(2);
     
@@ -423,10 +426,14 @@ export async function init(): Promise<void> {
       display.textContent = `Cutoff: ${cutoff}Hz | Q: ${q}`;
     }
     
-    // Update Tone.js filter in real-time if in Tone.js mode
+    // Update Tone.js filter in real-time if in Tone.js mode (throttled)
     if (currentMode === 'tonejs' && isToneJsInitialized()) {
-      const { cutoff: cutoffValue, q: qValue } = getFilterParams();
-      updateToneJsFilter(cutoffValue, qValue);
+      const now = Date.now();
+      if (now - lastFilterUpdateTime >= FILTER_UPDATE_INTERVAL) {
+        const { cutoff: cutoffValue, q: qValue } = getFilterParams();
+        updateToneJsFilter(cutoffValue, qValue);
+        lastFilterUpdateTime = now;
+      }
     }
   });
   

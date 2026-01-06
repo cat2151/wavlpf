@@ -10,11 +10,14 @@ import type * as ToneTypes from 'tone';
 let Tone: typeof ToneTypes | null = null;
 let currentSynth: ToneTypes.MonoSynth | null = null;
 let currentFilter: ToneTypes.Filter | null = null;
+let releaseTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 export interface ToneJsSynthParams {
   cutoff: number;
   q: number;
   waveformType: 'sawtooth' | 'pulse';
+  // Note: dutyRatio is included for API compatibility but not currently used
+  // Tone.js pulse oscillator doesn't support custom duty ratios in the same way
   dutyRatio: number;
   filterType: 'lpf' | 'hpf' | 'bpf' | 'notch' | 'apf' | 'lowshelf' | 'highshelf';
 }
@@ -103,6 +106,12 @@ export function playToneJsNote(frequency: number = 220, duration: number = 0.25)
     return;
   }
   
+  // Clear any pending release timeout
+  if (releaseTimeoutId !== null) {
+    clearTimeout(releaseTimeoutId);
+    releaseTimeoutId = null;
+  }
+  
   // Stop any currently playing note
   currentSynth.triggerRelease();
   
@@ -110,10 +119,11 @@ export function playToneJsNote(frequency: number = 220, duration: number = 0.25)
   currentSynth.triggerAttack(frequency);
   
   // Schedule release after duration
-  setTimeout(() => {
+  releaseTimeoutId = setTimeout(() => {
     if (currentSynth) {
       currentSynth.triggerRelease();
     }
+    releaseTimeoutId = null;
   }, duration * 1000);
 }
 
@@ -142,6 +152,12 @@ export function isToneJsInitialized(): boolean {
  * Dispose all Tone.js resources
  */
 export function disposeToneJs(): void {
+  // Clear any pending release timeout
+  if (releaseTimeoutId !== null) {
+    clearTimeout(releaseTimeoutId);
+    releaseTimeoutId = null;
+  }
+  
   if (currentSynth) {
     currentSynth.triggerRelease();
     currentSynth.dispose();
