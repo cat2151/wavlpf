@@ -27,6 +27,13 @@ let isToneLoading = false;
 // Promise to track the loading state for concurrent clicks
 let toneLoadingPromise: Promise<void> | null = null;
 
+// Mode tracking: 'wav' (default) or 'seq' (sequencer)
+type PlaybackMode = 'wav' | 'seq';
+let currentMode: PlaybackMode = 'wav';
+
+// Global storage for the most recently generated WAV
+let lastGeneratedWavUrl: string | null = null;
+
 const SAMPLE_RATE = 44100;
 const FREQUENCY = 220; // 220Hz (A3)
 
@@ -71,6 +78,9 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 // Track whether playback loop has started
 let isPlaybackLoopStarted = false;
+
+// Store reference to scheduleNextPlay function for mode switching
+let scheduleNextPlayFn: (() => void) | null = null;
 
 // パフォーマンス統計トラッキング
 const performanceStats: PerformanceStats = createPerformanceStats(10);
@@ -222,9 +232,9 @@ function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
 }
 
 /**
- * Generate and play audio
+ * Generate and play audio (WAV mode)
  */
-async function playAudio(): Promise<void> {
+async function playAudioWav(): Promise<void> {
   // Ensure Tone is loaded
   if (!Tone) {
     console.warn('Tone.js not loaded yet');
@@ -237,6 +247,13 @@ async function playAudio(): Promise<void> {
   // Generate WAV
   const wavData = generateWav(samples, SAMPLE_RATE);
   const wavUrl = createWavBlobUrl(wavData);
+  
+  // Store the generated WAV URL for seq mode
+  // Revoke the previous URL to prevent memory leaks
+  if (lastGeneratedWavUrl) {
+    URL.revokeObjectURL(lastGeneratedWavUrl);
+  }
+  lastGeneratedWavUrl = wavUrl;
   
   // Stop previous player if exists
   if (currentPlayer) {
@@ -256,11 +273,93 @@ async function playAudio(): Promise<void> {
   
   // Update generation time display
   updateGenerationTimeDisplay(generationTimeMs);
+}
+
+/**
+ * Play audio using stored WAV (Seq mode)
+ */
+async function playAudioSeq(): Promise<void> {
+  // Ensure Tone is loaded
+  if (!Tone) {
+    console.warn('Tone.js not loaded yet');
+    return;
+  }
   
-  // Clean up URL after playback (match duration)
-  setTimeout(() => {
-    URL.revokeObjectURL(wavUrl);
-  }, getDuration() * 1000);
+  // Check if we have a stored WAV
+  if (!lastGeneratedWavUrl) {
+    console.warn('No WAV stored yet. Generate audio first.');
+    return;
+  }
+  
+  // Stop previous player if exists
+  if (currentPlayer) {
+    try {
+      currentPlayer.stop();
+      currentPlayer.dispose();
+    } catch (error) {
+      console.warn('Failed to stop or dispose previous player:', error);
+    }
+  }
+  
+  // Create and play new player with stored WAV
+  currentPlayer = new Tone.Player(lastGeneratedWavUrl).toDestination();
+  await Tone.loaded();
+  currentPlayer.start();
+  
+  // Clear generation time display for seq mode
+  const genTimeEl = document.getElementById('generationTime');
+  if (genTimeEl) {
+    genTimeEl.textContent = 'Generation time: N/A (Seq mode - playing stored WAV)';
+  }
+}
+
+/**
+ * Play audio based on current mode
+ */
+async function playAudio(): Promise<void> {
+  if (currentMode === 'wav') {
+    await playAudioWav();
+  } else {
+    await playAudioSeq();
+  }
+}
+
+/**
+ * Switch between WAV and Seq modes
+ */
+async function switchMode(mode: PlaybackMode): Promise<void> {
+  if (mode === currentMode) {
+    return; // Already in this mode
+  }
+  
+  currentMode = mode;
+  
+  // Update tab UI and ARIA attributes
+  const tabWav = document.getElementById('tabWav');
+  const tabSeq = document.getElementById('tabSeq');
+  
+  if (tabWav && tabSeq) {
+    if (mode === 'wav') {
+      tabWav.classList.add('active');
+      tabSeq.classList.remove('active');
+      tabWav.setAttribute('aria-selected', 'true');
+      tabSeq.setAttribute('aria-selected', 'false');
+    } else {
+      tabWav.classList.remove('active');
+      tabSeq.classList.add('active');
+      tabWav.setAttribute('aria-selected', 'false');
+      tabSeq.setAttribute('aria-selected', 'true');
+    }
+  }
+  
+  // Reschedule playback with appropriate interval
+  if (isPlaybackLoopStarted && playbackTimeoutId !== null && scheduleNextPlayFn) {
+    clearTimeout(playbackTimeoutId);
+    scheduleNextPlayFn();
+  }
+  
+  // Update status display
+  updateStatusDisplay();
 }
 
 /**
@@ -424,6 +523,22 @@ export async function init(): Promise<void> {
     });
   }
   
+  // Tab switching handlers
+  const tabWav = document.getElementById('tabWav');
+  const tabSeq = document.getElementById('tabSeq');
+  
+  if (tabWav) {
+    tabWav.addEventListener('click', async () => {
+      await switchMode('wav');
+    });
+  }
+  
+  if (tabSeq) {
+    tabSeq.addEventListener('click', async () => {
+      await switchMode('seq');
+    });
+  }
+  
   // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {
     if (Tone && Tone.context.state === 'running') {
@@ -431,9 +546,13 @@ export async function init(): Promise<void> {
         console.error('Error while playing audio:', error);
       });
     }
-    const duration = getDuration();
-    playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
+    // Use 1 second interval for seq mode, otherwise use calculated duration
+    const interval = currentMode === 'seq' ? 1000 : getDuration() * 1000;
+    playbackTimeoutId = setTimeout(scheduleNextPlay, interval);
   }
+  
+  // Store reference for mode switching
+  scheduleNextPlayFn = scheduleNextPlay;
   
   // Click handler for starting audio
   const handleClick = async (event: Event) => {
@@ -498,8 +617,12 @@ export async function init(): Promise<void> {
 function updateStatusDisplay(): void {
   const statusEl = document.getElementById('status');
   if (statusEl) {
-    const duration = getDuration();
-    statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+    if (currentMode === 'wav') {
+      const duration = getDuration();
+      statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
+    } else {
+      statusEl.textContent = 'Seq Mode: Playing stored WAV every 1 second';
+    }
   }
 }
 
@@ -549,5 +672,11 @@ export function dispose(): void {
       console.warn('Failed to dispose player during cleanup:', error);
     }
     currentPlayer = null;
+  }
+  
+  // Clean up stored WAV URL
+  if (lastGeneratedWavUrl) {
+    URL.revokeObjectURL(lastGeneratedWavUrl);
+    lastGeneratedWavUrl = null;
   }
 }
