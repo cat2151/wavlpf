@@ -30,6 +30,9 @@ export interface ToneJsSynthParams {
  * This avoids duplicate imports and ensures a single Tone.js instance
  */
 export function setToneInstance(toneInstance: typeof ToneTypes): void {
+  if (!toneInstance) {
+    throw new Error('Invalid Tone.js instance: cannot be null or undefined');
+  }
   Tone = toneInstance;
 }
 
@@ -82,7 +85,7 @@ export function isSynthSetup(): boolean {
  * Only recreates instances if waveform type or filter type changes
  */
 let lastWaveformType: 'sawtooth' | 'pulse' | null = null;
-let lastFilterType: string | null = null;
+let lastFilterType: ToneJsSynthParams['filterType'] | null = null;
 
 export function setupToneJsSynth(params: ToneJsSynthParams): void {
   if (!Tone) {
@@ -137,7 +140,7 @@ export function setupToneJsSynth(params: ToneJsSynthParams): void {
     // Remember current configuration
     lastWaveformType = params.waveformType;
     lastFilterType = params.filterType;
-  } else {
+  } else if (currentFilter) {
     // Just update filter parameters without recreating
     currentFilter.frequency.value = params.cutoff;
     currentFilter.Q.value = params.q;
@@ -207,4 +210,8 @@ export function disposeToneJs(): void {
     currentFilter.dispose();
     currentFilter = null;
   }
+  
+  // Reset cached state to prevent stale configuration
+  lastWaveformType = null;
+  lastFilterType = null;
 }
