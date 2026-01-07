@@ -288,6 +288,13 @@ async function playAudioSeq(): Promise<void> {
   // Check if we have a stored WAV
   if (!lastGeneratedWavUrl) {
     console.warn('No WAV stored yet. Generate audio first.');
+    
+    // Provide user-visible feedback so it's clear why Seq mode did not play audio
+    const genTimeEl = document.getElementById('generationTime');
+    if (genTimeEl) {
+      genTimeEl.textContent =
+        'WAVが生成されていません。まずWAV Generation Modeでオーディオを生成してください。';
+    }
     return;
   }
   
@@ -325,7 +332,14 @@ async function playAudio(): Promise<void> {
 }
 
 /**
- * Switch between WAV and Seq modes
+ * WAVモードとSeqモード間を切り替える
+ * @param mode - 切り替え先のモード ('wav' または 'seq')
+ * @returns Promise<void>
+ * 
+ * 動作:
+ * - タブのUI状態（active class、ARIA属性）を更新
+ * - 再生中の場合は適切な間隔で再生スケジュールを再設定
+ * - ステータス表示を更新
  */
 async function switchMode(mode: PlaybackMode): Promise<void> {
   if (mode === currentMode) {
@@ -342,20 +356,25 @@ async function switchMode(mode: PlaybackMode): Promise<void> {
     if (mode === 'wav') {
       tabWav.classList.add('active');
       tabSeq.classList.remove('active');
-      tabWav.setAttribute('aria-selected', 'true');
-      tabSeq.setAttribute('aria-selected', 'false');
+      tabWav.setAttribute('aria-pressed', 'true');
+      tabSeq.setAttribute('aria-pressed', 'false');
     } else {
       tabWav.classList.remove('active');
       tabSeq.classList.add('active');
-      tabWav.setAttribute('aria-selected', 'false');
-      tabSeq.setAttribute('aria-selected', 'true');
+      tabWav.setAttribute('aria-pressed', 'false');
+      tabSeq.setAttribute('aria-pressed', 'true');
     }
   }
   
   // Reschedule playback with appropriate interval
-  if (isPlaybackLoopStarted && playbackTimeoutId !== null && scheduleNextPlayFn) {
-    clearTimeout(playbackTimeoutId);
-    scheduleNextPlayFn();
+  if (isPlaybackLoopStarted) {
+    if (playbackTimeoutId !== null && scheduleNextPlayFn) {
+      clearTimeout(playbackTimeoutId);
+      scheduleNextPlayFn();
+    } else {
+      // Log warning if playback loop is started but scheduling function is unavailable
+      console.warn('Playback loop is started but scheduling function is not available');
+    }
   }
   
   // Update status display

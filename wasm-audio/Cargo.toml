@@ -14,7 +14,16 @@ opt-level = 3
 lto = true
 
 [package.metadata.wasm-pack.profile.release]
-# Disable wasm-opt because the binaryen download from GitHub fails in restricted network environments.
-# The Rust compiler already applies optimizations via opt-level=3 and lto=true above.
+# wasm-opt is disabled due to network restrictions in CI/CD environments
+# where binaryen binary download from GitHub fails.
+# 
+# The Rust compiler already applies significant optimizations via:
+# - opt-level = 3: Maximum optimization level
+# - lto = true: Link-time optimization across crates
+#
+# If you need wasm-opt in your local environment, you can:
+# 1. Comment out the line below
+# 2. Ensure you have network access to github.com/WebAssembly/binaryen
+# 3. Run: cd wasm-audio && wasm-pack build --target web --release
 wasm-opt = false
 
