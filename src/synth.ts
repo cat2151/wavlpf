@@ -367,14 +367,12 @@ async function switchMode(mode: PlaybackMode): Promise<void> {
   }
   
   // Reschedule playback with appropriate interval
-  if (isPlaybackLoopStarted) {
-    if (playbackTimeoutId !== null && scheduleNextPlayFn) {
-      clearTimeout(playbackTimeoutId);
-      scheduleNextPlayFn();
-    } else {
-      // Log warning if playback loop is started but scheduling function is unavailable
-      console.warn('Playback loop is started but scheduling function is not available');
-    }
+  if (isPlaybackLoopStarted && playbackTimeoutId !== null && scheduleNextPlayFn) {
+    clearTimeout(playbackTimeoutId);
+    scheduleNextPlayFn();
+  } else if (isPlaybackLoopStarted) {
+    // Log warning if playback loop is started but scheduling function is unavailable
+    console.warn('Playback loop is started but scheduling function is not available');
   }
   
   // Update status display
