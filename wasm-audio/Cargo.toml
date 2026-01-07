@@ -14,16 +14,33 @@ opt-level = 3
 lto = true
 
 [package.metadata.wasm-pack.profile.release]
-# wasm-opt is disabled due to network restrictions in CI/CD environments
-# where binaryen binary download from GitHub fails.
+# ⚠️ 厳重警告 - wasm-opt設定について ⚠️
 # 
-# The Rust compiler already applies significant optimizations via:
-# - opt-level = 3: Maximum optimization level
-# - lto = true: Link-time optimization across crates
+# 【重要】wasm-optはデフォルトで有効であり、ownerのすべての環境で正常に動作します。
+# 【重要】CI環境でも検証済みで、問題なく動作しています。
+# 
+# ❌ 絶対禁止事項 ❌
+# - `wasm-opt = false` を追加することは厳重に禁止されています
+# - この設定を変更することは重大なミスです
+# 
+# 【過去の問題】
+# AI agentが2回にわたり、以下の誤った判断で`wasm-opt = false`を追加しました：
+# 1. 「CIで落ちないように」という根拠のない憶測
+# 2. ユーザーの指示を無視して設定を破壊
+# これらはすべて誤りでした。ownerが検証した結果、wasm-optは有効で問題ありません。
 #
-# If you need wasm-opt in your local environment, you can:
-# 1. Comment out the line below
-# 2. Ensure you have network access to github.com/WebAssembly/binaryen
-# 3. Run: cd wasm-audio && wasm-pack build --target web --release
-wasm-opt = false
+# 【正しい動作】
+# - この設定セクションに`wasm-opt`の行を書かないことで、デフォルトで有効になります
+# - デフォルト動作を変更する必要はありません
+#
+# 【技術的背景】
+# wasm-optはWASMバイナリをさらに最適化します。Rustコンパイラの最適化に加えて：
+# - opt-level = 3: 最大最適化レベル
+# - lto = true: クレート間のリンク時最適化
+# wasm-optはこれらに追加で適用される重要な最適化です。
+#
+# 【デバッグ時のみ】
+# デバッグ目的で一時的に無効化する場合のみ、以下を追加できます：
+# wasm-opt = false
+# ただし、これはローカルでのデバッグ時のみで、コミットしてはいけません。
 
