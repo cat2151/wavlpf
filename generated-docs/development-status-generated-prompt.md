@@ -1,4 +1,4 @@
-Last updated: 2026-01-07
+Last updated: 2026-01-08
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -232,6 +232,10 @@ Last updated: 2026-01-07
 - issue-notes/44.md
 - issue-notes/46.md
 - issue-notes/48.md
+- issue-notes/50.md
+- issue-notes/52.md
+- issue-notes/53.md
+- issue-notes/55.md
 - package-lock.json
 - package.json
 - src/index.ts
@@ -249,734 +253,277 @@ Last updated: 2026-01-07
 - wasm-audio/src/lib.rs
 
 ## 現在のオープンIssues
-## [Issue #49](../issue-notes/49.md): Add Tone.js direct synthesis mode with tab switching for UX prototyping
-Implements dual-mode audio playback: existing WASM→WAV rendering and new Tone.js direct synthesis, switchable via tabs for UX comparison testing.
+## [Issue #56](../issue-notes/56.md): Implement multi-note JSON sequencer for Seq mode using tonejs-json-sequencer
+## seqモードについて、複数音符のseqを実装する - Issue #55
 
-## Changes
+この issue では、seqモードに複数音符のシーケンス機能を実装し、tonejs-json-sequencerライブラリを利用します。
 
-### New Module: `src/tonejs-synth.ts`
-- Tone.js MonoSynth + Filter for 220Hz synthesis
-- Real-time filter parameter updates (50ms throttled)
-...
+### ✅ 実装完了 + レビューフィードバック対応
+
+- [x] Issue内容を確認し、tonejs-json-sequencerライブラリとサンプル（Sampler Piano）を調査
+- [x] tonejs-json-sequencerの必要なファイルを統合
+  - [x] scheduleOrExecuteEvent.jsの実装をsrc/sequencer.ts...
 ラベル: 
---- issue-notes/49.md の内容 ---
+--- issue-notes/56.md の内容 ---
 
 ```markdown
 
 ```
 
-## [Issue #48](../issue-notes/48.md): UX検証用プロトタイピングのため、これまでの波形生成モードにくわえて、Tone.jsによる生成波形演奏モードを実装し、画面上部のタブでそれぞれを切り替える
-[issue-notes/48.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/48.md)
+## [Issue #55](../issue-notes/55.md): seqモードについて、複数音符のseqを実装する。tonejs-json-sequencer ライブラリを利用する。そのサンプルの、sampler pianoとほぼ同じJSONと音符にする
+[issue-notes/55.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/55.md)
 
 ...
 ラベル: 
---- issue-notes/48.md の内容 ---
+--- issue-notes/55.md の内容 ---
 
 ```markdown
-# issue UX検証用プロトタイピングのため、これまでの波形生成モードにくわえて、Tone.jsによる生成波形演奏モードを実装し、画面上部のタブでそれぞれを切り替える #48
-[issues #48](https://github.com/cat2151/wavlpf/issues/48)
+# issue （json seq リポジトリでsamplerが実装されたあと）複数音符のseqを、seq jsonで実装する #55
+[issues #55](https://github.com/cat2151/wavlpf/issues/55)
+
+
+
+```
+
+## [Issue #52](../issue-notes/52.md): （複数の音符のseqの実装後）seqタブにおいて、Tone.js instrument sampler による演奏 / それを一度wavにprerenderしてから演奏（分析用） / 自前実装seq & rendererでWebAudio非依存renderした演奏（分析用）とを、プルダウンで選べるようにする。Tone.jsを経由したrenderと自前renderどちらもデータミスによる品質低下が別々に発生しそうなので相補的に運用して検証する用
+[issue-notes/52.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/52.md)
+
+...
+ラベル: 
+--- issue-notes/52.md の内容 ---
+
+```markdown
+# issue seqタブにおいて、Tone.js instrument sampler による演奏 / それを一度wavにprerenderしてから演奏（分析用） / 自前実装seq & rendererでWebAudio非依存renderした演奏（分析用）とを、プルダウンで選べるようにする。Tone.jsを経由したrenderと自前renderどちらもデータミスによる品質低下が別々に発生しそうなので相補的に運用して検証する用 #52
+[issues #52](https://github.com/cat2151/wavlpf/issues/52)
 
 
 
 ```
 
 ## ドキュメントで言及されているファイルの内容
-### .github/actions-tmp/issue-notes/8.md
+### .github/actions-tmp/issue-notes/2.md
 ```md
 {% raw %}
-# issue 関数コールグラフhtmlビジュアライズ生成の対象ソースファイルを、呼び出し元ymlで指定できるようにする #8
-[issues #8](https://github.com/cat2151/github-actions/issues/8)
+# issue GitHub Actions「関数コールグラフhtmlビジュアライズ生成」を共通ワークフロー化する #2
+[issues #2](https://github.com/cat2151/github-actions/issues/2)
 
-# これまでの課題
-- 以下が決め打ちになっていた
+
+# prompt
 ```
-  const allowedFiles = [
-    'src/main.js',
-    'src/mml2json.js',
-    'src/play.js'
-  ];
-```
-
-# 対策
-- 呼び出し元ymlで指定できるようにする
-
-# agent
-- agentにやらせることができれば楽なので、初手agentを試した
-- 失敗
-    - ハルシネーションしてscriptを大量破壊した
-- 分析
-    - 修正対象scriptはagentが生成したもの
-    - 低品質な生成結果でありソースが巨大
-    - ハルシネーションで破壊されやすいソース
-    - AIの生成したソースは、必ずしもAIフレンドリーではない
-
-# 人力リファクタリング
-- 低品質コードを、最低限agentが扱えて、ハルシネーションによる大量破壊を防止できる内容、にする
-- 手短にやる
-    - そもそもビジュアライズは、agentに雑に指示してやらせたもので、
-    - 今後別のビジュアライザを選ぶ可能性も高い
-    - 今ここで手間をかけすぎてコンコルド効果（サンクコストバイアス）を増やすのは、project群をトータルで俯瞰して見たとき、損
-- 対象
-    - allowedFiles のあるソース
-        - callgraph-utils.cjs
-            - たかだか300行未満のソースである
-            - この程度でハルシネーションされるのは予想外
-            - やむなし、リファクタリングでソース分割を進める
-
-# agentに修正させる
-## prompt
-```
-allowedFilesを引数で受け取るようにしたいです。
-ないならエラー。
-最終的に呼び出し元すべてに波及して修正したいです。
-
-呼び出し元をたどってエントリポイントも見つけて、
-エントリポイントにおいては、
-引数で受け取ったjsonファイル名 allowedFiles.js から
-jsonファイル allowedFiles.jsonの内容をreadして
-変数 allowedFilesに格納、
-後続処理に引き渡す、としたいです。
-
-まずplanしてください。
-planにおいては、修正対象のソースファイル名と関数名を、呼び出し元を遡ってすべて特定し、listしてください。
+あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
+このymlファイルを、以下の2つのファイルに分割してください。
+1. 共通ワークフロー       cat2151/github-actions/.github/workflows/callgraph_enhanced.yml
+2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-callgraph_enhanced.yml
+まずplanしてください
 ```
 
-# 修正が順調にできた
-- コマンドライン引数から受け取る作りになっていなかったので、そこだけ指示して修正させた
-- yml側は人力で修正した
+# 結果
+- indent
+    - linter？がindentのエラーを出しているがyml内容は見た感じOK
+    - テキストエディタとagentの相性問題と判断する
+    - 別のテキストエディタでsaveしなおし、テキストエディタをreload
+    - indentのエラーは解消した
+- LLMレビュー
+    - agent以外の複数のLLMにレビューさせる
+    - prompt
+```
+あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
+以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューしてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
 
-# 他のリポジトリから呼び出した場合にバグらないよう修正する
-- 気付いた
-    - 共通ワークフローとして他のリポジトリから使った場合はバグるはず。
-        - ymlから、共通ワークフロー側リポジトリのcheckoutが漏れているので。
-- 他のyml同様に修正する
-- あわせて全体にymlをリファクタリングし、修正しやすくし、今後のyml読み書きの学びにしやすくする
+--- 共通ワークフロー
 
-# local WSL + act : test green
+# GitHub Actions Reusable Workflow for Call Graph Generation
+name: Generate Call Graph
 
-# closeとする
-- もし生成されたhtmlがNGの場合は、別issueとするつもり
+# TODO Windowsネイティブでのtestをしていた名残が残っているので、今後整理していく。今はWSL act でtestしており、Windowsネイティブ環境依存問題が解決した
+#  ChatGPTにレビューさせるとそこそこ有用そうな提案が得られたので、今後それをやる予定
+#  agentに自己チェックさせる手も、セカンドオピニオンとして選択肢に入れておく
 
-{% endraw %}
+on:
+  workflow_call:
+
+jobs:
+  check-commits:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50 # 過去のコミットを取得
+
+      - name: Check for user commits in last 24 hours
+        id: check
+        run: |
+          node .github/scripts/callgraph_enhanced/check-commits.cjs
+
+  generate-callgraph:
+    needs: check-commits
+    if: needs.check-commits.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Remove old CodeQL packages cache
+        run: rm -rf ~/.codeql/packages
+
+      - name: Check Node.js version
+        run: |
+          node .github/scripts/callgraph_enhanced/check-node-version.cjs
+
+      - name: Install CodeQL CLI
+        run: |
+          wget https://github.com/github/codeql-cli-binaries/releases/download/v2.22.1/codeql-linux64.zip
+          unzip codeql-linux64.zip
+          sudo mv codeql /opt/codeql
+          echo "/opt/codeql" >> $GITHUB_PATH
+
+      - name: Install CodeQL query packs
+        run: |
+          /opt/codeql/codeql pack install .github/codeql-queries
+
+      - name: Check CodeQL exists
+        run: |
+          node .github/scripts/callgraph_enhanced/check-codeql-exists.cjs
+
+      - name: Verify CodeQL Configuration
+        run: |
+          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs verify-config
+
+      - name: Remove existing CodeQL DB (if any)
+        run: |
+          rm -rf codeql-db
+
+      - name: Perform CodeQL Analysis
+        run: |
+          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs analyze
+
+      - name: Check CodeQL Analysis Results
+        run: |
+          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs check-results
+
+      - name: Debug CodeQL execution
+        run: |
+          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs debug
+
+      - name: Wait for CodeQL results
+        run: |
+          node -e "setTimeout(()=>{}, 10000)"
+
+      - name: Find and process CodeQL results
+        run: |
+          node .github/scripts/callgraph_enhanced/find-process-results.cjs
+
+      - name: Generate HTML graph
+        run: |
+          node .github/scripts/callgraph_enhanced/generate-html-graph.cjs
+
+      - name: Copy files to generated-docs and commit results
+        run: |
+          node .github/scripts/callgraph_enhanced/copy-commit-results.cjs
+
+--- 呼び出し元
+# 呼び出し元ワークフロー: call-callgraph_enhanced.yml
+name: Call Call Graph Enhanced
+
+on:
+  schedule:
+    # 毎日午前5時(JST) = UTC 20:00前日
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  call-callgraph-enhanced:
+    # uses: cat2151/github-actions/.github/workflows/callgraph_enhanced.yml
+    uses: ./.github/workflows/callgraph_enhanced.yml # ローカルでのテスト用
 ```
 
-### .github/actions-tmp/issue-notes/9.md
-```md
-{% raw %}
-# issue 関数コールグラフhtmlビジュアライズが0件なので、原因を可視化する #9
-[issues #9](https://github.com/cat2151/github-actions/issues/9)
+# レビュー結果OKと判断する
+- レビュー結果を人力でレビューした形になった
 
-# agentに修正させたり、人力で修正したりした
-- agentがハルシネーションし、いろいろ根の深いバグにつながる、エラー隠蔽などを仕込んでいたため、検知が遅れた
-- 詳しくはcommit logを参照のこと
-- WSL + actの環境を少し変更、act起動時のコマンドライン引数を変更し、generated-docsをmountする（ほかはデフォルト挙動であるcpだけにする）ことで、デバッグ情報をコンテナ外に出力できるようにし、デバッグを効率化した
+# test
+- #4 同様にローカル WSL + act でtestする
+- エラー。userのtest設計ミス。
+  - scriptの挙動 : src/ がある前提
+  - 今回の共通ワークフローのリポジトリ : src/ がない
+  - 今回testで実現したいこと
+    - 仮のソースでよいので、関数コールグラフを生成させる
+  - 対策
+    - src/ にダミーを配置する
+- test green
+  - ただしcommit pushはしてないので、html内容が0件NG、といったケースの検知はできない
+  - もしそうなったら別issueとしよう
 
 # test green
 
+# commit用に、yml 呼び出し元 uses をlocal用から本番用に書き換える
+
 # closeとする
+- もしhtml内容が0件NG、などになったら、別issueとするつもり
 
 {% endraw %}
 ```
 
-### issue-notes/48.md
+### issue-notes/52.md
 ```md
 {% raw %}
-# issue UX検証用プロトタイピングのため、これまでの波形生成モードにくわえて、Tone.jsによる生成波形演奏モードを実装し、画面上部のタブでそれぞれを切り替える #48
-[issues #48](https://github.com/cat2151/wavlpf/issues/48)
+# issue seqタブにおいて、Tone.js instrument sampler による演奏 / それを一度wavにprerenderしてから演奏（分析用） / 自前実装seq & rendererでWebAudio非依存renderした演奏（分析用）とを、プルダウンで選べるようにする。Tone.jsを経由したrenderと自前renderどちらもデータミスによる品質低下が別々に発生しそうなので相補的に運用して検証する用 #52
+[issues #52](https://github.com/cat2151/wavlpf/issues/52)
 
 
 
 {% endraw %}
 ```
 
-### src/synth.ts
-```ts
+### issue-notes/55.md
+```md
 {% raw %}
-import { generateWav, createWavBlobUrl } from './wav';
-import type * as ToneTypes from 'tone';
-import {
-  Settings,
-  loadSettings,
-  saveSettings,
-  exportSettingsToFile,
-  importSettingsFromFile,
-} from './settings';
-import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
-import {
-  createPerformanceStats,
-  addPerformanceSample,
-  calculatePerformanceStats,
-  resetPerformanceStats,
-  type PerformanceStats,
-} from './performance-stats';
+# issue （json seq リポジトリでsamplerが実装されたあと）複数音符のseqを、seq jsonで実装する #55
+[issues #55](https://github.com/cat2151/wavlpf/issues/55)
 
-// Tone.js is kept as null until the first user interaction. We dynamically import
-// the module on a user click so that the underlying AudioContext is not created
-// before a user gesture, which would violate browser autoplay policies.
-let Tone: typeof ToneTypes | null = null;
 
-// Track whether Tone.js is currently being loaded to prevent race conditions
-let isToneLoading = false;
-
-// Promise to track the loading state for concurrent clicks
-let toneLoadingPromise: Promise<void> | null = null;
-
-const SAMPLE_RATE = 44100;
-const FREQUENCY = 220; // 220Hz (A3)
-
-// Mouse position state
-let mouseX = 0.5;
-let mouseY = 0.5;
-
-// Parameter state - loaded from settings
-const initialSettings: Settings = loadSettings();
-let bpm = initialSettings.bpm;
-let beat = initialSettings.beat;
-let qMax = initialSettings.qMax;
-let cutoffMax = initialSettings.cutoffMax;
-let decayUnit: 'Hz' | 'Cent' = initialSettings.decayUnit;
-let decayRate = initialSettings.decayRate;
-let waveformType: 'sawtooth' | 'pulse' = initialSettings.waveformType;
-let dutyRatio = initialSettings.dutyRatio;
-let filterType: 'lpf' | 'hpf' | 'bpf' | 'notch' | 'apf' | 'lowshelf' | 'highshelf' = initialSettings.filterType;
-
-/**
- * 現在の設定を取得
- */
-function getCurrentSettings(): Settings {
-  return {
-    bpm,
-    beat,
-    qMax,
-    cutoffMax,
-    decayUnit,
-    decayRate,
-    waveformType,
-    dutyRatio,
-    filterType,
-  };
-}
-
-// Track currently playing player
-let currentPlayer: ToneTypes.Player | null = null;
-
-// Track playback timeout for cleanup
-let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
-
-// Track whether playback loop has started
-let isPlaybackLoopStarted = false;
-
-// パフォーマンス統計トラッキング
-const performanceStats: PerformanceStats = createPerformanceStats(10);
-
-/**
- * BPMとビート値から再生周期(秒)を計算
- * 
- * 4分音符の長さ = 60 / BPM [秒]
- * ビート値はノートの長さとして解釈: 1/beat
- *   - beat = 4 -> 4分音符
- *   - beat = 8 -> 8分音符
- * 
- * 再生周期 = (60秒 / BPM) × (4 / beat)
- * 例: BPM=120, beat=8の場合: (60/120) × (4/8) = 0.5 × 0.5 = 0.25秒 = 250ms
- * 例: BPM=120, beat=4の場合: (60/120) × (4/4) = 0.5 × 1   = 0.5秒  = 500ms
- */
-function getDuration(): number {
-  return (60 / bpm) * (4 / beat);
-}
-
-/**
- * textareaから数値パラメータを読み込んで検証
- * @param id - 要素のID
- * @param validator - 検証関数
- * @returns 検証済みの値、または検証失敗時はnull
- */
-function readNumericParameter(
-  id: string,
-  validator: (value: number) => boolean
-): number | null {
-  const el = document.getElementById(id) as HTMLTextAreaElement | null;
-  if (el) {
-    const value = parseFloat(el.value);
-    if (!isNaN(value) && validator(value)) {
-      return value;
-    }
-  }
-  return null;
-}
-
-/**
- * UIからパラメータを読み込む
- */
-function readParameters(): void {
-  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
-  const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
-  const filterTypeEl = document.getElementById('filterType') as HTMLSelectElement | null;
-  
-  // BPM: 30-300の範囲で検証
-  const bpmValue = readNumericParameter('bpm', (value) => value >= 30 && value <= 300);
-  if (bpmValue !== null) {
-    bpm = bpmValue;
-  }
-  
-  // Beat: 1-32の範囲で検証
-  const beatValue = readNumericParameter('beat', (value) => value >= 1 && value <= 32);
-  if (beatValue !== null) {
-    beat = beatValue;
-  }
-  
-  // Q Max: 0.5-50の範囲で検証
-  const qMaxValue = readNumericParameter('qMax', (value) => value >= 0.5 && value <= 50);
-  if (qMaxValue !== null) {
-    qMax = qMaxValue;
-  }
-  
-  // Cutoff Max: 20-20000Hzの範囲で検証
-  const cutoffMaxValue = readNumericParameter('cutoffMax', (value) => value >= 20 && value <= 20000);
-  if (cutoffMaxValue !== null) {
-    cutoffMax = cutoffMaxValue;
-  }
-  
-  // Decay Unit
-  if (decayUnitEl) {
-    const value = decayUnitEl.value;
-    if (value === 'Hz' || value === 'Cent') {
-      decayUnit = value;
-    }
-  }
-  
-  // Decay Rate: 0.01以上で検証(0は減衰なしなので最小値を0.01に設定)
-  const decayRateValue = readNumericParameter('decayRate', (value) => value >= 0.01);
-  if (decayRateValue !== null) {
-    decayRate = decayRateValue;
-  }
-  
-  // Waveform Type
-  if (waveformTypeEl) {
-    const value = waveformTypeEl.value;
-    if (value === 'sawtooth' || value === 'pulse') {
-      waveformType = value;
-    }
-  }
-  
-  // Duty Ratio: 0-100の範囲で検証
-  const dutyRatioValue = readNumericParameter('dutyRatio', (value) => value >= 0 && value <= 100);
-  if (dutyRatioValue !== null) {
-    dutyRatio = dutyRatioValue;
-  }
-  
-  // Filter Type
-  if (filterTypeEl) {
-    const value = filterTypeEl.value;
-    const validFilterTypes = ['lpf', 'hpf', 'bpf', 'notch', 'apf', 'lowshelf', 'highshelf'];
-    if (validFilterTypes.includes(value)) {
-      filterType = value as typeof filterType;
-    }
-  }
-  
-  // Save settings to localStorage
-  saveSettings(getCurrentSettings());
-}
-
-/**
- * マウス位置をフィルタパラメータにマッピング
- */
-function getFilterParams(): { cutoff: number; q: number } {
-  // X軸: カットオフ周波数 20Hz - cutoffMax
-  const cutoff = 20 + mouseX * (cutoffMax - 20);
-  // Y軸: Q値 0.5 - qMax (反転: 上端=高Q, 下端=低Q)
-  const q = 0.5 + (1 - mouseY) * (qMax - 0.5);
-  return { cutoff, q };
-}
-
-/**
- * LPFとカットオフ減衰を適用してオーディオをレンダリング (Rust WASM使用)
- * @returns 生成されたオーディオサンプルと生成時間(ms)
- */
-function renderAudio(): { samples: Float32Array; generationTimeMs: number } {
-  if (!isWasmInitialized()) {
-    throw new Error('WASM module not initialized. Please wait for initialization to complete.');
-  }
-  
-  const duration = getDuration();
-  const { cutoff: initialCutoff, q } = getFilterParams();
-  
-  return renderAudioWasm(
-    waveformType,
-    FREQUENCY,
-    SAMPLE_RATE,
-    duration,
-    dutyRatio,
-    filterType,
-    initialCutoff,
-    q,
-    decayUnit,
-    decayRate,
-  );
-}
-
-/**
- * Generate and play audio
- */
-async function playAudio(): Promise<void> {
-  // Ensure Tone is loaded
-  if (!Tone) {
-    console.warn('Tone.js not loaded yet');
-    return;
-  }
-  
-  // Render audio
-  const { samples, generationTimeMs } = renderAudio();
-  
-  // Generate WAV
-  const wavData = generateWav(samples, SAMPLE_RATE);
-  const wavUrl = createWavBlobUrl(wavData);
-  
-  // Stop previous player if exists
-  if (currentPlayer) {
-    try {
-      currentPlayer.stop();
-      currentPlayer.dispose();
-    } catch (error) {
-      // Log errors instead of silently ignoring them
-      console.warn('Failed to stop or dispose previous player:', error);
-    }
-  }
-  
-  // Create and play new player
-  currentPlayer = new Tone.Player(wavUrl).toDestination();
-  await Tone.loaded();
-  currentPlayer.start();
-  
-  // Update generation time display
-  updateGenerationTimeDisplay(generationTimeMs);
-  
-  // Clean up URL after playback (match duration)
-  setTimeout(() => {
-    URL.revokeObjectURL(wavUrl);
-  }, getDuration() * 1000);
-}
-
-/**
- * UIフィールドを現在の設定値で更新
- */
-function updateUIFields(): void {
-  const bpmEl = document.getElementById('bpm') as HTMLTextAreaElement | null;
-  const beatEl = document.getElementById('beat') as HTMLTextAreaElement | null;
-  const qMaxEl = document.getElementById('qMax') as HTMLTextAreaElement | null;
-  const cutoffMaxEl = document.getElementById('cutoffMax') as HTMLTextAreaElement | null;
-  const decayUnitEl = document.getElementById('decayUnit') as HTMLSelectElement | null;
-  const decayRateEl = document.getElementById('decayRate') as HTMLTextAreaElement | null;
-  const waveformTypeEl = document.getElementById('waveformType') as HTMLSelectElement | null;
-  const dutyRatioEl = document.getElementById('dutyRatio') as HTMLTextAreaElement | null;
-  const filterTypeEl = document.getElementById('filterType') as HTMLSelectElement | null;
-  
-  if (bpmEl) bpmEl.value = String(bpm);
-  if (beatEl) beatEl.value = String(beat);
-  if (qMaxEl) qMaxEl.value = String(qMax);
-  if (cutoffMaxEl) cutoffMaxEl.value = String(cutoffMax);
-  if (decayUnitEl) decayUnitEl.value = decayUnit;
-  if (decayRateEl) decayRateEl.value = String(decayRate);
-  if (waveformTypeEl) waveformTypeEl.value = waveformType;
-  if (dutyRatioEl) dutyRatioEl.value = String(dutyRatio);
-  if (filterTypeEl) filterTypeEl.value = filterType;
-}
-
-/**
- * シンセサイザーを初期化
- */
-export async function init(): Promise<void> {
-  // Initialize WASM module - required for all audio processing
-  await initWasm().catch((error) => {
-    console.error('Failed to initialize WASM module:', error);
-    
-    // WASM初期化エラーをユーザーに分かりやすく通知
-    const statusEl = document.getElementById('status');
-    if (statusEl) {
-      statusEl.textContent =
-        'シンセサイザーの初期化に失敗しました。ページを再読み込みしてください。';
-    }
-    
-    throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
-  });
-  
-  // マウス位置を追跡
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX / window.innerWidth;
-    mouseY = e.clientY / window.innerHeight;
-    
-    // 表示を更新
-    const cutoff = Math.round(20 + mouseX * (cutoffMax - 20));
-    const q = (0.5 + (1 - mouseY) * (qMax - 0.5)).toFixed(2);
-    
-    const display = document.getElementById('params');
-    if (display) {
-      display.textContent = `Cutoff: ${cutoff}Hz | Q: ${q}`;
-    }
-  });
-  
-  // パラメータ変更のための入力イベントリスナーを追加(デバウンス処理)
-  let inputDebounceTimer: number | null = null;
-  const handleInputChange = () => {
-    if (inputDebounceTimer !== null) {
-      clearTimeout(inputDebounceTimer);
-    }
-    inputDebounceTimer = window.setTimeout(() => {
-      readParameters();
-      updateUIFields(); // 検証された値でUIを更新し、無効な入力との不一致を防ぐ
-      updateStatusDisplay();
-      
-      // パラメータ変更時に既存の再生スケジュールをキャンセルして再スケジュール
-      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
-        clearTimeout(playbackTimeoutId);
-        const duration = getDuration();
-        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
-      }
-    }, 150);
-  };
-  
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'filterType'];
-  inputs.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.addEventListener('input', handleInputChange);
-    }
-  });
-  
-  // UIフィールドを保存済み設定で初期化
-  updateUIFields();
-  
-  // パラメータの初期読み込み
-  readParameters();
-  updateStatusDisplay();
-  
-  // Export settings button handler
-  const exportBtn = document.getElementById('exportSettings');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      exportSettingsToFile(getCurrentSettings());
-    });
-  }
-  
-  // Import settings button handler
-  const importBtn = document.getElementById('importSettings');
-  if (importBtn) {
-    importBtn.addEventListener('click', async () => {
-      const importedSettings = await importSettingsFromFile();
-      
-      if (!importedSettings) {
-        // User cancelled or error occurred
-        const statusEl = document.getElementById('status');
-        if (statusEl) {
-          const originalText = statusEl.textContent;
-          statusEl.textContent = '設定のインポートに失敗しました。ファイル形式を確認してください。';
-          setTimeout(() => {
-            if (statusEl.textContent?.includes('インポートに失敗')) {
-              statusEl.textContent = originalText;
-            }
-          }, 3000);
-        }
-        return;
-      }
-      
-      // Update state
-      bpm = importedSettings.bpm;
-      beat = importedSettings.beat;
-      qMax = importedSettings.qMax;
-      cutoffMax = importedSettings.cutoffMax;
-      decayUnit = importedSettings.decayUnit;
-      decayRate = importedSettings.decayRate;
-      waveformType = importedSettings.waveformType;
-      dutyRatio = importedSettings.dutyRatio;
-      filterType = importedSettings.filterType;
-      
-      // Update UI
-      updateUIFields();
-      updateStatusDisplay();
-      
-      // Save to localStorage
-      saveSettings(importedSettings);
-      
-      // Show success feedback
-      const statusEl = document.getElementById('status');
-      if (statusEl) {
-        const originalText = statusEl.textContent;
-        statusEl.textContent = '設定をインポートしました。';
-        setTimeout(() => {
-          if (statusEl.textContent?.includes('インポートしました')) {
-            statusEl.textContent = originalText;
-          }
-        }, 3000);
-      }
-      
-      // Reschedule playback if already playing
-      if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
-        clearTimeout(playbackTimeoutId);
-        const duration = getDuration();
-        playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
-      }
-    });
-  }
-  
-  // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
-  function scheduleNextPlay() {
-    if (Tone && Tone.context.state === 'running') {
-      playAudio().catch((error: unknown) => {
-        console.error('Error while playing audio:', error);
-      });
-    }
-    const duration = getDuration();
-    playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
-  }
-  
-  // Click handler for starting audio
-  const handleClick = async (event: Event) => {
-    // For touch events, prevent the subsequent click event from firing.
-    // This ensures handleClick is only called once per tap on touch devices.
-    // Note: This may interfere with touch scrolling, but is necessary to prevent
-    // duplicate audio context initialization on touch-enabled devices.
-    if (event.type === 'touchstart') {
-      event.preventDefault();
-    }
-    
-    // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
-    // Dynamic import ensures AudioContext is only created after a user gesture.
-    if (!Tone && !isToneLoading) {
-      isToneLoading = true;
-      toneLoadingPromise = (async () => {
-        try {
-          Tone = await import('tone') as typeof ToneTypes;
-        } catch (error) {
-          console.error('Failed to load Tone.js:', error);
-          throw error;
-        } finally {
-          isToneLoading = false;
-          toneLoadingPromise = null;
-        }
-      })();
-    }
-    
-    // Wait for Tone.js to finish loading if another click initiated the load
-    if (toneLoadingPromise) {
-      try {
-        await toneLoadingPromise;
-      } catch (error) {
-        return; // Loading failed
-      }
-    }
-    
-    if (!Tone) {
-      return; // Failed to load
-    }
-    
-    if (Tone.context.state !== 'running') {
-      await Tone.start();
-    }
-    
-    // Start playback loop only once
-    if (!isPlaybackLoopStarted) {
-      isPlaybackLoopStarted = true;
-      scheduleNextPlay();
-    }
-  };
-  
-  // Attach click listener only to document to avoid duplicate execution from event bubbling
-  // Touch events use { passive: false } since preventDefault() is called in the handler
-  document.addEventListener('click', handleClick);
-  document.addEventListener('touchstart', handleClick, { passive: false });
-}
-
-/**
- * 現在の設定でステータス表示を更新
- */
-function updateStatusDisplay(): void {
-  const statusEl = document.getElementById('status');
-  if (statusEl) {
-    const duration = getDuration();
-    statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
-  }
-}
-
-/**
- * 波形生成時間を表示
- * @param generationTimeMs - 生成時間(ミリ秒)
- */
-function updateGenerationTimeDisplay(generationTimeMs: number): void {
-  // この計測値を統計に追加
-  addPerformanceSample(performanceStats, generationTimeMs);
-  
-  const genTimeEl = document.getElementById('generationTime');
-  if (genTimeEl) {
-    const stats = calculatePerformanceStats(performanceStats);
-    
-    if (stats && stats.count > 1) {
-      // 複数のサンプルがある場合は詳細な統計情報を表示
-      const currentText = `Generation time (Rust WASM): ${stats.current.toFixed(2)}ms`;
-      const statsText = `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
-      genTimeEl.textContent = `${currentText} ${statsText}`;
-    } else {
-      // 初回計測では単純表示
-      genTimeEl.textContent = `Generation time (Rust WASM): ${generationTimeMs.toFixed(2)}ms`;
-    }
-  }
-}
-
-/**
- * Stop the synthesizer and clean up resources
- */
-export function dispose(): void {
-  // Clear playback timeout
-  if (playbackTimeoutId !== null) {
-    clearTimeout(playbackTimeoutId);
-    playbackTimeoutId = null;
-  }
-  
-  // Reset playback loop flag
-  isPlaybackLoopStarted = false;
-  
-  // Stop and dispose current player
-  if (currentPlayer) {
-    try {
-      currentPlayer.stop();
-      currentPlayer.dispose();
-    } catch (error) {
-      console.warn('Failed to dispose player during cleanup:', error);
-    }
-    currentPlayer = null;
-  }
-}
 
 {% endraw %}
 ```
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-b021635 Auto-translate README.ja.md to README.md [auto]
-773034e Merge pull request #47 from cat2151/copilot/update-readme-comments
-422473c Improve Japanese clarity in Cargo.toml comments
-1eb0a32 Document wasm-opt verification results in README and Cargo.toml
-834fedc Add issue note for #48 [auto]
-141fdbe Add issue note for #46 [auto]
-9ad3f43 Initial plan
-13f7373 Merge pull request #45 from cat2151/copilot/remove-wasm-opt-flag
-3d4c622 コメントを日本語に変更（レビューフィードバックに対応）
-e8dc47b Add clarifying comment about wasm-opt verification test
+6ce8be7 Add issue note for #55 [auto]
+0a28c6b Auto-translate README.ja.md to README.md [auto]
+1883695 Merge pull request #54 from cat2151/copilot/enforce-wasm-opt-true
+0e1bdca wasm-opt設定をtrueに修正し、厳重な警告を追加
+a215845 Initial plan
+231e46a Add issue note for #53 [auto]
+9f319c1 Merge pull request #51 from cat2151/copilot/add-global-wav-storage
+4fb2227 Simplify nested conditions in switchMode per code review
+442ffd0 Clarify vite.config.ts security boundary with improved comments
+aab3474 Address PR review comments: improve docs, ARIA attributes, and security
 
 ### 変更されたファイル:
+.github/copilot-instructions.md
 README.ja.md
 README.md
 index.html
-issue-notes/44.md
-issue-notes/46.md
-issue-notes/48.md
-src/settings.test.ts
-src/settings.ts
+issue-notes/50.md
+issue-notes/52.md
+issue-notes/53.md
+issue-notes/55.md
 src/synth.ts
-src/wasmAudio.ts
 vite.config.ts
 wasm-audio/Cargo.toml
-wasm-audio/src/lib.rs
 
 
 ---
-Generated at: 2026-01-07 07:03:28 JST
+Generated at: 2026-01-08 07:03:06 JST

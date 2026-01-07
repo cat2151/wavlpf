@@ -1,4 +1,4 @@
-Last updated: 2026-01-07
+Last updated: 2026-01-08
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -153,7 +153,14 @@ npm run build
 
 TypeScriptの型チェック、Rust WASMモジュールのビルド、Viteで本番用バンドルを作成します。
 
-**wasm-optに関する注意**: ビルドはデフォルトで`wasm-opt`（binaryenから）を使用して追加のWASM最適化を行います。これはCI環境で正常に動作することが検証されています。`wasm-opt`を無効にする必要がある場合（デバッグやネットワーク制限のため）、`wasm-audio/Cargo.toml`の設定をコメント解除できます。
+**⚠️ wasm-optに関する厳重な注意 ⚠️**: 
+- ビルドはデフォルトで`wasm-opt`（binaryenから）を使用してWASMの最適化を行います
+- **これはCI環境を含むすべての環境で正常に動作することが検証済みです**
+- **`wasm-audio/Cargo.toml`で`wasm-opt = false`を設定することは厳重に禁止されています**
+- 過去にAI agentが2回、根拠のない憶測で`wasm-opt = false`を追加する誤りを犯しました
+- ownerが検証した結果、wasm-optは有効で問題ないことが確認されています
+- デフォルト設定（wasm-opt有効）を変更しないでください
+- デバッグ目的でローカルで一時的に無効化する場合も、その変更をコミットしないでください
 
 ### 本番ビルドのプレビュー
 
@@ -292,6 +299,10 @@ MIT
   📖 44.md
   📖 46.md
   📖 48.md
+  📖 50.md
+  📖 52.md
+  📖 53.md
+  📖 55.md
 📊 package-lock.json
 📊 package.json
 📁 src/
@@ -312,7 +323,7 @@ MIT
     📄 lib.rs
 
 ## ファイル詳細分析
-**index.html** (225行, 6176バイト)
+**index.html** (258行, 7045バイト)
   - 関数: なし
   - インポート: なし
 
@@ -336,8 +347,8 @@ MIT
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (554行, 16683バイト)
-  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, getFilterParams, renderAudio, playAudio, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
+**src/synth.ts** (700行, 20810バイト)
+  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, getFilterParams, renderAudio, playAudioWav, playAudioSeq, playAudio, switchMode, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
   - インポート: ./wav, tone, ./wasmAudio
 
 **src/wasmAudio.ts** (96行, 2245バイト)
@@ -352,7 +363,7 @@ MIT
   - 関数: generateWav, writeString, createWavBlobUrl, if, for
   - インポート: なし
 
-**vite.config.ts** (52行, 1081バイト)
+**vite.config.ts** (54行, 1214バイト)
   - 関数: なし
   - インポート: vite
 
@@ -375,7 +386,10 @@ MIT
       - readParameters ()
       - getFilterParams ()
       - renderAudio ()
+      - playAudioWav ()
+      - playAudioSeq ()
       - playAudio ()
+      - switchMode ()
       - updateUIFields ()
       - scheduleNextPlay ()
       - updateStatusDisplay ()
@@ -422,6 +436,7 @@ issue-notes/41.md
 issue-notes/44.md
 issue-notes/46.md
 issue-notes/48.md
+issue-notes/50.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -434,4 +449,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-07 07:03:27 JST
+Generated at: 2026-01-08 07:03:06 JST
