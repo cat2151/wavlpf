@@ -15,7 +15,7 @@ import {
   resetPerformanceStats,
   type PerformanceStats,
 } from './performance-stats';
-import { SequencerNodes, playSequence } from './sequencer';
+import { playSequence, disposeAllNodes } from './sequencer';
 import { pianoSequence } from './sequenceSamples';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
@@ -86,9 +86,6 @@ let scheduleNextPlayFn: (() => void) | null = null;
 
 // パフォーマンス統計トラッキング
 const performanceStats: PerformanceStats = createPerformanceStats(10);
-
-// Sequencer nodes for JSON-based playback
-const sequencerNodes = new SequencerNodes();
 
 /**
  * BPMとビート値から再生周期(秒)を計算
@@ -303,7 +300,7 @@ async function playAudioSeq(): Promise<void> {
   
   // Play the piano sequence using tonejs-json-sequencer
   try {
-    await playSequence(Tone, sequencerNodes, pianoSequence);
+    await playSequence(Tone, pianoSequence);
     
     // Update generation time display for seq mode
     const genTimeEl = document.getElementById('generationTime');
@@ -693,7 +690,7 @@ export function dispose(): void {
   }
   
   // Clean up sequencer nodes
-  sequencerNodes.disposeAll();
+  disposeAllNodes();
   
   // Clean up stored WAV URL
   if (lastGeneratedWavUrl) {
