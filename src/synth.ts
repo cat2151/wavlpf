@@ -15,6 +15,8 @@ import {
   resetPerformanceStats,
   type PerformanceStats,
 } from './performance-stats';
+import { SequencerNodes, playSequence } from './sequencer';
+import { pianoSequence } from './sequenceSamples';
 
 // Tone.js is kept as null until the first user interaction. We dynamically import
 // the module on a user click so that the underlying AudioContext is not created
@@ -84,6 +86,9 @@ let scheduleNextPlayFn: (() => void) | null = null;
 
 // パフォーマンス統計トラッキング
 const performanceStats: PerformanceStats = createPerformanceStats(10);
+
+// Sequencer nodes for JSON-based playback
+const sequencerNodes = new SequencerNodes();
 
 /**
  * BPMとビート値から再生周期(秒)を計算
@@ -276,25 +281,12 @@ async function playAudioWav(): Promise<void> {
 }
 
 /**
- * Play audio using stored WAV (Seq mode)
+ * Play audio using JSON sequence (Seq mode with tonejs-json-sequencer)
  */
 async function playAudioSeq(): Promise<void> {
   // Ensure Tone is loaded
   if (!Tone) {
     console.warn('Tone.js not loaded yet');
-    return;
-  }
-  
-  // Check if we have a stored WAV
-  if (!lastGeneratedWavUrl) {
-    console.warn('No WAV stored yet. Generate audio first.');
-    
-    // Provide user-visible feedback so it's clear why Seq mode did not play audio
-    const genTimeEl = document.getElementById('generationTime');
-    if (genTimeEl) {
-      genTimeEl.textContent =
-        'WAVが生成されていません。まずWAV Generation Modeでオーディオを生成してください。';
-    }
     return;
   }
   
@@ -306,17 +298,26 @@ async function playAudioSeq(): Promise<void> {
     } catch (error) {
       console.warn('Failed to stop or dispose previous player:', error);
     }
+    currentPlayer = null;
   }
   
-  // Create and play new player with stored WAV
-  currentPlayer = new Tone.Player(lastGeneratedWavUrl).toDestination();
-  await Tone.loaded();
-  currentPlayer.start();
-  
-  // Clear generation time display for seq mode
-  const genTimeEl = document.getElementById('generationTime');
-  if (genTimeEl) {
-    genTimeEl.textContent = 'Generation time: N/A (Seq mode - playing stored WAV)';
+  // Play the piano sequence using tonejs-json-sequencer
+  try {
+    await playSequence(Tone, sequencerNodes, pianoSequence);
+    
+    // Update generation time display for seq mode
+    const genTimeEl = document.getElementById('generationTime');
+    if (genTimeEl) {
+      genTimeEl.textContent = 'Seq mode: Playing piano sequence (tonejs-json-sequencer)';
+    }
+  } catch (error) {
+    console.error('Failed to play sequence:', error);
+    
+    // Show error to user
+    const genTimeEl = document.getElementById('generationTime');
+    if (genTimeEl) {
+      genTimeEl.textContent = 'Seq mode: Error playing sequence';
+    }
   }
 }
 
@@ -563,8 +564,8 @@ export async function init(): Promise<void> {
         console.error('Error while playing audio:', error);
       });
     }
-    // Use 1 second interval for seq mode, otherwise use calculated duration
-    const interval = currentMode === 'seq' ? 1000 : getDuration() * 1000;
+    // Use 2 second interval for seq mode (piano sequence duration), otherwise use calculated duration
+    const interval = currentMode === 'seq' ? 2000 : getDuration() * 1000;
     playbackTimeoutId = setTimeout(scheduleNextPlay, interval);
   }
   
@@ -638,7 +639,7 @@ function updateStatusDisplay(): void {
       const duration = getDuration();
       statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
     } else {
-      statusEl.textContent = 'Seq Mode: Playing stored WAV every 1 second';
+      statusEl.textContent = 'Seq Mode: Playing piano sequence (tonejs-json-sequencer) every 2 seconds';
     }
   }
 }
@@ -690,6 +691,9 @@ export function dispose(): void {
     }
     currentPlayer = null;
   }
+  
+  // Clean up sequencer nodes
+  sequencerNodes.disposeAll();
   
   // Clean up stored WAV URL
   if (lastGeneratedWavUrl) {
