@@ -9,9 +9,11 @@ export default defineConfig({
     port: 8080,
     open: true,
     fs: {
-      // Allow serving files from wasm-audio/pkg directory only
-      // This is needed for WASM module imports during development
-      allow: ['./wasm-audio/pkg'],
+      // Allow serving files from project root directory for development
+      // '.' refers to the directory containing vite.config.ts
+      // This is required for index.html, src files, and wasm-audio/pkg
+      // Note: This does NOT expose parent directories or system files
+      allow: ['.'],
     },
   },
   
