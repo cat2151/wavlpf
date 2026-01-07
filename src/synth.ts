@@ -308,7 +308,7 @@ async function playAudioSeq(): Promise<void> {
     // Update generation time display for seq mode
     const genTimeEl = document.getElementById('generationTime');
     if (genTimeEl) {
-      genTimeEl.textContent = 'Seq mode: Playing piano sequence (tonejs-json-sequencer)';
+      genTimeEl.textContent = 'Seq mode: Playing piano-style sequence (tonejs-json-sequencer)';
     }
   } catch (error) {
     console.error('Failed to play sequence:', error);
@@ -639,7 +639,7 @@ function updateStatusDisplay(): void {
       const duration = getDuration();
       statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
     } else {
-      statusEl.textContent = 'Seq Mode: Playing piano sequence (tonejs-json-sequencer) every 2 seconds';
+      statusEl.textContent = 'Seq Mode: Playing piano-style sequence (tonejs-json-sequencer) every 2 seconds';
     }
   }
 }

@@ -5,22 +5,28 @@
 import type { SequenceEvent } from './sequencer';
 
 /**
- * Default piano sequence - based on the Sampler (Piano) sample
- * from tonejs-json-sequencer
+ * Default piano-style sequence using PolySynth instead of Sampler
+ * Based on the structure of the Sampler (Piano) sample
+ * from tonejs-json-sequencer, but using synthesizer to avoid
+ * external audio file dependencies
  */
 export const pianoSequence: SequenceEvent[] = [
   {
     eventType: 'createNode',
     nodeId: 0,
-    nodeType: 'Sampler',
+    nodeType: 'PolySynth',
     args: {
-      urls: {
-        C4: 'https://tonejs.github.io/audio/salamander/C4.mp3',
-        E4: 'https://tonejs.github.io/audio/salamander/E4.mp3',
-        G4: 'https://tonejs.github.io/audio/salamander/G4.mp3',
-        B4: 'https://tonejs.github.io/audio/salamander/B4.mp3',
-      },
-      release: 1,
+      options: {
+        oscillator: {
+          type: 'sine'
+        },
+        envelope: {
+          attack: 0.001,
+          decay: 0.2,
+          sustain: 0.3,
+          release: 0.5
+        }
+      }
     }
   },
   {
