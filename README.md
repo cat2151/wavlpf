@@ -90,7 +90,14 @@ npm run build
 
 This performs TypeScript type checking, builds the Rust WASM module, and creates a production bundle with Vite.
 
-**Note on wasm-opt**: By default, the build performs additional WASM optimizations using `wasm-opt` (from binaryen). This has been verified to work correctly in CI environments. If you need to disable `wasm-opt` (for debugging or network restrictions), you can uncomment the settings in `wasm-audio/Cargo.toml`.
+**⚠️ Critical Note on wasm-opt ⚠️**: 
+- By default, the build uses `wasm-opt` (from binaryen) for WASM optimization
+- **This has been verified to work correctly in ALL environments including CI**
+- **Setting `wasm-opt = false` in `wasm-audio/Cargo.toml` is strictly PROHIBITED**
+- In the past, AI agents incorrectly added `wasm-opt = false` twice based on unfounded assumptions
+- The owner has verified that wasm-opt works correctly when enabled
+- Do NOT change the default setting (wasm-opt enabled)
+- Even for local debugging, do NOT commit changes that disable wasm-opt
 
 ### Preview Production Build
 
