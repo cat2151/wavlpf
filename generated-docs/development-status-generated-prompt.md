@@ -1,4 +1,4 @@
-Last updated: 2026-01-08
+Last updated: 2026-01-10
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -209,11 +209,13 @@ Last updated: 2026-01-08
 - INTEGRATION_BLOCKERS_SUMMARY.md
 - ISSUE_39_SUMMARY.md
 - LICENSE
+- MODULE_DEPENDENCIES.md
 - PERFORMANCE_DISPLAY_DEMO.md
 - PERFORMANCE_TIMING_ANALYSIS.md
 - README.ja.md
 - README.md
 - README_ANALYSIS.md
+- REFACTORING_SUMMARY.md
 - SUMMARY.md
 - _config.yml
 - generated-docs/project-overview-generated-prompt.md
@@ -236,50 +238,63 @@ Last updated: 2026-01-08
 - issue-notes/52.md
 - issue-notes/53.md
 - issue-notes/55.md
+- issue-notes/57.md
+- issue-notes/58.md
+- issue-notes/59.md
+- issue-notes/61.md
+- issue-notes/63.md
 - package-lock.json
 - package.json
+- src/audio-player.ts
 - src/index.ts
 - src/performance-stats.test.ts
 - src/performance-stats.ts
+- src/playback-mode.ts
 - src/settings.test.ts
 - src/settings.ts
 - src/synth.ts
+- src/timing.test.ts
+- src/timing.ts
+- src/ui-params.test.ts
+- src/ui-params.ts
 - src/wasmAudio.ts
 - src/wav.test.ts
 - src/wav.ts
 - tsconfig.json
 - vite.config.ts
 - wasm-audio/Cargo.toml
+- wasm-audio/README.md
+- wasm-audio/src/audio_renderer.rs
+- wasm-audio/src/filter.rs
 - wasm-audio/src/lib.rs
+- wasm-audio/src/oscillator.rs
 
 ## 現在のオープンIssues
-## [Issue #56](../issue-notes/56.md): Implement multi-note JSON sequencer for Seq mode using tonejs-json-sequencer
-## seqモードについて、複数音符のseqを実装する - Issue #55
-
-この issue では、seqモードに複数音符のシーケンス機能を実装し、tonejs-json-sequencerライブラリを利用します。
-
-### ✅ 実装完了 + レビューフィードバック対応
-
-- [x] Issue内容を確認し、tonejs-json-sequencerライブラリとサンプル（Sampler Piano）を調査
-- [x] tonejs-json-sequencerの必要なファイルを統合
-  - [x] scheduleOrExecuteEvent.jsの実装をsrc/sequencer.ts...
-ラベル: 
---- issue-notes/56.md の内容 ---
-
-```markdown
-
-```
-
-## [Issue #55](../issue-notes/55.md): seqモードについて、複数音符のseqを実装する。tonejs-json-sequencer ライブラリを利用する。そのサンプルの、sampler pianoとほぼ同じJSONと音符にする
-[issue-notes/55.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/55.md)
+## [Issue #58](../issue-notes/58.md): （cat-oscilloscope が導入できるようになったら）波形ビジュアライズを実装する
+[issue-notes/58.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/58.md)
 
 ...
 ラベル: 
---- issue-notes/55.md の内容 ---
+--- issue-notes/58.md の内容 ---
 
 ```markdown
-# issue （json seq リポジトリでsamplerが実装されたあと）複数音符のseqを、seq jsonで実装する #55
-[issues #55](https://github.com/cat2151/wavlpf/issues/55)
+# issue （cat-oscilloscope が導入できるようになったら）波形ビジュアライズを実装する #58
+[issues #58](https://github.com/cat2151/wavlpf/issues/58)
+
+
+
+```
+
+## [Issue #57](../issue-notes/57.md): tonejs-json-sequencer がCDN importできるようになるまで待つ
+[issue-notes/57.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/57.md)
+
+...
+ラベル: 
+--- issue-notes/57.md の内容 ---
+
+```markdown
+# issue tonejs-json-sequencer がCDN importできるようになるまで待つ #57
+[issues #57](https://github.com/cat2151/wavlpf/issues/57)
 
 
 
@@ -476,6 +491,97 @@ jobs:
 {% endraw %}
 ```
 
+### .github/actions-tmp/issue-notes/7.md
+```md
+{% raw %}
+# issue issue note生成できるかのtest用 #7
+[issues #7](https://github.com/cat2151/github-actions/issues/7)
+
+- 生成できた
+- closeとする
+
+{% endraw %}
+```
+
+### .github/actions-tmp/issue-notes/8.md
+```md
+{% raw %}
+# issue 関数コールグラフhtmlビジュアライズ生成の対象ソースファイルを、呼び出し元ymlで指定できるようにする #8
+[issues #8](https://github.com/cat2151/github-actions/issues/8)
+
+# これまでの課題
+- 以下が決め打ちになっていた
+```
+  const allowedFiles = [
+    'src/main.js',
+    'src/mml2json.js',
+    'src/play.js'
+  ];
+```
+
+# 対策
+- 呼び出し元ymlで指定できるようにする
+
+# agent
+- agentにやらせることができれば楽なので、初手agentを試した
+- 失敗
+    - ハルシネーションしてscriptを大量破壊した
+- 分析
+    - 修正対象scriptはagentが生成したもの
+    - 低品質な生成結果でありソースが巨大
+    - ハルシネーションで破壊されやすいソース
+    - AIの生成したソースは、必ずしもAIフレンドリーではない
+
+# 人力リファクタリング
+- 低品質コードを、最低限agentが扱えて、ハルシネーションによる大量破壊を防止できる内容、にする
+- 手短にやる
+    - そもそもビジュアライズは、agentに雑に指示してやらせたもので、
+    - 今後別のビジュアライザを選ぶ可能性も高い
+    - 今ここで手間をかけすぎてコンコルド効果（サンクコストバイアス）を増やすのは、project群をトータルで俯瞰して見たとき、損
+- 対象
+    - allowedFiles のあるソース
+        - callgraph-utils.cjs
+            - たかだか300行未満のソースである
+            - この程度でハルシネーションされるのは予想外
+            - やむなし、リファクタリングでソース分割を進める
+
+# agentに修正させる
+## prompt
+```
+allowedFilesを引数で受け取るようにしたいです。
+ないならエラー。
+最終的に呼び出し元すべてに波及して修正したいです。
+
+呼び出し元をたどってエントリポイントも見つけて、
+エントリポイントにおいては、
+引数で受け取ったjsonファイル名 allowedFiles.js から
+jsonファイル allowedFiles.jsonの内容をreadして
+変数 allowedFilesに格納、
+後続処理に引き渡す、としたいです。
+
+まずplanしてください。
+planにおいては、修正対象のソースファイル名と関数名を、呼び出し元を遡ってすべて特定し、listしてください。
+```
+
+# 修正が順調にできた
+- コマンドライン引数から受け取る作りになっていなかったので、そこだけ指示して修正させた
+- yml側は人力で修正した
+
+# 他のリポジトリから呼び出した場合にバグらないよう修正する
+- 気付いた
+    - 共通ワークフローとして他のリポジトリから使った場合はバグるはず。
+        - ymlから、共通ワークフロー側リポジトリのcheckoutが漏れているので。
+- 他のyml同様に修正する
+- あわせて全体にymlをリファクタリングし、修正しやすくし、今後のyml読み書きの学びにしやすくする
+
+# local WSL + act : test green
+
+# closeとする
+- もし生成されたhtmlがNGの場合は、別issueとするつもり
+
+{% endraw %}
+```
+
 ### issue-notes/52.md
 ```md
 {% raw %}
@@ -487,11 +593,22 @@ jobs:
 {% endraw %}
 ```
 
-### issue-notes/55.md
+### issue-notes/57.md
 ```md
 {% raw %}
-# issue （json seq リポジトリでsamplerが実装されたあと）複数音符のseqを、seq jsonで実装する #55
-[issues #55](https://github.com/cat2151/wavlpf/issues/55)
+# issue tonejs-json-sequencer がCDN importできるようになるまで待つ #57
+[issues #57](https://github.com/cat2151/wavlpf/issues/57)
+
+
+
+{% endraw %}
+```
+
+### issue-notes/58.md
+```md
+{% raw %}
+# issue （cat-oscilloscope が導入できるようになったら）波形ビジュアライズを実装する #58
+[issues #58](https://github.com/cat2151/wavlpf/issues/58)
 
 
 
@@ -500,30 +617,38 @@ jobs:
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-6ce8be7 Add issue note for #55 [auto]
-0a28c6b Auto-translate README.ja.md to README.md [auto]
-1883695 Merge pull request #54 from cat2151/copilot/enforce-wasm-opt-true
-0e1bdca wasm-opt設定をtrueに修正し、厳重な警告を追加
-a215845 Initial plan
-231e46a Add issue note for #53 [auto]
-9f319c1 Merge pull request #51 from cat2151/copilot/add-global-wav-storage
-4fb2227 Simplify nested conditions in switchMode per code review
-442ffd0 Clarify vite.config.ts security boundary with improved comments
-aab3474 Address PR review comments: improve docs, ARIA attributes, and security
+130bf24 Merge pull request #64 from cat2151/copilot/refactor-typescript-code
+90ae796 Fix documentation: update line counts and test counts
+d1dd5c4 Add comprehensive refactoring documentation
+0198952 Add input validation and improve error handling
+ba3d8b9 Refactor TypeScript code following Single Responsibility Principle
+fd31678 Initial plan
+b6ad3b1 Add issue note for #63 [auto]
+4350ef1 Add issue note for #61 [auto]
+ba05cac Merge pull request #60 from cat2151/copilot/refactor-rust-source-code
+19e3224 Add documentation for refactored Rust modules
 
 ### 変更されたファイル:
-.github/copilot-instructions.md
-README.ja.md
-README.md
-index.html
-issue-notes/50.md
-issue-notes/52.md
-issue-notes/53.md
-issue-notes/55.md
+MODULE_DEPENDENCIES.md
+REFACTORING_SUMMARY.md
+issue-notes/57.md
+issue-notes/58.md
+issue-notes/59.md
+issue-notes/61.md
+issue-notes/63.md
+src/audio-player.ts
+src/playback-mode.ts
 src/synth.ts
-vite.config.ts
-wasm-audio/Cargo.toml
+src/timing.test.ts
+src/timing.ts
+src/ui-params.test.ts
+src/ui-params.ts
+wasm-audio/README.md
+wasm-audio/src/audio_renderer.rs
+wasm-audio/src/filter.rs
+wasm-audio/src/lib.rs
+wasm-audio/src/oscillator.rs
 
 
 ---
-Generated at: 2026-01-08 07:03:06 JST
+Generated at: 2026-01-10 07:03:23 JST

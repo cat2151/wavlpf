@@ -1,4 +1,4 @@
-Last updated: 2026-01-08
+Last updated: 2026-01-10
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -275,11 +275,13 @@ MIT
 📖 INTEGRATION_BLOCKERS_SUMMARY.md
 📖 ISSUE_39_SUMMARY.md
 📄 LICENSE
+📖 MODULE_DEPENDENCIES.md
 📖 PERFORMANCE_DISPLAY_DEMO.md
 📖 PERFORMANCE_TIMING_ANALYSIS.md
 📖 README.ja.md
 📖 README.md
 📖 README_ANALYSIS.md
+📖 REFACTORING_SUMMARY.md
 📖 SUMMARY.md
 📄 _config.yml
 📁 generated-docs/
@@ -303,15 +305,26 @@ MIT
   📖 52.md
   📖 53.md
   📖 55.md
+  📖 57.md
+  📖 58.md
+  📖 59.md
+  📖 61.md
+  📖 63.md
 📊 package-lock.json
 📊 package.json
 📁 src/
+  📘 audio-player.ts
   📘 index.ts
   📘 performance-stats.test.ts
   📘 performance-stats.ts
+  📘 playback-mode.ts
   📘 settings.test.ts
   📘 settings.ts
   📘 synth.ts
+  📘 timing.test.ts
+  📘 timing.ts
+  📘 ui-params.test.ts
+  📘 ui-params.ts
   📘 wasmAudio.ts
   📘 wav.test.ts
   📘 wav.ts
@@ -319,13 +332,21 @@ MIT
 📘 vite.config.ts
 📁 wasm-audio/
   📄 Cargo.toml
+  📖 README.md
   📁 src/
+    📄 audio_renderer.rs
+    📄 filter.rs
     📄 lib.rs
+    📄 oscillator.rs
 
 ## ファイル詳細分析
 **index.html** (258行, 7045バイト)
   - 関数: なし
   - インポート: なし
+
+**src/audio-player.ts** (125行, 2760バイト)
+  - 関数: loadTone, isToneLoaded, startAudioContext, isAudioContextRunning, playWavUrl, stopAndCleanup, if, catch
+  - インポート: tone
 
 **src/index.ts** (21行, 450バイト)
   - 関数: if
@@ -339,6 +360,10 @@ MIT
   - 関数: createPerformanceStats, addPerformanceSample, calculatePerformanceStats, resetPerformanceStats, if
   - インポート: なし
 
+**src/playback-mode.ts** (75行, 1449バイト)
+  - 関数: getCurrentMode, updateModeUI, switchMode, if
+  - インポート: なし
+
 **src/settings.test.ts** (126行, 4869バイト)
   - 関数: なし
   - インポート: vitest
@@ -347,9 +372,25 @@ MIT
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (700行, 20810バイト)
-  - 関数: getCurrentSettings, getDuration, readNumericParameter, readParameters, getFilterParams, renderAudio, playAudioWav, playAudioSeq, playAudio, switchMode, updateUIFields, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
-  - インポート: ./wav, tone, ./wasmAudio
+**src/synth.ts** (498行, 14347バイト)
+  - 関数: getCurrentSettings, readParameters, renderAudio, playAudioWav, playAudioSeq, playAudio, handleModeSwitch, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if
+  - インポート: ./wav, ./wasmAudio, ./timing
+
+**src/timing.test.ts** (43行, 1500バイト)
+  - 関数: なし
+  - インポート: vitest, ./timing
+
+**src/timing.ts** (28行, 733バイト)
+  - 関数: calculateDuration, if
+  - インポート: なし
+
+**src/ui-params.test.ts** (76行, 2460バイト)
+  - 関数: なし
+  - インポート: vitest
+
+**src/ui-params.ts** (185行, 5478バイト)
+  - 関数: readNumericParameter, readParametersFromUI, updateUIFields, mapMouseToFilterParams, updateMousePositionDisplay, if
+  - インポート: ./settings
 
 **src/wasmAudio.ts** (96行, 2245バイト)
   - 関数: initWasm, isWasmInitialized, renderAudioWasm, if, catch
@@ -368,38 +409,49 @@ MIT
   - インポート: vite
 
 ## 関数呼び出し階層
-- if (src/index.ts)
+- if (src/audio-player.ts)
+  - loadTone (src/audio-player.ts)
+    - isToneLoaded ()
+      - startAudioContext ()
+      - isAudioContextRunning ()
+      - playWavUrl ()
+      - stopAndCleanup ()
+      - dispose ()
   - init ()
+    - catch (src/audio-player.ts)
+      - validateSettings (src/settings.ts)
+      - loadSettings ()
+      - saveSettings ()
+      - exportSettingsToFile ()
+      - importSettingsFromFile ()
+      - initWasm ()
+      - isWasmInitialized ()
+      - renderAudioWasm ()
     - createPerformanceStats (src/performance-stats.ts)
       - addPerformanceSample ()
       - calculatePerformanceStats ()
       - resetPerformanceStats ()
-    - loadSettings ()
-      - validateSettings (src/settings.ts)
-      - saveSettings ()
-      - exportSettingsToFile ()
-      - importSettingsFromFile ()
-    - catch (src/settings.ts)
-      - getCurrentSettings (src/synth.ts)
-      - getDuration ()
-      - readNumericParameter ()
+    - getCurrentMode (src/playback-mode.ts)
+      - updateModeUI ()
+      - switchMode ()
+    - getCurrentSettings (src/synth.ts)
       - readParameters ()
-      - getFilterParams ()
       - renderAudio ()
       - playAudioWav ()
       - playAudioSeq ()
       - playAudio ()
-      - switchMode ()
-      - updateUIFields ()
+      - handleModeSwitch ()
       - scheduleNextPlay ()
       - updateStatusDisplay ()
       - updateGenerationTimeDisplay ()
-      - dispose ()
-      - initWasm ()
-      - isWasmInitialized ()
-      - renderAudioWasm ()
+      - calculateDuration ()
+      - readParametersFromUI ()
+      - updateUIFields ()
+      - mapMouseToFilterParams ()
+      - updateMousePositionDisplay ()
       - generateWav ()
       - createWavBlobUrl ()
+  - readNumericParameter (src/ui-params.ts)
   - writeString ()
 - handleInputChange (src/synth.ts)
 - handleClick (src/synth.ts)
@@ -415,11 +467,13 @@ DEVELOPMENT.md
 IMPLEMENTATION_EXAMPLES.md
 INTEGRATION_BLOCKERS_SUMMARY.md
 ISSUE_39_SUMMARY.md
+MODULE_DEPENDENCIES.md
 PERFORMANCE_DISPLAY_DEMO.md
 PERFORMANCE_TIMING_ANALYSIS.md
 README.ja.md
 README.md
 README_ANALYSIS.md
+REFACTORING_SUMMARY.md
 SUMMARY.md
 index.html
 issue-notes/21.md
@@ -435,8 +489,6 @@ issue-notes/39.md
 issue-notes/41.md
 issue-notes/44.md
 issue-notes/46.md
-issue-notes/48.md
-issue-notes/50.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -449,4 +501,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-08 07:03:06 JST
+Generated at: 2026-01-10 07:03:23 JST
