@@ -11,11 +11,11 @@
 ### 変更後
 以下の4つの新しいモジュールに責任を分離:
 
-#### 1. `timing.ts` (23行)
+#### 1. `timing.ts` (27行)
 **責任**: BPM/beatから再生周期を計算
 - `calculateDuration(bpm, beat)`: 再生周期を秒単位で計算
 
-#### 2. `ui-params.ts` (183行)
+#### 2. `ui-params.ts` (184行)
 **責任**: UIパラメータの読み書きとマウストラッキング
 - `readNumericParameter()`: DOM要素から数値パラメータを読み取り
 - `readParametersFromUI()`: すべてのUIパラメータを読み込み
@@ -47,11 +47,11 @@
 
 ## テスト
 すべての新しいモジュールに対応するテストを追加:
-- `timing.test.ts`: 4テスト
+- `timing.test.ts`: 8テスト
 - `ui-params.test.ts`: 7テスト
 - 既存テスト: 35テスト
 
-**合計**: 46テストすべて合格 ✓
+**合計**: 50テストすべて合格 ✓
 
 ## 利点
 
