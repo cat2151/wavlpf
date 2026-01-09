@@ -84,7 +84,8 @@ export function readParametersFromUI(currentSettings: Settings): Settings {
     }
   }
   
-  // Decay Rate: 0.01以上で検証(0は減衰なしなので最小値を0.01に設定)
+  // Decay Rate: 0.01以上で検証
+  // Note: UI上では0入力は無効として扱われ、0.01が最小値となります
   const decayRateValue = readNumericParameter('decayRate', (value) => value >= 0.01);
   if (decayRateValue !== null) {
     result.decayRate = decayRateValue;

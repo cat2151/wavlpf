@@ -22,5 +22,21 @@ describe('timing', () => {
       const duration = calculateDuration(240, 16);
       expect(duration).toBeCloseTo(0.0625, 5); // 62.5ms
     });
+
+    it('should throw error for invalid bpm (0)', () => {
+      expect(() => calculateDuration(0, 4)).toThrow('Invalid parameters');
+    });
+
+    it('should throw error for invalid bpm (negative)', () => {
+      expect(() => calculateDuration(-120, 4)).toThrow('Invalid parameters');
+    });
+
+    it('should throw error for invalid beat (0)', () => {
+      expect(() => calculateDuration(120, 0)).toThrow('Invalid parameters');
+    });
+
+    it('should throw error for invalid beat (negative)', () => {
+      expect(() => calculateDuration(120, -4)).toThrow('Invalid parameters');
+    });
   });
 });
