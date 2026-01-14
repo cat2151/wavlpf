@@ -1,4 +1,4 @@
-Last updated: 2026-01-10
+Last updated: 2026-01-15
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -252,6 +252,7 @@ MIT
 依存関係:
 {
   "dependencies": {
+    "cat-oscilloscope": "file:../../../../../tmp/cat-oscilloscope",
     "tone": "^14.7.77"
   },
   "devDependencies": {
@@ -268,12 +269,15 @@ MIT
 📄 .gitignore
 📖 ARCHITECTURE_DIAGRAMS.md
 📖 CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md
+📖 CAT_OSCILLOSCOPE_INSTALLATION.md
 📖 CAT_OSCILLOSCOPE_INTEGRATION.md
+📖 CAT_OSCILLOSCOPE_INTEGRATION_REPORT.md
 📖 CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md
 📖 DEVELOPMENT.md
 📖 IMPLEMENTATION_EXAMPLES.md
 📖 INTEGRATION_BLOCKERS_SUMMARY.md
 📖 ISSUE_39_SUMMARY.md
+📖 ISSUE_58_COMPLETION_REPORT.md
 📄 LICENSE
 📖 MODULE_DEPENDENCIES.md
 📖 PERFORMANCE_DISPLAY_DEMO.md
@@ -310,11 +314,14 @@ MIT
   📖 59.md
   📖 61.md
   📖 63.md
+  📖 66.md
 📊 package-lock.json
 📊 package.json
 📁 src/
   📘 audio-player.ts
   📘 index.ts
+  📘 oscilloscope.test.ts
+  📘 oscilloscope.ts
   📘 performance-stats.test.ts
   📘 performance-stats.ts
   📘 playback-mode.ts
@@ -340,7 +347,7 @@ MIT
     📄 oscillator.rs
 
 ## ファイル詳細分析
-**index.html** (258行, 7045バイト)
+**index.html** (298行, 8106バイト)
   - 関数: なし
   - インポート: なし
 
@@ -351,6 +358,14 @@ MIT
 **src/index.ts** (21行, 450バイト)
   - 関数: if
   - インポート: ./synth
+
+**src/oscilloscope.test.ts** (201行, 6687バイト)
+  - 関数: if, for
+  - インポート: vitest
+
+**src/oscilloscope.ts** (150行, 4545バイト)
+  - 関数: initOscilloscope, cleanupDummyCanvases, validateInputs, updateOscilloscope, stopOscilloscope, isOscilloscopeInitialized, if
+  - インポート: cat-oscilloscope
 
 **src/performance-stats.test.ts** (208行, 6502バイト)
   - 関数: なし
@@ -372,8 +387,8 @@ MIT
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (498行, 14347バイト)
-  - 関数: getCurrentSettings, readParameters, renderAudio, playAudioWav, playAudioSeq, playAudio, handleModeSwitch, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if
+**src/synth.ts** (567行, 16471バイト)
+  - 関数: getCurrentSettings, displayOscilloscopeError, readParameters, renderAudio, playAudioWav, playAudioSeq, playAudio, handleModeSwitch, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
   - インポート: ./wav, ./wasmAudio, ./timing
 
 **src/timing.test.ts** (43行, 1500バイト)
@@ -424,17 +439,16 @@ MIT
       - saveSettings ()
       - exportSettingsToFile ()
       - importSettingsFromFile ()
-      - initWasm ()
-      - isWasmInitialized ()
-      - renderAudioWasm ()
-    - createPerformanceStats (src/performance-stats.ts)
+      - initOscilloscope ()
+      - updateOscilloscope ()
+      - isOscilloscopeInitialized ()
+      - createPerformanceStats (src/performance-stats.ts)
       - addPerformanceSample ()
       - calculatePerformanceStats ()
-      - resetPerformanceStats ()
-    - getCurrentMode (src/playback-mode.ts)
-      - updateModeUI ()
+      - getCurrentMode (src/playback-mode.ts)
       - switchMode ()
-    - getCurrentSettings (src/synth.ts)
+      - getCurrentSettings (src/synth.ts)
+      - displayOscilloscopeError ()
       - readParameters ()
       - renderAudio ()
       - playAudioWav ()
@@ -449,24 +463,35 @@ MIT
       - updateUIFields ()
       - mapMouseToFilterParams ()
       - updateMousePositionDisplay ()
+      - initWasm ()
+      - isWasmInitialized ()
+      - renderAudioWasm ()
       - generateWav ()
       - createWavBlobUrl ()
+  - stopOscilloscope ()
+    - cleanupDummyCanvases ()
+      - validateInputs ()
+  - resetPerformanceStats ()
+  - updateModeUI ()
   - readNumericParameter (src/ui-params.ts)
   - writeString ()
+- for (src/oscilloscope.test.ts)
 - handleInputChange (src/synth.ts)
 - handleClick (src/synth.ts)
-- for (src/wav.ts)
 
 
 ## プロジェクト構造（ファイル一覧）
 ARCHITECTURE_DIAGRAMS.md
 CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md
+CAT_OSCILLOSCOPE_INSTALLATION.md
 CAT_OSCILLOSCOPE_INTEGRATION.md
+CAT_OSCILLOSCOPE_INTEGRATION_REPORT.md
 CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md
 DEVELOPMENT.md
 IMPLEMENTATION_EXAMPLES.md
 INTEGRATION_BLOCKERS_SUMMARY.md
 ISSUE_39_SUMMARY.md
+ISSUE_58_COMPLETION_REPORT.md
 MODULE_DEPENDENCIES.md
 PERFORMANCE_DISPLAY_DEMO.md
 PERFORMANCE_TIMING_ANALYSIS.md
@@ -486,9 +511,6 @@ issue-notes/33.md
 issue-notes/35.md
 issue-notes/37.md
 issue-notes/39.md
-issue-notes/41.md
-issue-notes/44.md
-issue-notes/46.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -501,4 +523,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-10 07:03:23 JST
+Generated at: 2026-01-15 07:03:09 JST

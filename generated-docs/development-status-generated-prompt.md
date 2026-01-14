@@ -1,4 +1,4 @@
-Last updated: 2026-01-10
+Last updated: 2026-01-15
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -202,12 +202,15 @@ Last updated: 2026-01-10
 - .gitignore
 - ARCHITECTURE_DIAGRAMS.md
 - CAT_OSCILLOSCOPE_FEASIBILITY_ANALYSIS.md
+- CAT_OSCILLOSCOPE_INSTALLATION.md
 - CAT_OSCILLOSCOPE_INTEGRATION.md
+- CAT_OSCILLOSCOPE_INTEGRATION_REPORT.md
 - CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md
 - DEVELOPMENT.md
 - IMPLEMENTATION_EXAMPLES.md
 - INTEGRATION_BLOCKERS_SUMMARY.md
 - ISSUE_39_SUMMARY.md
+- ISSUE_58_COMPLETION_REPORT.md
 - LICENSE
 - MODULE_DEPENDENCIES.md
 - PERFORMANCE_DISPLAY_DEMO.md
@@ -243,10 +246,13 @@ Last updated: 2026-01-10
 - issue-notes/59.md
 - issue-notes/61.md
 - issue-notes/63.md
+- issue-notes/66.md
 - package-lock.json
 - package.json
 - src/audio-player.ts
 - src/index.ts
+- src/oscilloscope.test.ts
+- src/oscilloscope.ts
 - src/performance-stats.test.ts
 - src/performance-stats.ts
 - src/playback-mode.ts
@@ -270,16 +276,38 @@ Last updated: 2026-01-10
 - wasm-audio/src/oscillator.rs
 
 ## 現在のオープンIssues
-## [Issue #58](../issue-notes/58.md): （cat-oscilloscope が導入できるようになったら）波形ビジュアライズを実装する
-[issue-notes/58.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/58.md)
+## [Issue #67](../issue-notes/67.md): Remove cat-oscilloscope local dependency causing CI failure
+# CI修正完了 ✅
+
+## 実施内容
+- [x] CIエラーの原因を特定
+- [x] `package.json`から`cat-oscilloscope`依存関係を削除
+- [x] `src/oscilloscope.ts`をスタブ実装に変更
+- [x] すべてのテストが成功することを確認（72テスト合格）
+- [x] ビルドが成功することを確認
+- [x] コードレビュー完了（スタイルの小さな提案のみ）
+- [x] セキュリティスキャン完了（問題なし）
+- [x] PRレビューコメントに対応
+
+## PRレビューコメントへの対応
+- [x] `any`型を削除し、適切なインターフェース（`...
+ラベル: 
+--- issue-notes/67.md の内容 ---
+
+```markdown
+
+```
+
+## [Issue #66](../issue-notes/66.md): CIがエラー
+[issue-notes/66.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/66.md)
 
 ...
 ラベル: 
---- issue-notes/58.md の内容 ---
+--- issue-notes/66.md の内容 ---
 
 ```markdown
-# issue （cat-oscilloscope が導入できるようになったら）波形ビジュアライズを実装する #58
-[issues #58](https://github.com/cat2151/wavlpf/issues/58)
+# issue CIがエラー #66
+[issues #66](https://github.com/cat2151/wavlpf/issues/66)
 
 
 
@@ -503,81 +531,69 @@ jobs:
 {% endraw %}
 ```
 
-### .github/actions-tmp/issue-notes/8.md
-```md
+### .github/actions-tmp/package.json
+```json
 {% raw %}
-# issue 関数コールグラフhtmlビジュアライズ生成の対象ソースファイルを、呼び出し元ymlで指定できるようにする #8
-[issues #8](https://github.com/cat2151/github-actions/issues/8)
+{
+  "name": "actions-tmp",
+  "version": "1.0.0",
+  "description": "This repository is a **collection of GitHub Actions shared workflows reusable across multiple projects.**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@octokit/rest": "^22.0.1"
+  }
+}
 
-# これまでの課題
-- 以下が決め打ちになっていた
-```
-  const allowedFiles = [
-    'src/main.js',
-    'src/mml2json.js',
-    'src/play.js'
-  ];
-```
-
-# 対策
-- 呼び出し元ymlで指定できるようにする
-
-# agent
-- agentにやらせることができれば楽なので、初手agentを試した
-- 失敗
-    - ハルシネーションしてscriptを大量破壊した
-- 分析
-    - 修正対象scriptはagentが生成したもの
-    - 低品質な生成結果でありソースが巨大
-    - ハルシネーションで破壊されやすいソース
-    - AIの生成したソースは、必ずしもAIフレンドリーではない
-
-# 人力リファクタリング
-- 低品質コードを、最低限agentが扱えて、ハルシネーションによる大量破壊を防止できる内容、にする
-- 手短にやる
-    - そもそもビジュアライズは、agentに雑に指示してやらせたもので、
-    - 今後別のビジュアライザを選ぶ可能性も高い
-    - 今ここで手間をかけすぎてコンコルド効果（サンクコストバイアス）を増やすのは、project群をトータルで俯瞰して見たとき、損
-- 対象
-    - allowedFiles のあるソース
-        - callgraph-utils.cjs
-            - たかだか300行未満のソースである
-            - この程度でハルシネーションされるのは予想外
-            - やむなし、リファクタリングでソース分割を進める
-
-# agentに修正させる
-## prompt
-```
-allowedFilesを引数で受け取るようにしたいです。
-ないならエラー。
-最終的に呼び出し元すべてに波及して修正したいです。
-
-呼び出し元をたどってエントリポイントも見つけて、
-エントリポイントにおいては、
-引数で受け取ったjsonファイル名 allowedFiles.js から
-jsonファイル allowedFiles.jsonの内容をreadして
-変数 allowedFilesに格納、
-後続処理に引き渡す、としたいです。
-
-まずplanしてください。
-planにおいては、修正対象のソースファイル名と関数名を、呼び出し元を遡ってすべて特定し、listしてください。
+{% endraw %}
 ```
 
-# 修正が順調にできた
-- コマンドライン引数から受け取る作りになっていなかったので、そこだけ指示して修正させた
-- yml側は人力で修正した
-
-# 他のリポジトリから呼び出した場合にバグらないよう修正する
-- 気付いた
-    - 共通ワークフローとして他のリポジトリから使った場合はバグるはず。
-        - ymlから、共通ワークフロー側リポジトリのcheckoutが漏れているので。
-- 他のyml同様に修正する
-- あわせて全体にymlをリファクタリングし、修正しやすくし、今後のyml読み書きの学びにしやすくする
-
-# local WSL + act : test green
-
-# closeとする
-- もし生成されたhtmlがNGの場合は、別issueとするつもり
+### package.json
+```json
+{% raw %}
+{
+  "name": "wavlpf",
+  "version": "1.0.0",
+  "description": "Simple software synthesizer with LPF filter",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:wasm && tsc && vite build",
+    "build:wasm": "cd wasm-audio && wasm-pack build --target web --release",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "coverage": "vitest run --coverage",
+    "serve": "vite preview"
+  },
+  "keywords": [
+    "synthesizer",
+    "audio",
+    "lpf",
+    "tone.js"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cat-oscilloscope": "file:../../../../../tmp/cat-oscilloscope",
+    "tone": "^14.7.77"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@vitest/ui": "^4.0.16",
+    "happy-dom": "^20.0.11",
+    "typescript": "^5.3.3",
+    "vite": "^7.3.0",
+    "vitest": "^4.0.16"
+  }
+}
 
 {% endraw %}
 ```
@@ -604,39 +620,205 @@ planにおいては、修正対象のソースファイル名と関数名を、�
 {% endraw %}
 ```
 
-### issue-notes/58.md
+### issue-notes/66.md
 ```md
 {% raw %}
-# issue （cat-oscilloscope が導入できるようになったら）波形ビジュアライズを実装する #58
-[issues #58](https://github.com/cat2151/wavlpf/issues/58)
+# issue CIがエラー #66
+[issues #66](https://github.com/cat2151/wavlpf/issues/66)
 
 
 
 {% endraw %}
 ```
 
+### src/oscilloscope.ts
+```ts
+{% raw %}
+/**
+ * Oscilloscope visualization integration using cat-oscilloscope library
+ */
+import { Oscilloscope, BufferSource } from 'cat-oscilloscope';
+
+let oscilloscope: Oscilloscope | null = null;
+let currentBufferSource: BufferSource | null = null;
+let dummyCanvases: HTMLCanvasElement[] = [];
+let isUpdating = false; // Guard against concurrent updates
+
+/**
+ * Initialize the oscilloscope with a canvas element
+ * Note: cat-oscilloscope requires 5 canvas elements for full functionality:
+ * - Main oscilloscope display
+ * - Previous waveform comparison
+ * - Current waveform comparison
+ * - Similarity plot
+ * - Frame buffer display
+ * 
+ * For wavlpf's simple use case, we only need the main display,
+ * so we create dummy canvases for the comparison features.
+ * 
+ * @param mainCanvas - Canvas element for main rendering
+ * @throws Error if mainCanvas is not a valid HTMLCanvasElement
+ */
+export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
+  if (!mainCanvas || !(mainCanvas instanceof HTMLCanvasElement)) {
+    throw new Error('Invalid canvas element provided to initOscilloscope');
+  }
+
+  // Clean up any existing dummy canvases from previous initialization
+  cleanupDummyCanvases();
+
+  // Create dummy canvases for comparison features
+  // These are required by cat-oscilloscope but not needed for wavlpf's use case
+  const createDummyCanvas = (): HTMLCanvasElement => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    canvas.style.display = 'none';
+    dummyCanvases.push(canvas); // Track for cleanup
+    return canvas;
+  };
+
+  const previousWaveformCanvas = createDummyCanvas();
+  const currentWaveformCanvas = createDummyCanvas();
+  const similarityPlotCanvas = createDummyCanvas();
+  const frameBufferCanvas = createDummyCanvas();
+
+  oscilloscope = new Oscilloscope(
+    mainCanvas,
+    previousWaveformCanvas,
+    currentWaveformCanvas,
+    similarityPlotCanvas,
+    frameBufferCanvas
+  );
+}
+
+/**
+ * Clean up dummy canvases to prevent memory leaks
+ */
+function cleanupDummyCanvases(): void {
+  dummyCanvases.forEach(canvas => {
+    // Remove any references to allow garbage collection
+    canvas.width = 0;
+    canvas.height = 0;
+  });
+  dummyCanvases = [];
+}
+
+/**
+ * Validate input parameters for oscilloscope update
+ * @param samples - Audio samples to validate
+ * @param sampleRate - Sample rate to validate
+ * @throws Error if inputs are invalid
+ */
+function validateInputs(samples: Float32Array, sampleRate: number): void {
+  if (!samples || samples.length === 0) {
+    throw new Error('Invalid samples: array is empty or null');
+  }
+
+  if (!Number.isFinite(sampleRate) || sampleRate <= 0) {
+    throw new Error(`Invalid sample rate: ${sampleRate}. Must be a positive finite number.`);
+  }
+
+  // Check for invalid float values
+  for (let i = 0; i < Math.min(samples.length, 100); i++) { // Sample check first 100 values
+    if (!Number.isFinite(samples[i])) {
+      throw new Error(`Invalid sample value at index ${i}: ${samples[i]}`);
+    }
+  }
+}
+
+/**
+ * Update the oscilloscope visualization with new audio data
+ * @param samples - Audio samples as Float32Array
+ * @param sampleRate - Sample rate in Hz
+ * @returns Promise that resolves when update is complete
+ */
+export async function updateOscilloscope(samples: Float32Array, sampleRate: number): Promise<void> {
+  if (!oscilloscope) {
+    throw new Error('Oscilloscope not initialized. Call initOscilloscope() first.');
+  }
+
+  // Prevent concurrent updates
+  if (isUpdating) {
+    console.warn('Oscilloscope update already in progress, skipping this update');
+    return;
+  }
+
+  try {
+    isUpdating = true;
+
+    // Validate inputs
+    validateInputs(samples, sampleRate);
+
+    // Stop previous visualization if any
+    if (currentBufferSource) {
+      await oscilloscope.stop();
+    }
+
+    // Create a new BufferSource with loop enabled for continuous visualization
+    currentBufferSource = new BufferSource(samples, sampleRate, { loop: true });
+
+    // Start visualization from the buffer
+    await oscilloscope.startFromBuffer(currentBufferSource);
+  } finally {
+    isUpdating = false;
+  }
+}
+
+/**
+ * Stop the oscilloscope visualization and clean up resources
+ */
+export async function stopOscilloscope(): Promise<void> {
+  if (oscilloscope) {
+    await oscilloscope.stop();
+    currentBufferSource = null;
+  }
+  cleanupDummyCanvases();
+  oscilloscope = null;
+}
+
+/**
+ * Check if oscilloscope is initialized
+ */
+export function isOscilloscopeInitialized(): boolean {
+  return oscilloscope !== null;
+}
+
+{% endraw %}
+```
+
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+4ad63b8 Add issue note for #66 [auto]
+8eab36c Merge pull request #65 from cat2151/copilot/implement-waveform-visualization
+53d66c8 Address PR review comments: accessibility, performance, validation, error handling, memory leaks, tests
+bf8252f Add Issue #58 completion report
+4a8ba42 Add comprehensive documentation for cat-oscilloscope integration
+4df1d7b Add cat-oscilloscope integration for waveform visualization
+c2d4d1a Initial plan
+8cf931c Update project summaries (overview & development status) [auto]
 130bf24 Merge pull request #64 from cat2151/copilot/refactor-typescript-code
 90ae796 Fix documentation: update line counts and test counts
-d1dd5c4 Add comprehensive refactoring documentation
-0198952 Add input validation and improve error handling
-ba3d8b9 Refactor TypeScript code following Single Responsibility Principle
-fd31678 Initial plan
-b6ad3b1 Add issue note for #63 [auto]
-4350ef1 Add issue note for #61 [auto]
-ba05cac Merge pull request #60 from cat2151/copilot/refactor-rust-source-code
-19e3224 Add documentation for refactored Rust modules
 
 ### 変更されたファイル:
+CAT_OSCILLOSCOPE_INSTALLATION.md
+CAT_OSCILLOSCOPE_INTEGRATION_REPORT.md
+ISSUE_58_COMPLETION_REPORT.md
 MODULE_DEPENDENCIES.md
 REFACTORING_SUMMARY.md
-issue-notes/57.md
-issue-notes/58.md
-issue-notes/59.md
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview-generated-prompt.md
+generated-docs/project-overview.md
+index.html
 issue-notes/61.md
 issue-notes/63.md
+issue-notes/66.md
+package-lock.json
+package.json
 src/audio-player.ts
+src/oscilloscope.test.ts
+src/oscilloscope.ts
 src/playback-mode.ts
 src/synth.ts
 src/timing.test.ts
@@ -651,4 +833,4 @@ wasm-audio/src/oscillator.rs
 
 
 ---
-Generated at: 2026-01-10 07:03:23 JST
+Generated at: 2026-01-15 07:03:10 JST
