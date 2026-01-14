@@ -98,22 +98,22 @@ npm run preview   # 本番ビルドをローカルでプレビュー
 - [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md): 現在のアーキテクチャと提案アーキテクチャの視覚的比較
 - **主な課題**: wavlpfはFloat32Arrayバッファを使用; cat-oscilloscopeは現在Web Audio APIマイク入力を想定
 
-### tonejs-json-sequencerライブラリの統合ガイドライン
+### cat-oscilloscopeライブラリとtonejs-json-sequencerライブラリの統合ガイドライン
 
 #### ⚠️ 重要: フォールバック実装の厳重禁止
 
-**`tonejs-json-sequencer`ライブラリが利用できない場合でも、フォールバックによるスタブ実装を作成することは厳重に禁止されています。**
+**`cat-oscilloscope`ライブラリと`tonejs-json-sequencer`ライブラリが利用できない場合でも、フォールバックによるスタブ実装を作成することは厳重に禁止されています。**
 
 詳細は[PR #58](https://github.com/cat2151/wavlpf/pull/58)を参照してください。
 
 #### 理由
-1. tonejs-json-sequencerはwavlpfのために専用設計されたライブラリ
+1. cat-oscilloscope と tonejs-json-sequencer は汎用として設計されたライブラリで、複数のプロジェクトからの利用を想定
 2. ライブラリとしての活用により、コード重複を避けメンテナンス性を保つ
 3. スタブ実装は一時的な回避策に見えるが、長期的には技術的負債となる
 
 #### 配布方法の前提
 
-**tonejs-json-sequencerライブラリは、dist commit方式でリリースされている前提とします。**
+**cat-oscilloscopeライブラリとtonejs-json-sequencerライブラリは、dist commit方式でリリースされている前提とします。**
 
 - ✅ dist commit方式（ビルド済みファイルをリポジトリにコミット）
 - ❌ npm登録方式は使用しない
@@ -123,7 +123,7 @@ npm run preview   # 本番ビルドをローカルでプレビュー
 
 以下のいずれかに該当する場合は、**変更を加えず、必ずuserに報告してください**:
 
-1. tonejs-json-sequencerがdist commit方式でリリースされていない
+1. cat-oscilloscopeとtonejs-json-sequencerがdist commit方式でリリースされていない
 2. ライブラリのインストールや利用に問題がある
 3. CI環境でライブラリが正しく動作しない
 
