@@ -23,6 +23,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "cat-oscilloscope": "file:../../../../../tmp/cat-oscilloscope",
     "tone": "^14.7.77"
   },
   "devDependencies": {

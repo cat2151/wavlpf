@@ -1,35 +1,24 @@
 /**
  * Oscilloscope visualization integration using cat-oscilloscope library
- * 
- * NOTE: This is currently a stub implementation since cat-oscilloscope
- * is not yet published as an npm package. The integration is in development.
- * See CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md for details.
  */
+import { Oscilloscope, BufferSource } from 'cat-oscilloscope';
 
-/**
- * Stub interface for oscilloscope object
- */
-interface OscilloscopeStub {
-  initialized: boolean;
-}
-
-/**
- * Stub interface for buffer source object
- */
-interface BufferSourceStub {
-  // Placeholder for future implementation
-}
-
-// Stub implementation - cat-oscilloscope integration is under development
-let oscilloscope: OscilloscopeStub | null = null;
-let currentBufferSource: BufferSourceStub | null = null;
+let oscilloscope: Oscilloscope | null = null;
+let currentBufferSource: BufferSource | null = null;
+let dummyCanvases: HTMLCanvasElement[] = [];
 let isUpdating = false; // Guard against concurrent updates
 
 /**
  * Initialize the oscilloscope with a canvas element
+ * Note: cat-oscilloscope requires 5 canvas elements for full functionality:
+ * - Main oscilloscope display
+ * - Previous waveform comparison
+ * - Current waveform comparison
+ * - Similarity plot
+ * - Frame buffer display
  * 
- * STUB IMPLEMENTATION: This is currently a no-op since cat-oscilloscope
- * is not yet available as an npm package.
+ * For wavlpf's simple use case, we only need the main display,
+ * so we create dummy canvases for the comparison features.
  * 
  * @param mainCanvas - Canvas element for main rendering
  * @throws Error if mainCanvas is not a valid HTMLCanvasElement
@@ -39,10 +28,44 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
     throw new Error('Invalid canvas element provided to initOscilloscope');
   }
 
-  // Stub: Set oscilloscope to a dummy object to indicate initialization
-  oscilloscope = { initialized: true };
-  
-  console.log('Oscilloscope initialized (stub implementation - visualization not available)');
+  // Clean up any existing dummy canvases from previous initialization
+  cleanupDummyCanvases();
+
+  // Create dummy canvases for comparison features
+  // These are required by cat-oscilloscope but not needed for wavlpf's use case
+  const createDummyCanvas = (): HTMLCanvasElement => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    canvas.style.display = 'none';
+    dummyCanvases.push(canvas); // Track for cleanup
+    return canvas;
+  };
+
+  const previousWaveformCanvas = createDummyCanvas();
+  const currentWaveformCanvas = createDummyCanvas();
+  const similarityPlotCanvas = createDummyCanvas();
+  const frameBufferCanvas = createDummyCanvas();
+
+  oscilloscope = new Oscilloscope(
+    mainCanvas,
+    previousWaveformCanvas,
+    currentWaveformCanvas,
+    similarityPlotCanvas,
+    frameBufferCanvas
+  );
+}
+
+/**
+ * Clean up dummy canvases to prevent memory leaks
+ */
+function cleanupDummyCanvases(): void {
+  dummyCanvases.forEach(canvas => {
+    // Remove any references to allow garbage collection
+    canvas.width = 0;
+    canvas.height = 0;
+  });
+  dummyCanvases = [];
 }
 
 /**
@@ -70,10 +93,6 @@ function validateInputs(samples: Float32Array, sampleRate: number): void {
 
 /**
  * Update the oscilloscope visualization with new audio data
- * 
- * STUB IMPLEMENTATION: This is currently a no-op since cat-oscilloscope
- * is not yet available as an npm package.
- * 
  * @param samples - Audio samples as Float32Array
  * @param sampleRate - Sample rate in Hz
  * @returns Promise that resolves when update is complete
@@ -95,8 +114,16 @@ export async function updateOscilloscope(samples: Float32Array, sampleRate: numb
     // Validate inputs
     validateInputs(samples, sampleRate);
 
-    // Stub: No actual visualization happens
-    // In the future, this will use cat-oscilloscope library
+    // Stop previous visualization if any
+    if (currentBufferSource) {
+      await oscilloscope.stop();
+    }
+
+    // Create a new BufferSource with loop enabled for continuous visualization
+    currentBufferSource = new BufferSource(samples, sampleRate, { loop: true });
+
+    // Start visualization from the buffer
+    await oscilloscope.startFromBuffer(currentBufferSource);
   } finally {
     isUpdating = false;
   }
@@ -104,15 +131,13 @@ export async function updateOscilloscope(samples: Float32Array, sampleRate: numb
 
 /**
  * Stop the oscilloscope visualization and clean up resources
- * 
- * STUB IMPLEMENTATION: This is currently a no-op since cat-oscilloscope
- * is not yet available as an npm package.
  */
 export async function stopOscilloscope(): Promise<void> {
   if (oscilloscope) {
-    // Stub: No actual stop needed
+    await oscilloscope.stop();
     currentBufferSource = null;
   }
+  cleanupDummyCanvases();
   oscilloscope = null;
 }
 
