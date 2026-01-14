@@ -6,10 +6,23 @@
  * See CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md for details.
  */
 
+/**
+ * Stub interface for oscilloscope object
+ */
+interface OscilloscopeStub {
+  initialized: boolean;
+}
+
+/**
+ * Stub interface for buffer source object
+ */
+interface BufferSourceStub {
+  // Placeholder for future implementation
+}
+
 // Stub implementation - cat-oscilloscope integration is under development
-let oscilloscope: any = null;
-let currentBufferSource: any = null;
-let dummyCanvases: HTMLCanvasElement[] = [];
+let oscilloscope: OscilloscopeStub | null = null;
+let currentBufferSource: BufferSourceStub | null = null;
 let isUpdating = false; // Guard against concurrent updates
 
 /**
@@ -26,25 +39,10 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
     throw new Error('Invalid canvas element provided to initOscilloscope');
   }
 
-  // Clean up any existing dummy canvases from previous initialization
-  cleanupDummyCanvases();
-
   // Stub: Set oscilloscope to a dummy object to indicate initialization
   oscilloscope = { initialized: true };
   
   console.log('Oscilloscope initialized (stub implementation - visualization not available)');
-}
-
-/**
- * Clean up dummy canvases to prevent memory leaks
- */
-function cleanupDummyCanvases(): void {
-  dummyCanvases.forEach(canvas => {
-    // Remove any references to allow garbage collection
-    canvas.width = 0;
-    canvas.height = 0;
-  });
-  dummyCanvases = [];
 }
 
 /**
@@ -115,7 +113,6 @@ export async function stopOscilloscope(): Promise<void> {
     // Stub: No actual stop needed
     currentBufferSource = null;
   }
-  cleanupDummyCanvases();
   oscilloscope = null;
 }
 
