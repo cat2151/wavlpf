@@ -108,6 +108,8 @@ CI環境では：
 - ✅ npm公開不要
 - ✅ CI/CDで動作
 - ✅ 実装時間: 5分
+- ✅ 標準的なベストプラクティス
+- ✅ メンテナンスフリー
 
 **詳細**: `CAT_OSCILLOSCOPE_INSTALLATION.md`参照
 
@@ -135,6 +137,41 @@ npm publish
 - ✅ CDNからの利用も可能
 
 **実装時間**: 15分
+
+### 🎯 代替解決方法3: distファイルのコミット（非推奨）
+
+`.gitignore`から`dist/`を削除し、ビルド済みファイルをコミット：
+
+```bash
+cd cat-oscilloscope
+# .gitignoreからdist/を削除
+npm run build:lib
+git add dist/
+git commit -m "Add dist files for direct installation"
+git push
+```
+
+**メリット**:
+- ✅ インストールが高速（ビルド不要）
+- ✅ ビルド環境不要
+
+**デメリット**:
+- ❌ リポジトリサイズ増加
+- ❌ 差分レビューが複雑
+- ❌ 継続的なメンテナンス負荷
+- ❌ 非標準的（ベストプラクティス違反）
+
+**実装時間**: 初回10分 + 継続的な手動メンテナンス
+
+### 📊 詳細な比較
+
+3つの方法の詳細な比較については、`CAT_OSCILLOSCOPE_DISTRIBUTION_METHODS_COMPARISON.md`を参照してください。
+
+| 方法 | 実装時間 | メンテナンス | 標準的 | 推奨度 |
+|------|---------|------------|--------|--------|
+| prepareスクリプト | 10分 | 自動 | ✅ | 🥇 最推奨 |
+| npm公開 | 30分 | 自動 | ✅ | 🥈 推奨 |
+| distコミット | 10分+継続的 | 手動 | ❌ | 🥉 非推奨 |
 
 ### ❌ 不採用: スタブ実装
 
@@ -249,6 +286,8 @@ npm run build
 
 ## 参考資料
 
+- `CAT_OSCILLOSCOPE_DISTRIBUTION_METHODS_COMPARISON.md` - **3つの配布方法の詳細比較**
+- `CI_FAILURE_ANALYSIS.md` - 詳細な原因分析と解決方法
 - `INTEGRATION_BLOCKERS_SUMMARY.md` - 統合ブロッカーの詳細分析
 - `ISSUE_58_COMPLETION_REPORT.md` - Issue #58完了報告
 - `CAT_OSCILLOSCOPE_INSTALLATION.md` - インストール手順の詳細
