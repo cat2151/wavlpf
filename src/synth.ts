@@ -34,6 +34,11 @@ import {
   getCurrentMode,
   switchMode,
 } from './playback-mode';
+import {
+  initOscilloscope,
+  updateOscilloscope,
+  isOscilloscopeInitialized,
+} from './oscilloscope';
 
 // Global storage for the most recently generated WAV
 let lastGeneratedWavUrl: string | null = null;
@@ -84,6 +89,42 @@ let scheduleNextPlayFn: (() => void) | null = null;
 
 // パフォーマンス統計トラッキング
 const performanceStats: PerformanceStats = createPerformanceStats(10);
+
+/**
+ * Display oscilloscope error message to the user
+ * @param message - Error message to display
+ */
+function displayOscilloscopeError(message: string): void {
+  const container = document.querySelector('.oscilloscope-container');
+  if (!container) return;
+
+  // Remove any existing error message
+  const existingError = container.querySelector('.oscilloscope-error');
+  if (existingError) {
+    existingError.remove();
+  }
+
+  // Create error message element
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'oscilloscope-error';
+  errorDiv.style.cssText = `
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 5px;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    font-size: 0.9em;
+  `;
+  errorDiv.textContent = message;
+
+  container.appendChild(errorDiv);
+
+  // Auto-remove error after 5 seconds
+  setTimeout(() => {
+    errorDiv.remove();
+  }, 5000);
+}
 
 /**
  * UIからパラメータを読み込む
@@ -144,6 +185,16 @@ async function playAudioWav(): Promise<void> {
   
   // Render audio
   const { samples, generationTimeMs } = renderAudio();
+  
+  // Update oscilloscope visualization with generated samples (non-blocking)
+  // We don't await this to prevent delaying audio playback
+  if (isOscilloscopeInitialized()) {
+    updateOscilloscope(samples, SAMPLE_RATE).catch((error) => {
+      console.error('Failed to update oscilloscope:', error);
+      // Display error to user
+      displayOscilloscopeError('Visualization update failed. The oscilloscope may not be functioning correctly.');
+    });
+  }
   
   // Generate WAV
   const wavData = generateWav(samples, SAMPLE_RATE);
@@ -251,6 +302,24 @@ export async function init(): Promise<void> {
     
     throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
+  
+  // Initialize oscilloscope
+  const canvas = document.getElementById('oscilloscope') as HTMLCanvasElement | null;
+  if (canvas) {
+    try {
+      initOscilloscope(canvas);
+    } catch (error) {
+      console.error('Failed to initialize oscilloscope:', error);
+      displayOscilloscopeError(
+        'Failed to initialize waveform visualization. The oscilloscope feature will not be available.'
+      );
+    }
+  } else {
+    console.error(
+      'Oscilloscope canvas element not found. Expected element with id="oscilloscope". ' +
+      'Waveform visualization will not be available.'
+    );
+  }
   
   // マウス位置を追跡
   document.addEventListener('mousemove', (e) => {
