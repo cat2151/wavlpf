@@ -186,6 +186,18 @@
       border-radius: 5px;
       display: block;
     }
+    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border-width: 0;
+    }
   </style>
 </head>
 <body>
@@ -275,7 +287,8 @@
     
     <div class="oscilloscope-container">
       <div class="oscilloscope-title">Waveform Visualization</div>
-      <canvas id="oscilloscope"></canvas>
+      <canvas id="oscilloscope" role="img" aria-label="Waveform oscilloscope visualization showing the filtered audio signal"></canvas>
+      <div class="sr-only" id="oscilloscope-status">Oscilloscope displaying filtered audio waveform in real-time</div>
     </div>
   </div>
   
