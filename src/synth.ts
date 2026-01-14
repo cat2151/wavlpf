@@ -34,6 +34,11 @@ import {
   getCurrentMode,
   switchMode,
 } from './playback-mode';
+import {
+  initOscilloscope,
+  updateOscilloscope,
+  isOscilloscopeInitialized,
+} from './oscilloscope';
 
 // Global storage for the most recently generated WAV
 let lastGeneratedWavUrl: string | null = null;
@@ -145,6 +150,13 @@ async function playAudioWav(): Promise<void> {
   // Render audio
   const { samples, generationTimeMs } = renderAudio();
   
+  // Update oscilloscope visualization with generated samples
+  if (isOscilloscopeInitialized()) {
+    await updateOscilloscope(samples, SAMPLE_RATE).catch((error) => {
+      console.error('Failed to update oscilloscope:', error);
+    });
+  }
+  
   // Generate WAV
   const wavData = generateWav(samples, SAMPLE_RATE);
   const wavUrl = createWavBlobUrl(wavData);
@@ -251,6 +263,14 @@ export async function init(): Promise<void> {
     
     throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
+  
+  // Initialize oscilloscope
+  const canvas = document.getElementById('oscilloscope') as HTMLCanvasElement | null;
+  if (canvas) {
+    initOscilloscope(canvas);
+  } else {
+    console.warn('Oscilloscope canvas element not found');
+  }
   
   // マウス位置を追跡
   document.addEventListener('mousemove', (e) => {
