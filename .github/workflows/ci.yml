@@ -25,9 +25,12 @@ jobs:
           cache: 'npm'
 
       - name: Install cat-oscilloscope from GitHub
+        # cat-oscilloscopeはdist commit方式でリリースされているため、GitHubから直接インストール
+        # 最新のmainブランチを使用（ローカル開発ではfile:依存関係を使用）
         run: npm install --no-save git+https://github.com/cat2151/cat-oscilloscope.git
 
       - name: Install dependencies
+        # --legacy-peer-deps: cat-oscilloscopeのpeer dependenciesとの互換性のため使用
         run: npm ci --legacy-peer-deps
 
       - name: Setup Rust

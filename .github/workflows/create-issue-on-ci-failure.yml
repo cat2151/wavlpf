@@ -37,6 +37,7 @@ jobs:
             ].join('\n');
 
             // 既存のissueをチェック（重複防止）
+            // ci-failureラベルを持つオープンなissueのみを検索
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -44,6 +45,8 @@ jobs:
               labels: ['ci-failure']
             });
 
+            // タイトルの完全一致で既存issueを検索
+            // （API呼び出しで既にci-failureラベルでフィルタ済み）
             const existingIssue = issues.data.find(issue => 
               issue.title === title
             );
