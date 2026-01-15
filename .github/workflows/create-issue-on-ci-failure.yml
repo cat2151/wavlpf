@@ -1,0 +1,75 @@
+name: Create Issue on CI Failure
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    # CI workflowが失敗した場合のみ実行
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Create issue if CI fails
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'CI failure detected';
+            const runUrl = '${{ github.event.workflow_run.html_url }}';
+            const headBranch = '${{ github.event.workflow_run.head_branch }}';
+            const headSha = '${{ github.event.workflow_run.head_sha }}';
+            
+            const body = [
+              'CI workflow failed.',
+              '',
+              '## Details',
+              `- Branch: \`${headBranch}\``,
+              `- Commit: \`${headSha.substring(0, 7)}\``,
+              `- Workflow run: ${runUrl}`,
+              '',
+              'Please investigate the failure and fix the issues.',
+            ].join('\n');
+
+            // 既存のissueをチェック（重複防止）
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['ci-failure']
+            });
+
+            const existingIssue = issues.data.find(issue => 
+              issue.title.includes('CI failure detected')
+            );
+
+            if (!existingIssue) {
+              // 新規issue作成
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['ci-failure', 'bug']
+              });
+              console.log('Created new issue for CI failure');
+            } else {
+              // 既存のissueにコメントを追加
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: [
+                  '## Another CI failure detected',
+                  '',
+                  `- Branch: \`${headBranch}\``,
+                  `- Commit: \`${headSha.substring(0, 7)}\``,
+                  `- Workflow run: ${runUrl}`
+                ].join('\n')
+              });
+              console.log(`Added comment to existing issue #${existingIssue.number}`);
+            }
