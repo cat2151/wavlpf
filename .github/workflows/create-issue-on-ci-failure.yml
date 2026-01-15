@@ -23,13 +23,14 @@ jobs:
             const runUrl = '${{ github.event.workflow_run.html_url }}';
             const headBranch = '${{ github.event.workflow_run.head_branch }}';
             const headSha = '${{ github.event.workflow_run.head_sha }}';
+            const shortSha = headSha.substring(0, 7);
             
             const body = [
               'CI workflow failed.',
               '',
               '## Details',
               `- Branch: \`${headBranch}\``,
-              `- Commit: \`${headSha.substring(0, 7)}\``,
+              `- Commit: \`${shortSha}\``,
               `- Workflow run: ${runUrl}`,
               '',
               'Please investigate the failure and fix the issues.',
@@ -44,7 +45,7 @@ jobs:
             });
 
             const existingIssue = issues.data.find(issue => 
-              issue.title.includes('CI failure detected')
+              issue.title === title
             );
 
             if (!existingIssue) {
@@ -67,7 +68,7 @@ jobs:
                   '## Another CI failure detected',
                   '',
                   `- Branch: \`${headBranch}\``,
-                  `- Commit: \`${headSha.substring(0, 7)}\``,
+                  `- Commit: \`${shortSha}\``,
                   `- Workflow run: ${runUrl}`
                 ].join('\n')
               });
