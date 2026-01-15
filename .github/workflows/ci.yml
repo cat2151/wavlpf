@@ -49,9 +49,9 @@ jobs:
 
       - name: Verify cat-oscilloscope installation
         run: |
-          if [ ! -d "node_modules/cat-oscilloscope" ] || [ ! -f "node_modules/cat-oscilloscope/package.json" ]; then
+          if [ ! -f "node_modules/cat-oscilloscope/package.json" ]; then
             echo "Error: cat-oscilloscope was not properly installed."
-            ls -la node_modules/cat-oscilloscope/ || echo "Directory does not exist"
+            ls -la node_modules/ | grep cat || echo "cat-oscilloscope not found in node_modules"
             exit 1
           fi
           echo "cat-oscilloscope successfully installed from GitHub"

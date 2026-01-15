@@ -17,18 +17,11 @@ function canvasSupported(): boolean {
   }
 }
 
-describe('oscilloscope', () => {
-  let canvas: HTMLCanvasElement;
+// Skip all tests if canvas 2D context is not supported (e.g., in happy-dom CI environment)
+const shouldSkipTests = !canvasSupported();
 
-  // Skip all tests if canvas 2D context is not supported (e.g., in happy-dom CI environment)
-  const shouldSkip = !canvasSupported();
-  
-  if (shouldSkip) {
-    it.skip('Canvas 2D context not supported in this environment - skipping oscilloscope tests', () => {
-      // This test is intentionally empty and always skipped
-    });
-    return;
-  }
+describe.skipIf(shouldSkipTests)('oscilloscope', () => {
+  let canvas: HTMLCanvasElement;
 
   beforeEach(() => {
     // Create a canvas element for testing
