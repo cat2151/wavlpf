@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install cat-oscilloscope from GitHub
+        # cat-oscilloscopeはdist commit方式でリリースされているため、GitHubから直接インストール
+        # 最新のmainブランチを使用（ローカル開発ではfile:依存関係を使用）
+        run: npm install --no-save git+https://github.com/cat2151/cat-oscilloscope.git
+
+      - name: Verify cat-oscilloscope installation
+        run: |
+          if [ ! -d "node_modules/cat-oscilloscope" ]; then
+            echo "Error: cat-oscilloscope was not found in node_modules after installation."
+            ls -R .
+            exit 1
+          fi
+
+      - name: Install dependencies
+        # NOTE:
+        # cat-oscilloscopeをGitHubからインストールすると、そのpackage.jsonで宣言されている
+        # peerDependenciesと、このリポジトリ側の依存バージョン（特にフロントエンド系パッケージ）の
+        # 組み合わせによって、npm v7以降の厳密なpeer dependency解決でERESOLVEエラーが発生する。
+        # そのためCIでは、peer dependencyチェックを緩和するために --legacy-peer-deps を明示的に付与している。
+        #
+        # 将来的にcat-oscilloscope側のpeerDependenciesがこのプロジェクトの依存バージョンと整合するように
+        # 更新された場合、あるいは本プロジェクト側の依存バージョンを見直した場合には、
+        #   1. まずローカル/CIで `npm ci` を --legacy-peer-deps なしで実行してみて、
+        #   2. peer dependency解決エラーが発生しないことを確認できたら
+        # このフラグを削除してよい。
+        run: npm ci --legacy-peer-deps
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'v0.13.1'
+
+      - name: Cache wasm-audio build
+        uses: actions/cache@v4
+        with:
+          path: wasm-audio/target
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('wasm-audio/Cargo.toml', 'wasm-audio/src/**/*.rs') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-target-
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build project
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
+            echo "Error: dist directory is empty or does not exist"
+            exit 1
+          fi
