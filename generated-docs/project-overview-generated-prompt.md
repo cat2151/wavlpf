@@ -1,4 +1,4 @@
-Last updated: 2026-01-15
+Last updated: 2026-01-16
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -315,6 +315,8 @@ MIT
   📖 61.md
   📖 63.md
   📖 66.md
+  📖 68.md
+  📖 70.md
 📊 package-lock.json
 📊 package.json
 📁 src/
@@ -523,4 +525,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-15 07:03:09 JST
+Generated at: 2026-01-16 07:03:02 JST
