@@ -11,7 +11,7 @@ function canvasSupported(): boolean {
   try {
     const testCanvas = document.createElement('canvas');
     const ctx = testCanvas.getContext('2d');
-    return ctx !== null && typeof ctx.fillRect === 'function';
+    return ctx !== null;
   } catch {
     return false;
   }

@@ -49,6 +49,12 @@ jobs:
 
       - name: Verify cat-oscilloscope installation
         run: |
+          # 壊れたシンボリックリンクを明示的に検出
+          if [ -L "node_modules/cat-oscilloscope" ] && [ ! -e "node_modules/cat-oscilloscope" ]; then
+            echo "Error: cat-oscilloscope symlink is broken."
+            ls -la node_modules/ | grep cat || echo "cat-oscilloscope not found in node_modules"
+            exit 1
+          fi
           if [ ! -f "node_modules/cat-oscilloscope/package.json" ]; then
             echo "Error: cat-oscilloscope was not properly installed."
             ls -la node_modules/ | grep cat || echo "cat-oscilloscope not found in node_modules"
