@@ -29,8 +29,26 @@ jobs:
         # 最新のmainブランチを使用（ローカル開発ではfile:依存関係を使用）
         run: npm install --no-save git+https://github.com/cat2151/cat-oscilloscope.git
 
+      - name: Verify cat-oscilloscope installation
+        run: |
+          if [ ! -d "node_modules/cat-oscilloscope" ]; then
+            echo "Error: cat-oscilloscope was not found in node_modules after installation."
+            ls -R .
+            exit 1
+          fi
+
       - name: Install dependencies
-        # --legacy-peer-deps: cat-oscilloscopeのpeer dependenciesとの互換性のため使用
+        # NOTE:
+        # cat-oscilloscopeをGitHubからインストールすると、そのpackage.jsonで宣言されている
+        # peerDependenciesと、このリポジトリ側の依存バージョン（特にフロントエンド系パッケージ）の
+        # 組み合わせによって、npm v7以降の厳密なpeer dependency解決でERESOLVEエラーが発生する。
+        # そのためCIでは、peer dependencyチェックを緩和するために --legacy-peer-deps を明示的に付与している。
+        #
+        # 将来的にcat-oscilloscope側のpeerDependenciesがこのプロジェクトの依存バージョンと整合するように
+        # 更新された場合、あるいは本プロジェクト側の依存バージョンを見直した場合には、
+        #   1. まずローカル/CIで `npm ci` を --legacy-peer-deps なしで実行してみて、
+        #   2. peer dependency解決エラーが発生しないことを確認できたら
+        # このフラグを削除してよい。
         run: npm ci --legacy-peer-deps
 
       - name: Setup Rust
