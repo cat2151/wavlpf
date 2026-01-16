@@ -40,29 +40,37 @@ try {
   // Create destination directory if it doesn't exist
   fs.mkdirSync(destDir, { recursive: true });
 
-  // Copy each file
-  let copiedCount = 0;
+  // Copy each file - all files are required for WASM to work
+  const missingFiles = [];
   for (const file of files) {
     const src = path.join(sourceDir, file);
-    const dest = path.join(destDir, file);
     
-    if (fs.existsSync(src)) {
-      fs.copyFileSync(src, dest);
-      copiedCount++;
-    } else {
-      console.warn(`⚠️  File not found: ${file}`);
+    if (!fs.existsSync(src)) {
+      missingFiles.push(file);
     }
   }
 
-  if (copiedCount === files.length) {
-    console.log('✓ cat-oscilloscope WASM files copied to public/wasm/');
-  } else {
-    console.warn(`⚠️  Copied ${copiedCount}/${files.length} files. Some files were missing.`);
+  // Fail early if any required files are missing
+  if (missingFiles.length > 0) {
+    console.error('❌ Required WASM files are missing:');
+    missingFiles.forEach(file => console.error(`   - ${file}`));
+    console.error('   Source directory:', sourceDir);
+    console.error('   cat-oscilloscope may not be properly installed or built.');
+    process.exit(1);
   }
+
+  // Copy all files
+  for (const file of files) {
+    const src = path.join(sourceDir, file);
+    const dest = path.join(destDir, file);
+    fs.copyFileSync(src, dest);
+  }
+
+  console.log('✓ cat-oscilloscope WASM files copied to public/wasm/');
 } catch (error) {
   console.error('❌ Failed to copy cat-oscilloscope WASM files:', error.message);
   console.error('   Source:', sourceDir);
   console.error('   Destination:', destDir);
-  // Don't fail the installation, just warn
-  process.exit(0);
+  // Fail the installation to provide immediate feedback
+  process.exit(1);
 }
