@@ -29,7 +29,42 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # NOTE:
+        # cat-oscilloscopeをGitHubからインストールすると、そのpackage.jsonで宣言されている
+        # peerDependenciesと、このリポジトリ側の依存バージョン（特にフロントエンド系パッケージ）の
+        # 組み合わせによって、npm v7以降の厳密なpeer dependency解決でERESOLVEエラーが発生する。
+        # そのためデプロイ時も、peer dependencyチェックを緩和するために --legacy-peer-deps を明示的に付与している。
+        #
+        # 将来的にcat-oscilloscope側のpeerDependenciesがこのプロジェクトの依存バージョンと整合するように
+        # 更新された場合、あるいは本プロジェクト側の依存バージョンを見直した場合には、
+        #   1. まずローカル/CIで `npm ci` を --legacy-peer-deps なしで実行してみて、
+        #   2. peer dependency解決エラーが発生しないことを確認できたら
+        # このフラグを削除してよい。
+        #
+        # 注意: npm ci は package-lock.json に記載された file: パスの依存関係をシンボリックリンクとして作成するが、
+        # CI環境ではそのパスが存在しないため、次のステップでGitHubから直接インストールして上書きする必要がある。
+        run: npm ci --legacy-peer-deps
+
+      - name: Install cat-oscilloscope from GitHub
+        # cat-oscilloscopeはdist commit方式でリリースされているため、GitHubから直接インストール
+        # 最新のmainブランチを使用（ローカル開発ではfile:依存関係を使用）
+        # このステップは npm ci で作成された壊れたシンボリックリンクを上書きする
+        run: npm install --no-save git+https://github.com/cat2151/cat-oscilloscope.git
+
+      - name: Verify cat-oscilloscope installation
+        run: |
+          # 壊れたシンボリックリンクを明示的に検出
+          if [ -L "node_modules/cat-oscilloscope" ] && [ ! -e "node_modules/cat-oscilloscope" ]; then
+            echo "Error: cat-oscilloscope symlink is broken."
+            ls -la node_modules/ | grep cat || echo "cat-oscilloscope not found in node_modules"
+            exit 1
+          fi
+          if [ ! -f "node_modules/cat-oscilloscope/package.json" ]; then
+            echo "Error: cat-oscilloscope was not properly installed."
+            ls -la node_modules/ | grep cat || echo "cat-oscilloscope not found in node_modules"
+            exit 1
+          fi
+          echo "cat-oscilloscope successfully installed from GitHub"
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
