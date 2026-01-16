@@ -1,4 +1,4 @@
-Last updated: 2026-01-16
+Last updated: 2026-01-17
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -317,6 +317,7 @@ MIT
   📖 66.md
   📖 68.md
   📖 70.md
+  📖 74.md
 📊 package-lock.json
 📊 package.json
 📁 src/
@@ -361,8 +362,8 @@ MIT
   - 関数: if
   - インポート: ./synth
 
-**src/oscilloscope.test.ts** (201行, 6687バイト)
-  - 関数: if, for
+**src/oscilloscope.test.ts** (215行, 7144バイト)
+  - 関数: canvasSupported, if, for
   - インポート: vitest
 
 **src/oscilloscope.ts** (150行, 4545バイト)
@@ -470,8 +471,9 @@ MIT
       - renderAudioWasm ()
       - generateWav ()
       - createWavBlobUrl ()
-  - stopOscilloscope ()
-    - cleanupDummyCanvases ()
+  - canvasSupported (src/oscilloscope.test.ts)
+    - stopOscilloscope ()
+      - cleanupDummyCanvases ()
       - validateInputs ()
   - resetPerformanceStats ()
   - updateModeUI ()
@@ -525,4 +527,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-16 07:03:02 JST
+Generated at: 2026-01-17 07:02:58 JST

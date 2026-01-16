@@ -1,4 +1,4 @@
-Last updated: 2026-01-16
+Last updated: 2026-01-17
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -251,6 +251,7 @@ Last updated: 2026-01-16
 - issue-notes/66.md
 - issue-notes/68.md
 - issue-notes/70.md
+- issue-notes/74.md
 - package-lock.json
 - package.json
 - src/audio-player.ts
@@ -280,37 +281,6 @@ Last updated: 2026-01-16
 - wasm-audio/src/oscillator.rs
 
 ## 現在のオープンIssues
-## [Issue #72](../issue-notes/72.md): CI failure detected on main
-CI workflow failed.
-
-## Details
-- Branch: `main`
-- Commit: `3a1ce03`
-- Workflow run: https://github.com/cat2151/wavlpf/actions/runs/21034687078
-
-Please investigate the failure and fix the issues....
-ラベル: bug, ci-failure
---- issue-notes/72.md の内容 ---
-
-```markdown
-
-```
-
-## [Issue #66](../issue-notes/66.md): CIがエラー
-[issue-notes/66.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/66.md)
-
-...
-ラベル: 
---- issue-notes/66.md の内容 ---
-
-```markdown
-# issue CIがエラー #66
-[issues #66](https://github.com/cat2151/wavlpf/issues/66)
-
-
-
-```
-
 ## [Issue #57](../issue-notes/57.md): tonejs-json-sequencer がCDN importできるようになるまで待つ
 [issue-notes/57.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/57.md)
 
@@ -551,42 +521,32 @@ jobs:
 {% endraw %}
 ```
 
-### issue-notes/66.md
-```md
-{% raw %}
-# issue CIがエラー #66
-[issues #66](https://github.com/cat2151/wavlpf/issues/66)
-
-
-
-{% endraw %}
-```
-
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-3a1ce03 Merge pull request #71 from cat2151/copilot/add-ci-error-issue-creation
-63f3beb Address PR review comments: add verification, improve documentation, and enhance issue title
-84c432a Add comments to clarify workflow logic
-7a9b5b7 Fix code review issues and security alerts
-bd38315 Update CI workflow to install cat-oscilloscope from GitHub
-eed0bd6 Add CI workflow and automatic issue creation on failure
-7ab0e98 Initial plan
-6c6024d Add issue note for #70 [auto]
-92f83b3 Update integration guidelines for libraries
-ee8cdf1 Merge pull request #69 from cat2151/copilot/update-copilot-instructions-md
+dea05d8 Merge pull request #75 from cat2151/copilot/investigate-waveform-visualization
+2259c72 Fix deploy workflow: add cat-oscilloscope installation from GitHub
+fa9cf3d Initial plan
+24b714f Add issue note for #74 [auto]
+11e6d9c Merge pull request #73 from cat2151/copilot/fix-ci-failure-main
+b4c4e0e Address PR feedback: simplify canvas check and add broken symlink detection
+bcb5b0e Address code review feedback: use skipIf and simplify verification
+4becd52 Fix CI failure: correct cat-oscilloscope installation order and skip canvas tests
+cfdd8c0 Initial plan
+d4d73ce Update project summaries (overview & development status) [auto]
 
 ### 変更されたファイル:
 .github/copilot-instructions.md
 .github/workflows/ci.yml
 .github/workflows/create-issue-on-ci-failure.yml
+.github/workflows/deploy.yml
 generated-docs/development-status-generated-prompt.md
 generated-docs/development-status.md
 generated-docs/project-overview-generated-prompt.md
 generated-docs/project-overview.md
-issue-notes/66.md
-issue-notes/68.md
 issue-notes/70.md
+issue-notes/74.md
+src/oscilloscope.test.ts
 
 
 ---
-Generated at: 2026-01-16 07:03:02 JST
+Generated at: 2026-01-17 07:02:58 JST
