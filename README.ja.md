@@ -14,10 +14,15 @@ https://cat2151.github.io/wavlpf/
   - ミリ秒精度でのパフォーマンス測定
   - ネイティブからも利用可能なRustクレートとして実装
 - **220Hz波形ジェネレーター**: ノコギリ波またはパルス波、デューティー比設定可能
-- **Biquad LPFフィルター**: マウス制御によるインタラクティブなフィルター
+- **Biquadフィルター**: マウス制御によるインタラクティブなフィルター
+  - 複数のフィルタータイプ: LPF、HPF、BPF、Notch、APF、Low Shelf、High Shelf
   - X軸: カットオフ周波数（20Hz - 設定可能な最大値）
   - Y軸: レゾナンスQ値（0.5 - 設定可能な最大値、反転: 上 = 高、下 = 低）
   - 設定可能なカットオフ減衰（HzまたはCent/ミリ秒）
+- **波形ビジュアライゼーション**: [cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope)を使用したリアルタイムオシロスコープ表示
+  - Rust/WASMによる高性能ビジュアライゼーション
+  - Float32Arrayバッファの可視化
+  - ループ再生対応
 - **非リアルタイムレンダリング**: WebAudio非依存の信号処理
 - **設定可能なオーディオバッファ**: BPMとビート基準のオーディオ生成タイミング
 - **WAV生成**: 処理済みオーディオをWAVフォーマットに変換
@@ -26,14 +31,12 @@ https://cat2151.github.io/wavlpf/
 
 ## 関連ドキュメント
 
-### cat-oscilloscope統合調査
+### オシロスコープ統合
 
-**🌟 推奨** - [CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md) - **ベストプラクティス重視の包括的な分析**（日本語）
+**📘 使用ガイド** - [docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md) - **現在の実装と使用方法**（日本語）
 
-**参考資料**:
-- [CAT_OSCILLOSCOPE_INTEGRATION.md](CAT_OSCILLOSCOPE_INTEGRATION.md) - 最小変更アプローチ（参考用）
-- [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) - アーキテクチャ図
-- [IMPLEMENTATION_EXAMPLES.md](IMPLEMENTATION_EXAMPLES.md) - 実装例
+**技術詳細**:
+- [docs/CAT_OSCILLOSCOPE_WASM_SETUP.md](docs/CAT_OSCILLOSCOPE_WASM_SETUP.md) - WASMセットアップの詳細
 
 ### 開発ガイド
 
@@ -43,7 +46,7 @@ https://cat2151.github.io/wavlpf/
 
 開発フレームワークとテスト戦略の詳細については、[DEVELOPMENT.md](DEVELOPMENT.md)を参照してください。
 
-波形可視化の統合については、[CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md)を参照してください。
+波形可視化については、[docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md)を参照してください。
 
 ### 前提条件
 

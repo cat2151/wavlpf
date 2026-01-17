@@ -4,6 +4,15 @@
 
 wavlpf uses the [cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope) library for waveform visualization. The library uses Rust/WASM for high-performance audio processing.
 
+## ✅ Current Status
+
+The cat-oscilloscope library is **successfully integrated and working**:
+- Installed from GitHub repository using dist commit distribution
+- WASM files automatically set up via postinstall script
+- Waveform visualization is fully functional
+
+For detailed usage information, see [OSCILLOSCOPE_USAGE.md](OSCILLOSCOPE_USAGE.md).
+
 ## WASM File Setup
 
 The cat-oscilloscope library loads its WASM module dynamically at runtime from `{basePath}/wasm/wasm_processor.js`. To ensure these files are available in both development and production:
@@ -47,6 +56,7 @@ In CI environments (like GitHub Actions), the postinstall script runs automatica
 1. **Dynamic Loading**: cat-oscilloscope loads WASM at runtime (not bundled by Vite)
 2. **Base Path**: The library uses `determineBasePath()` to find the base URL and appends `/wasm/wasm_processor.js`
 3. **GitHub Pages**: With `base: '/wavlpf/'` in vite.config.ts, files are served from `/wavlpf/wasm/`
+4. **Dist Commit Distribution**: cat-oscilloscope uses dist commit distribution, meaning built files are committed to the repository, making GitHub installation seamless
 
 ### File Structure
 
@@ -62,7 +72,12 @@ dist/wasm/            # Copied by Vite during build
 └── (same files as public/wasm/)
 ```
 
+## Related Documentation
+
+- **[OSCILLOSCOPE_USAGE.md](OSCILLOSCOPE_USAGE.md)** - Complete usage guide
+- [DEPLOYMENT_VERIFICATION.md](DEPLOYMENT_VERIFICATION.md) - Deployment verification
+
 ## Related Issues
 
-- Issue #76: Initial discovery of WASM loading failure
-- The fix ensures WASM files are properly available at runtime
+- Issue #76, #78, #80: Initial discovery and resolution of WASM loading issues
+- The current setup ensures WASM files are properly available at runtime

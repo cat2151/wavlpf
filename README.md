@@ -14,10 +14,15 @@ https://cat2151.github.io/wavlpf/
   - Millisecond-precision performance measurement
   - Implemented as a Rust crate usable from native contexts
 - **220Hz Waveform Generator**: Sawtooth or pulse wave, with configurable duty cycle
-- **Biquad LPF Filter**: Interactive filter controlled by mouse
+- **Biquad Filter**: Interactive filter controlled by mouse
+  - Multiple filter types: LPF, HPF, BPF, Notch, APF, Low Shelf, High Shelf
   - X-axis: Cutoff frequency (20Hz - configurable maximum)
   - Y-axis: Resonance Q value (0.5 - configurable maximum, inverted: Up = high, Down = low)
   - Configurable cutoff decay (Hz or Cent/millisecond)
+- **Waveform Visualization**: Real-time oscilloscope display using [cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope)
+  - Rust/WASM-powered high-performance visualization
+  - Float32Array buffer visualization
+  - Loop playback support
 - **Non-Realtime Rendering**: WebAudio-independent signal processing
 - **Configurable Audio Buffer**: Audio generation timing based on BPM and beat
 - **WAV Generation**: Converts processed audio to WAV format
@@ -26,14 +31,12 @@ https://cat2151.github.io/wavlpf/
 
 ## Related Documentation
 
-### cat-oscilloscope Integration Research
+### Oscilloscope Integration
 
-**🌟 Recommended** - [CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md) - **Comprehensive analysis with a focus on best practices** (Japanese)
+**📘 Usage Guide** - [docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md) - **Current implementation and usage** (Japanese)
 
-**References**:
-- [CAT_OSCILLOSCOPE_INTEGRATION.md](CAT_OSCILLOSCOPE_INTEGRATION.md) - Minimal change approach (for reference)
-- [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) - Architecture diagrams
-- [IMPLEMENTATION_EXAMPLES.md](IMPLEMENTATION_EXAMPLES.md) - Implementation examples
+**Technical Details**:
+- [docs/CAT_OSCILLOSCOPE_WASM_SETUP.md](docs/CAT_OSCILLOSCOPE_WASM_SETUP.md) - WASM setup details
 
 ### Development Guide
 
@@ -43,7 +46,7 @@ https://cat2151.github.io/wavlpf/
 
 For details on the development framework and testing strategy, refer to [DEVELOPMENT.md](DEVELOPMENT.md).
 
-For information on waveform visualization integration, refer to [CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md](CAT_OSCILLOSCOPE_LIBRARY_BEST_PRACTICES.md).
+For information on waveform visualization, refer to [docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md).
 
 ### Prerequisites
 
