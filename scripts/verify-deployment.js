@@ -44,10 +44,25 @@ async function verifyDeployment(url) {
   
   try {
     // ブラウザを起動
-    browser = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    try {
+      browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+    } catch (launchError) {
+      // ブラウザの起動に失敗した場合、より詳細なエラーメッセージを表示
+      if (launchError.message.includes('Executable doesn\'t exist') || 
+          launchError.message.includes('browserType.launch')) {
+        console.error('❌ Chromiumブラウザがインストールされていません。');
+        console.error('');
+        console.error('以下のコマンドでブラウザをインストールしてください:');
+        console.error('  npx playwright install chromium');
+        console.error('');
+        process.exit(1);
+      }
+      // その他のエラーの場合はそのまま投げる
+      throw launchError;
+    }
     
     const context = await browser.newContext({
       viewport: { width: 1280, height: 720 },
@@ -219,18 +234,6 @@ const url = process.argv[2] || DEFAULT_URL;
 // Playwrightがインストールされているか確認
 try {
   require('playwright');
-  // Chromiumブラウザがインストールされているか確認
-  const { execSync } = require('child_process');
-  try {
-    execSync('npx playwright show-config', { stdio: 'pipe' });
-  } catch (browserError) {
-    console.error('❌ Playwrightはインストールされていますが、Chromiumブラウザがインストールされていません。');
-    console.error('');
-    console.error('以下のコマンドでブラウザをインストールしてください:');
-    console.error('  npx playwright install chromium');
-    console.error('');
-    process.exit(1);
-  }
 } catch (error) {
   console.error('❌ Playwrightがインストールされていません。');
   console.error('');
