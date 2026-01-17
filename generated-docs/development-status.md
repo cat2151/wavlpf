@@ -1,51 +1,68 @@
-Last updated: 2026-01-17
+Last updated: 2026-01-18
 
 # Development Status
 
 ## 現在のIssues
-- [Issue #57](../issue-notes/57.md) は、外部ライブラリ `tonejs-json-sequencer` がCDNで利用可能になるまで、その機能の実装を待機している状態です。
-- [Issue #52](../issue-notes/52.md) では、複数の音符シーケンス実装後、シーケンサータブで複数の演奏方法（Tone.js、プリレンダWAV、自前レンダラー）を切り替える機能の実装が課題です。
-- これらの機能は、Tone.jsと自前実装の品質を相補的に検証するための基盤となります。
+- オシロスコープの波形表示レイアウトが破綻 ([Issue #100](../issue-notes/100.md)) しており、パネル配置やオーバーレイ表示の修正とスクリーンショット検証ツールの改善 ([Issue #101](../issue-notes/101.md)) が進行中です。
+- シーケンサー機能については、`tonejs-json-sequencer` のCDNインポート待ち ([Issue #57](../issue-notes/57.md)) となっており、その状況確認が必要です。
+- また、複数の音符シーケンス実装後に、Tone.js、WAVプリレンダリング、自前レンダリングの3種類の演奏/レンダリング方法をプルダウンで選択できる機能の追加 ([Issue #52](../issue-notes/52.md)) が構想されています。
 
 ## 次の一手候補
-1. 複数の音符シーケンス再生機能の実装（[Issue #52](../issue-notes/52.md) の前段階）
-   - 最初の小さな一歩: `src/synth.ts` に単一のノートを連続して再生する基本的なシーケンスロジックを追加する。
+1. オシロスコープの表示レイアウトとオーバーレイの最終検証と調整 ([Issue #101](../issue-notes/101.md), [Issue #100](../issue-notes/100.md))
+   - 最初の小さな一歩: `index.html`と`src/oscilloscope.ts`の現在の実装をレビューし、`waveform-test.png`と比較して、[Issue #100](../issue-notes/100.md)で指摘されたレイアウト破綻が解消されているか、および[Issue #101](../issue-notes/101.md)で追加されたパネルが適切に配置されているかを確認する。
+   - Agent実行プロンプ:
+     ```
+     対象ファイル: `index.html`, `src/oscilloscope.ts`, `docs/OSCILLOSCOPE_LAYOUT.md`, `waveform-test.png`
+
+     実行内容:
+     1. `index.html` の `.oscilloscope-panels` およびその子要素 (`.oscilloscope-panel`, `.oscilloscope-debug-overlay` など) のCSSとHTML構造が、[Issue #100](../issue-notes/100.md) で指摘されたレイアウト破綻を解決し、[Issue #101](../issue-notes/101.md) で意図された表示を実現しているかを分析してください。
+     2. `src/oscilloscope.ts` における各Canvas要素の描画ロジックが、HTMLで定義されたパネルと正しく連携し、意図した情報を表示しているかを確認してください。
+     3. `waveform-test.png` と `docs/OSCILLOSCOPE_LAYOUT.md` を参照し、現在の実装が設計通りであるか、または追加の調整が必要かを判断してください。
+
+     確認事項:
+     - ブラウザでの表示が意図通りか。
+     - 各パネル（フレームバッファ、比較パネル、ピアノ鍵盤、デバッグオーバーレイ）が重なったり、画面外にはみ出したりしていないか。
+     - `waveform-test.png` が現在の実装状態を正確に反映しているか。
+
+     期待する出力: markdown形式で、現在のレイアウト実装の状態（問題点、改善点）と、[Issue #101](../issue-notes/101.md) および [Issue #100](../issue-notes/100.md) の完了に向けた具体的な次のアクションプランを記述してください。特に、どのファイルにどのような修正が必要か、もしあればその具体的なコード差分を提案してください。
+     ```
+
+2. `tonejs-json-sequencer` のCDNインポート状況の確認と代替案検討 ([Issue #57](../issue-notes/57.md))
+   - 最初の小さな一歩: `tonejs-json-sequencer` の公式リポジトリや関連コミュニティを調査し、CDNでの利用可能性に関する最新の進捗状況やロードマップを確認する。
    - Agent実行プロンプト:
      ```
-     対象ファイル: `src/synth.ts`, `src/index.ts`
+     対象ファイル: なし（主に外部情報の調査）
 
-     実行内容: `src/synth.ts` に、定義された複数のノート（MIDIノート番号とデュレーション）を順次再生する基本的なシーケンス再生ロジックを追加してください。また、`src/index.ts` からそのシーケンスを呼び出すための簡単なUIトリガー（例: ボタンクリック）を追加してください。
+     実行内容:
+     1. `tonejs-json-sequencer` のGitHubリポジトリ、ドキュメント、Issueトラッカー、および関連するTone.jsコミュニティフォーラムを調査し、CDNでの利用に関する最新情報を収集してください。
+     2. CDNで利用可能になる見込みがない場合、または長期化しそうな場合、本プロジェクトにおける `tonejs-json-sequencer` の必要性を再評価し、代替ライブラリの利用、または一時的なローカルバンドルなどの代替案を検討してください。
 
-     確認事項: 既存のオーディオ再生機能（`src/audio-player.ts` や `src/synth.ts` 内の既存メソッド）との連携方法、およびUI（`src/index.ts`）からの呼び出し方法に整合性があるか確認してください。追加するシーケンスロジックが既存のWeb Audio APIのコンテキストと適切に統合されることを確認してください。
+     確認事項:
+     - `tonejs-json-sequencer` がCDN経由で利用可能になる具体的なロードマップやタイムラインが存在するか。
+     - 現在のプロジェクトで `tonejs-json-sequencer` が具体的にどのような機能のために必要とされているか。
+     - 代替ライブラリや回避策を導入した場合の技術的な影響（工数、互換性など）。
 
-     期待する出力: シーケンス再生ロジックが追加された `src/synth.ts` および `src/index.ts` の変更内容を提示してください。また、実装後のテスト方法（例: 複数ノートが順次再生されることの確認）をmarkdown形式で説明してください。
+     期待する出力: markdown形式で、`tonejs-json-sequencer` のCDN利用に関する調査結果、およびその結果に基づいたプロジェクトへの影響と、[Issue #57](../issue-notes/57.md) に対する具体的な次のアクションプラン（例：継続して待つ、代替案を検討する、Issueをクローズするなど）を記述してください。
      ```
 
-2. Tone.js `Sampler` を用いた演奏機能の基本統合（[Issue #52](../issue-notes/52.md) の一部）
-   - 最初の小さな一歩: `src/audio-player.ts` または `src/synth.ts` にTone.js `Sampler` を初期化し、単一の音符を再生する基本機能を実装する。
+3. シーケンサー演奏/レンダリング選択機能の設計初期検討 ([Issue #52](../issue-notes/52.md))
+   - 最初の小さな一歩: `src/index.ts` および `src/synth.ts` を中心に、現在のシーケンス処理とオーディオレンダリングの構造を分析し、[Issue #52](../issue-notes/52.md) で提案されている3つの演奏/レンダリング方法を組み込むためのアーキテクチャ案を検討する。特にUIとバックエンドの連携方法に焦点を当てる。
    - Agent実行プロンプト:
      ```
-     対象ファイル: `src/audio-player.ts`, `src/synth.ts`, `src/index.ts`, `package.json`
+     対象ファイル: `src/index.ts`, `src/synth.ts`, `index.html` (UI部分)
 
-     実行内容: `src/audio-player.ts` または `src/synth.ts` にTone.jsの`Sampler`を組み込み、指定されたサンプル音源（例: ドラムキットやピアノ）をロードして、`src/index.ts` から呼び出せるようにする基本機能を実装してください。まずは単一のノートを再生できることを目標とします。必要であれば`package.json`にTone.jsの依存関係を追加してください。
+     実行内容:
+     1. `src/index.ts`と`src/synth.ts`を分析し、現在のオーディオ生成、シーケンス、レンダリングの主要なロジックを特定してください。
+     2. [Issue #52](../issue-notes/52.md) で提案されている「Tone.js instrument sampler による演奏」「一度wavにprerenderしてから演奏」「自前実装seq & rendererでWebAudio非依存renderした演奏」の3つのモードを切り替えるためのUI (プルダウン) を `index.html` にどのように追加し、各モードの選択がバックエンドのロジック (`src/synth.ts` など) にどのように影響するか、その連携メカニズムについて設計案を考案してください。
+     3. 各モードの切り替えが、既存のパフォーマンスやリソース利用にどのような影響を与えるかを概説してください。
 
-     確認事項: Tone.jsライブラリが適切にロードされ、Web Audio APIのコンテキストと衝突しないことを確認してください。また、既存のオーディオ再生パスに影響を与えないように注意してください。`package.json` に`Tone`の依存関係が適切に追加されているか確認してください。
+     確認事項:
+     - 現在のコードベースで、新しいレンダリングパスを追加する際の拡張性。
+     - [Issue #57](../issue-notes/57.md) との依存関係（`tonejs-json-sequencer`が利用できない場合、Tone.js samplerの代替をどうするか）。
+     - UIの追加が既存のユーザー体験を損なわないか。
 
-     期待する出力: Tone.js `Sampler` を用いた再生機能が実装された `src/audio-player.ts` または `src/synth.ts` および、それを呼び出す `src/index.ts` の変更内容を提示してください。加えて、必要な `package.json` の変更と、実装後の動作確認手順をmarkdown形式で説明してください。
-     ```
-
-3. `tonejs-json-sequencer` のCDN対応状況の再調査（[Issue #57](../issue-notes/57.md) 関連）
-   - 最初の小さな一歩: `tonejs-json-sequencer` のGitHubリポジトリやnpmパッケージのドキュメント、関連するIssueやプルリクエストを確認し、CDNでの利用可能性や進捗状況を調査する。
-   - Agent実行プロンプト:
-     ```
-     対象ファイル: なし (外部リソースの調査)
-
-     実行内容: `tonejs-json-sequencer` ライブラリのCDN対応状況を調査してください。具体的には、公式GitHubリポジトリ（例: `https://github.com/Tonejs/tonejs-json-sequencer`）、npmパッケージページ、関連するIssueやプルリクエストを検索し、CDN経由での利用方法や今後の対応予定に関する情報を収集してください。
-
-     確認事項: 調査対象のライブラリが `tonejs-json-sequencer` であることを確認し、最新の情報に基づいて分析を行ってください。
-
-     期待する出力: 調査結果をmarkdown形式で報告してください。報告には、CDN利用の可否、利用可能なCDNサービス（あれば）、将来的な対応計画、関連するIssueやプルリクエストのリンク、およびその内容の要約を含めてください。
+     期待する出力: markdown形式で、シーケンサー機能の演奏/レンダリング選択機能の初期設計案を記述してください。具体的には、UIの変更案（HTML構造）、バックエンドのモジュール分割案、各レンダリングモードの実装に必要な主要な関数やクラス、および[Issue #57](../issue-notes/57.md)との依存関係についての考察を含めてください。
      ```
 
 ---
-Generated at: 2026-01-17 07:03:14 JST
+Generated at: 2026-01-18 07:03:25 JST
