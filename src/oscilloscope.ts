@@ -1,7 +1,7 @@
 /**
  * Oscilloscope visualization integration using cat-oscilloscope library
  */
-import { Oscilloscope, BufferSource, PianoKeyboardRenderer } from 'cat-oscilloscope';
+import { Oscilloscope, BufferSource, PianoKeyboardRenderer, OverlaysLayoutConfig } from 'cat-oscilloscope';
 
 let oscilloscope: Oscilloscope | null = null;
 let currentBufferSource: BufferSource | null = null;
@@ -59,13 +59,31 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
     }
   }
 
+  // Configure overlay layout to position frequency plot in top-right corner
+  // and FFT overlay in bottom-left corner
+  const overlaysLayout: OverlaysLayoutConfig = {
+    frequencyPlot: {
+      position: { x: 'right-10', y: 10 },
+      size: { width: 280, height: 120 }
+    },
+    fftOverlay: {
+      position: { x: 10, y: '65%' },
+      size: { width: '35%', height: '35%' }
+    },
+    harmonicAnalysis: {
+      position: { x: 10, y: 10 },
+      size: { width: 500, height: 'auto' }
+    }
+  };
+
   // Initialize the main oscilloscope (elements are now validated as HTMLCanvasElement)
   oscilloscope = new Oscilloscope(
     mainCanvas,
     previousWaveformCanvas as HTMLCanvasElement,
     currentWaveformCanvas as HTMLCanvasElement,
     similarityPlotCanvas as HTMLCanvasElement,
-    frameBufferCanvas as HTMLCanvasElement
+    frameBufferCanvas as HTMLCanvasElement,
+    overlaysLayout
   );
 
   // Initialize piano keyboard renderer
