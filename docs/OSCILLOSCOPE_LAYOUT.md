@@ -66,8 +66,9 @@ transform: translate(-50%, -50%);
 display: flex;
 flex-direction: column;
 align-items: center;
-justify-content: space-between;
+justify-content: flex-start;
 padding: 20px;
+gap: 10px;
 
 /* パネル: .frame-buffer-panel */
 margin-top: 10px;
@@ -259,9 +260,9 @@ right: 10px;
 ```
 上部余白: 20px (padding)
 フレームバッファパネル: 10px (margin-top) + 8px (padding) + 2px (border) + 5px (label) + 120px (canvas) + 8px (padding) + 2px (border) = 155px
-中段余白: 約10px (justify-content: space-between による自動調整)
+パネル間余白: 10px (gap)
 比較パネル: 8px (padding) + 2px (border) + 5px (label) + 120px (canvas) + 8px (padding) + 2px (border) = 153px
-中段～下段余白: 約10px
+パネル間余白: 10px (gap)
 ピアノ鍵盤パネル: 8px (padding) + 2px (border) + 5px (label) + 60px (canvas) + 8px (padding) + 2px (border) = 93px
 下部余白: 10px (margin-bottom) + 20px (padding) = 30px
 

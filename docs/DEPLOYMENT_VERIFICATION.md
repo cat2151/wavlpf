@@ -46,9 +46,37 @@ npm run verify-deployment
 3. WASM初期化が成功すること
 4. コンソールエラーがないこと
 
-### ローカルビルドの検証
+### PRの変更をローカルで完全検証（推奨）
 
-ローカルでビルドしたアプリケーションを検証する場合：
+**v0.0.3以降**: PRの変更をマージ前にローカル環境で完全に検証できるオーケストレーションスクリプトが利用可能です。
+
+```bash
+npm run test:pr-local
+```
+
+このコマンドは以下を自動的に実行します：
+
+1. **wasm-pack のインストール**（必要な場合）
+2. **npm依存関係のインストール**
+3. **アプリケーションのビルド**（WASM含む）
+4. **プレビューサーバーの起動**（ポート8082）
+5. **Playwrightのセットアップ**
+6. **スクリーンショットの撮影**（クリック操作含む）
+
+**出力**: `/tmp/pr-verification-screenshot.png`
+
+これにより、GitHub Pagesへのデプロイ前に、実際の表示を確認できます。特にレイアウト変更の検証に有用です。
+
+**必要な環境**:
+- Rust/cargo（通常プリインストール済み）
+- Node.js v16以上
+- 十分なディスク容量（WASMビルド用）
+
+**実行時間**: 初回は約5-10分（wasm-pack インストール含む）、2回目以降は約2-3分
+
+### ローカルビルドの検証（手動）
+
+手動でステップを実行する場合：
 
 ```bash
 # まずビルドを実行
@@ -92,6 +120,7 @@ node scripts/verify-deployment.js https://example.com/wavlpf/
 - HTTPステータスコードが200であること
 - ページが30秒以内にロードされること
 - ネットワークアイドル状態になること
+- **アプリケーション開始のためのクリック**: wavlpfは自動再生ポリシーに準拠するため、初回起動時に画面をクリックする必要があります。検証スクリプトは自動的にこの操作を実行します。
 
 ### 2. 主要な要素の存在確認
 
@@ -128,6 +157,43 @@ VERBOSE=1 npm run verify-deployment
 
 ```bash
 SAVE_SCREENSHOT=screenshot.png npm run verify-deployment
+```
+
+**重要**: スクリーンショットはアプリケーション起動後（クリック後）の状態で撮影されます。これにより、オシロスコープパネルが実際に動作している状態を確認できます。
+
+### 波形表示のスクリーンショットテスト
+
+オシロスコープの波形表示を含む詳細なスクリーンショットを撮影する場合：
+
+```bash
+npm run test:waveform-screenshot
+```
+
+このコマンドは以下を実行します：
+1. ページをロード
+2. 画面をクリックしてアプリケーションを開始
+3. 3秒待機（波形が表示されるまで）
+4. スクリーンショットを撮影（`waveform-test.png`として保存）
+5. キャンバスの内容を検証
+
+### GitHub Pagesの簡易スクリーンショット撮影
+
+シンプルにスクリーンショットだけを撮影したい場合：
+
+```bash
+npm run screenshot:github-pages
+```
+
+カスタムURLや出力先を指定する場合：
+
+```bash
+node scripts/screenshot-github-pages.js <URL> <OUTPUT_PATH>
+```
+
+例：
+```bash
+node scripts/screenshot-github-pages.js https://cat2151.github.io/wavlpf/ my-screenshot.png
+WAIT_TIME=5000 node scripts/screenshot-github-pages.js  # 5秒待機
 ```
 
 ## CI/CD統合

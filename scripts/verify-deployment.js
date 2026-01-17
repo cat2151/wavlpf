@@ -147,6 +147,17 @@ async function verifyDeployment(url) {
       console.log(`  ⚠️  ページの完全な読み込みに時間がかかっています: ${waitError.message}`);
     }
     
+    // アプリケーションを開始するために画面をクリック
+    // wavlpfアプリは"Click anywhere to start"と表示され、ユーザーインタラクションが必要
+    console.log('\n  ℹ️  アプリケーションを開始するために画面をクリック...');
+    try {
+      await page.click('body');
+      await page.waitForTimeout(2000); // オシロスコープの初期化を待つ
+      console.log('  ✅ アプリケーションを開始しました');
+    } catch (clickError) {
+      console.log(`  ⚠️  クリック操作でエラーが発生: ${clickError.message}`);
+    }
+    
     // テスト2: 主要な要素の存在確認
     console.log('\nテスト2: 主要な要素の存在確認');
     
