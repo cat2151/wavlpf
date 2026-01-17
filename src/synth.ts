@@ -84,6 +84,9 @@ let playbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 // Track whether playback loop has started
 let isPlaybackLoopStarted = false;
 
+// Track if oscilloscope error has been displayed to avoid repeated UI notifications
+let hasShownOscilloscopeError = false;
+
 // Store reference to scheduleNextPlay function for mode switching
 let scheduleNextPlayFn: (() => void) | null = null;
 
@@ -190,9 +193,13 @@ async function playAudioWav(): Promise<void> {
   // We don't await this to prevent delaying audio playback
   if (isOscilloscopeInitialized()) {
     updateOscilloscope(samples, SAMPLE_RATE).catch((error) => {
-      console.error('Failed to update oscilloscope:', error);
-      // Display error to user
-      displayOscilloscopeError('Visualization update failed. The oscilloscope may not be functioning correctly.');
+      // Only log and display error once to prevent console spam
+      if (!hasShownOscilloscopeError) {
+        hasShownOscilloscopeError = true;
+        console.error('Failed to update oscilloscope:', error);
+        // Display error to user
+        displayOscilloscopeError('Visualization update failed. The oscilloscope may not be functioning correctly.');
+      }
     });
   }
   

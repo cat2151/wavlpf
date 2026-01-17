@@ -7,6 +7,7 @@ let oscilloscope: Oscilloscope | null = null;
 let currentBufferSource: BufferSource | null = null;
 let dummyCanvases: HTMLCanvasElement[] = [];
 let isUpdating = false; // Guard against concurrent updates
+let hasPermanentFailure = false; // Track if oscilloscope has failed permanently to avoid repeated error logging
 
 /**
  * Initialize the oscilloscope with a canvas element
@@ -98,6 +99,11 @@ function validateInputs(samples: Float32Array, sampleRate: number): void {
  * @returns Promise that resolves when update is complete
  */
 export async function updateOscilloscope(samples: Float32Array, sampleRate: number): Promise<void> {
+  // If oscilloscope has permanently failed, silently skip updates to prevent console spam
+  if (hasPermanentFailure) {
+    return;
+  }
+
   if (!oscilloscope) {
     throw new Error('Oscilloscope not initialized. Call initOscilloscope() first.');
   }
@@ -124,6 +130,20 @@ export async function updateOscilloscope(samples: Float32Array, sampleRate: numb
 
     // Start visualization from the buffer
     await oscilloscope.startFromBuffer(currentBufferSource);
+  } catch (error) {
+    // Check if this is a WASM initialization error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('Failed to load WASM module script') || 
+        errorMessage.includes('WASM') || 
+        errorMessage.includes('wasm')) {
+      // Mark as permanent failure to prevent repeated error logging
+      hasPermanentFailure = true;
+      // Log once and throw to notify the caller
+      console.error('Oscilloscope WASM initialization failed permanently. Visualization will be disabled.', error);
+      throw error;
+    }
+    // For other errors, just re-throw without marking as permanent
+    throw error;
   } finally {
     isUpdating = false;
   }
@@ -145,5 +165,5 @@ export async function stopOscilloscope(): Promise<void> {
  * Check if oscilloscope is initialized
  */
 export function isOscilloscopeInitialized(): boolean {
-  return oscilloscope !== null;
+  return oscilloscope !== null && !hasPermanentFailure;
 }
