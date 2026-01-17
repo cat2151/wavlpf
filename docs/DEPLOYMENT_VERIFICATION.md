@@ -148,6 +148,26 @@ npm run test:waveform-screenshot
 4. スクリーンショットを撮影（`waveform-test.png`として保存）
 5. キャンバスの内容を検証
 
+### GitHub Pagesの簡易スクリーンショット撮影
+
+シンプルにスクリーンショットだけを撮影したい場合：
+
+```bash
+npm run screenshot:github-pages
+```
+
+カスタムURLや出力先を指定する場合：
+
+```bash
+node scripts/screenshot-github-pages.js <URL> <OUTPUT_PATH>
+```
+
+例：
+```bash
+node scripts/screenshot-github-pages.js https://cat2151.github.io/wavlpf/ my-screenshot.png
+WAIT_TIME=5000 node scripts/screenshot-github-pages.js  # 5秒待機
+```
+
 ## CI/CD統合
 
 ### GitHub Actionsでの使用
