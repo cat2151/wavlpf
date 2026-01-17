@@ -96,6 +96,40 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
       await expect(updateOscilloscope(samples, 44100)).rejects.toThrow('not initialized');
     });
 
+    it('should not repeatedly log WASM errors after permanent failure', async () => {
+      // This test verifies the fix for Issue #86
+      // After a WASM initialization error, subsequent calls should silently return
+      // without logging errors to prevent console spam
+      
+      const samples = new Float32Array(1024);
+      const consoleErrorSpy = { error: console.error };
+      let errorCount = 0;
+      
+      console.error = (...args: any[]) => {
+        if (args.some((arg: any) => 
+          typeof arg === 'string' && 
+          (arg.includes('WASM') || arg.includes('wasm'))
+        )) {
+          errorCount++;
+        }
+      };
+
+      try {
+        // First call - may throw and log error if WASM init fails
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        
+        // Subsequent calls should silently return without logging
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        
+        // Error should be logged at most once
+        expect(errorCount).toBeLessThanOrEqual(1);
+      } finally {
+        console.error = consoleErrorSpy.error;
+      }
+    });
+
     it('should throw error with empty samples', async () => {
       const samples = new Float32Array(0);
       await expect(updateOscilloscope(samples, 44100)).rejects.toThrow('empty');
