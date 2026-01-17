@@ -34,6 +34,20 @@ const { chromium } = require('playwright');
 // デプロイされたアプリケーションのURL
 const DEFAULT_URL = 'https://cat2151.github.io/wavlpf/';
 
+// 検証対象の要素セレクタ
+const SELECTORS = {
+  APP_ROOT: '#app',
+  CANVAS: 'canvas',
+  CONTROLS: '.controls',
+};
+
+// WASMエラーメッセージのパターン
+const WASM_ERROR_PATTERNS = [
+  'wasm',
+  'failed to update oscilloscope',
+  'wasm initialization failed',
+];
+
 async function verifyDeployment(url) {
   console.log(`\n🔍 GitHub Pagesデプロイ検証を開始: ${url}\n`);
   
@@ -121,16 +135,23 @@ async function verifyDeployment(url) {
       failed++;
     }
     
-    // 少し待機してJavaScriptの初期化を待つ
-    await page.waitForTimeout(2000);
+    // JavaScriptの初期化を待つ（DOMContentLoadedとload完了を確認）
+    try {
+      await page.waitForLoadState('domcontentloaded', { timeout: 5000 });
+      await page.waitForLoadState('load', { timeout: 5000 });
+      // さらに、#app要素が確実に存在するまで待つ
+      await page.waitForSelector(SELECTORS.APP_ROOT, { timeout: 5000, state: 'attached' });
+    } catch (waitError) {
+      console.log(`  ⚠️  ページの完全な読み込みに時間がかかっています: ${waitError.message}`);
+    }
     
     // テスト2: 主要な要素の存在確認
     console.log('\nテスト2: 主要な要素の存在確認');
     
     const elements = [
-      { selector: '#app', name: 'アプリケーションルート' },
-      { selector: 'canvas', name: 'オシロスコープキャンバス' },
-      { selector: '.controls', name: 'コントロールUI' },
+      { selector: SELECTORS.APP_ROOT, name: 'アプリケーションルート' },
+      { selector: SELECTORS.CANVAS, name: 'オシロスコープキャンバス' },
+      { selector: SELECTORS.CONTROLS, name: 'コントロールUI' },
     ];
     
     for (const { selector, name } of elements) {
@@ -154,9 +175,7 @@ async function verifyDeployment(url) {
     try {
       // WASMエラーがないことを確認（これが最も重要）
       const hasWasmError = consoleErrors.some(err => 
-        err.toLowerCase().includes('wasm') || 
-        err.toLowerCase().includes('failed to update oscilloscope') ||
-        err.toLowerCase().includes('wasm initialization failed')
+        WASM_ERROR_PATTERNS.some(pattern => err.toLowerCase().includes(pattern))
       );
       
       if (hasWasmError) {
