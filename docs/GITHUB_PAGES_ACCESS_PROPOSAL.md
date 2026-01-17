@@ -1,4 +1,31 @@
-# GitHub Pages Access Proposal for Sandbox Environment
+# GitHub Pages Access for GitHub Copilot Coding Agent
+
+> [!IMPORTANT]
+> **このドキュメントは古い情報を含んでいます。**
+> 
+> **正しい設定方法は [COPILOT_GITHUB_PAGES_ACCESS.md](COPILOT_GITHUB_PAGES_ACCESS.md) を参照してください。**
+
+## 正しい解決策
+
+GitHub Copilot Coding Agent が GitHub Pages にアクセスするには、**GitHub Copilot Allowlist** を使用します：
+
+1. リポジトリ設定ページにアクセス:
+   ```
+   https://github.com/cat2151/wavlpf/settings/copilot/coding_agent/allowlist
+   ```
+
+2. 以下のドメインを追加:
+   ```
+   cat2151.github.io
+   ```
+
+詳細な手順とベストプラクティスは [COPILOT_GITHUB_PAGES_ACCESS.md](COPILOT_GITHUB_PAGES_ACCESS.md) を参照してください。
+
+---
+
+## 以下は参考情報（非推奨）
+
+このセクションは、初期の調査結果を保持していますが、**推奨されない方法**です。
 
 ## 問題の詳細
 

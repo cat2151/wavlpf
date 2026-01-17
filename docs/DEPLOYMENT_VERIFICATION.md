@@ -10,6 +10,16 @@ Issue #76とIssue #78では、ローカル環境やCI環境での動作確認は
 
 このような問題を防ぐため、GitHub Pagesへのデプロイ後は必ずヘッドレスブラウザを使用した自動テストを実行することが必須となりました。
 
+## GitHub Copilot Coding Agent での使用
+
+GitHub Copilot Coding Agent が GitHub Pages にアクセスするには、allowlist への設定が必要です。
+
+詳細は **[COPILOT_GITHUB_PAGES_ACCESS.md](COPILOT_GITHUB_PAGES_ACCESS.md)** を参照してください。
+
+**設定URL**: `https://github.com/cat2151/wavlpf/settings/copilot/coding_agent/allowlist`
+
+**追加するドメイン**: `cat2151.github.io`
+
 ## 検証スクリプトの使用方法
 
 ### 前提条件
