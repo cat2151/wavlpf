@@ -54,7 +54,27 @@ https://cat2151.github.io/wavlpf/
 - npm
 - Rustとwasm-pack（WASMモジュールのビルド用）
 
-Rustとwasm-packのインストール:
+#### Rustとwasm-packのインストール
+
+**方法1: 自動インストールスクリプト（推奨）**
+
+プロジェクトに用意されているスクリプトを使用してwasm-packをインストール:
+
+```bash
+# wasm-packをインストール
+bash scripts/install-wasm-pack.sh
+```
+
+このスクリプトは:
+- Rustとcargoがインストールされているか確認
+- wasm-packが既にインストールされているか確認
+- cargo経由でwasm-packをインストール（ネットワーク制限がある環境でも動作）
+- インストールの成功を確認
+
+**方法2: 手動インストール**
+
+Rustとwasm-packを手動でインストール:
+
 ```bash
 # Rustのインストール
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
