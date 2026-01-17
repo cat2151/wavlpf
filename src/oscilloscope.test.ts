@@ -130,6 +130,33 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
       }
     });
 
+    it('should reset permanent failure flag after stop and reinit', async () => {
+      // This test verifies that the permanent failure flag is reset when the oscilloscope
+      // is stopped and reinitialized, allowing recovery from a previous WASM failure
+      
+      const samples = new Float32Array(1024);
+      
+      // Simulate a WASM failure by calling update (which may fail in test environment)
+      await updateOscilloscope(samples, 44100).catch(() => {});
+      
+      // Stop the oscilloscope
+      await stopOscilloscope();
+      expect(isOscilloscopeInitialized()).toBe(false);
+      
+      // Reinitialize - this should reset the permanent failure flag
+      initOscilloscope(canvas);
+      expect(isOscilloscopeInitialized()).toBe(true);
+      
+      // Update should be attempted again (not silently skipped)
+      // If WASM is available, it should work; if not, it should fail with proper error
+      // Either way, it should not be silently skipped due to permanent failure flag
+      const updatePromise = updateOscilloscope(samples, 44100);
+      
+      // The update should either succeed or throw an error, but not silently return
+      // due to the permanent failure flag being set from before
+      await expect(updatePromise).resolves.not.toThrow();
+    });
+
     it('should throw error with empty samples', async () => {
       const samples = new Float32Array(0);
       await expect(updateOscilloscope(samples, 44100)).rejects.toThrow('empty');

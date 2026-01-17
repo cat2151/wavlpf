@@ -29,6 +29,9 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
     throw new Error('Invalid canvas element provided to initOscilloscope');
   }
 
+  // Reset permanent failure flag on reinitialization to allow recovery
+  hasPermanentFailure = false;
+
   // Clean up any existing dummy canvases from previous initialization
   cleanupDummyCanvases();
 
@@ -99,13 +102,14 @@ function validateInputs(samples: Float32Array, sampleRate: number): void {
  * @returns Promise that resolves when update is complete
  */
 export async function updateOscilloscope(samples: Float32Array, sampleRate: number): Promise<void> {
-  // If oscilloscope has permanently failed, silently skip updates to prevent console spam
-  if (hasPermanentFailure) {
-    return;
-  }
-
   if (!oscilloscope) {
     throw new Error('Oscilloscope not initialized. Call initOscilloscope() first.');
+  }
+
+  // If oscilloscope has permanently failed, silently skip updates to prevent console spam
+  // Note: This check is after initialization check to ensure proper error reporting for uninitialized state
+  if (hasPermanentFailure) {
+    return;
   }
 
   // Prevent concurrent updates
@@ -131,11 +135,10 @@ export async function updateOscilloscope(samples: Float32Array, sampleRate: numb
     // Start visualization from the buffer
     await oscilloscope.startFromBuffer(currentBufferSource);
   } catch (error) {
-    // Check if this is a WASM initialization error
+    // Check if this is a WASM initialization error using specific error message pattern
+    // We use a specific pattern to avoid false positives from generic errors that mention WASM
     const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.includes('Failed to load WASM module script') || 
-        errorMessage.includes('WASM') || 
-        errorMessage.includes('wasm')) {
+    if (errorMessage.includes('Failed to load WASM module script')) {
       // Mark as permanent failure to prevent repeated error logging
       hasPermanentFailure = true;
       // Log once and throw to notify the caller
@@ -159,6 +162,8 @@ export async function stopOscilloscope(): Promise<void> {
   }
   cleanupDummyCanvases();
   oscilloscope = null;
+  // Reset permanent failure flag to allow reinitialization with a fresh state
+  hasPermanentFailure = false;
 }
 
 /**
