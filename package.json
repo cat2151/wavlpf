@@ -13,7 +13,9 @@
     "test:run": "vitest run",
     "coverage": "vitest run --coverage",
     "serve": "vite preview",
-    "postinstall": "node scripts/setup-cat-oscilloscope-wasm.js"
+    "postinstall": "node scripts/setup-cat-oscilloscope-wasm.js",
+    "verify-deployment": "node scripts/verify-deployment.js",
+    "verify-deployment:local": "node scripts/verify-deployment.js http://localhost:4173"
   },
   "keywords": [
     "synthesizer",

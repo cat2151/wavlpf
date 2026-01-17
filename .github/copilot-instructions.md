@@ -64,6 +64,62 @@ AI agentが2回にわたり、以下の誤った判断で`wasm-opt = false`を�
 
 ---
 
+## ⚠️ 重要: GitHub Pagesデプロイの検証について ⚠️
+
+### GitHub Pagesでのヘッドレスブラウザテストを必須とする
+
+**GitHub Pagesへのデプロイに関する問題を調査・修正する際は、必ず実際のGitHub Pages環境で動作確認すること。**
+
+#### 背景
+Issue #76とIssue #78では、ローカル環境やCI環境での動作確認は行われたが、実際のGitHub Pages環境での動作確認が不足していたため、問題が解決されていないことが後から判明した。
+
+#### 必須事項
+- ✅ **GitHub Pagesへのデプロイ成功を確認する**
+  - デプロイワークフローが成功したことを確認
+  - `https://cat2151.github.io/wavlpf/` へのアクセスが可能であることを確認
+- ✅ **ヘッドレスブラウザでGitHub Pagesをテストする**
+  - Playwright等を使用して実際にGitHub Pagesにデプロイされたアプリをテスト
+  - コンソールエラーがないことを確認
+  - アプリが正常に動作することを確認（オシロスコープ表示、オーディオ再生等）
+- ✅ **デプロイ後の検証手順を実行する**
+  1. GitHub Actionsのデプロイワークフローが成功したことを確認
+  2. ヘッドレスブラウザで `https://cat2151.github.io/wavlpf/` にアクセス
+  3. ページのロード成功を確認
+  4. コンソールログを確認（エラーがないこと）
+  5. 主要機能が動作することを確認
+
+#### 禁止事項
+- ❌ ローカル環境での動作確認だけで「解決した」と判断すること
+- ❌ CI環境での動作確認だけで「解決した」と判断すること
+- ❌ ビルドが成功したことだけで「デプロイ問題が解決した」と判断すること
+- ❌ デプロイワークフローが成功したことだけで「アプリが正常に動作している」と判断すること
+
+#### 検証スクリプトの作成
+GitHub Pagesデプロイ後の動作確認を自動化するため、以下のようなスクリプトを作成すること：
+- スクリプト名: `scripts/verify-deployment.js` または類似の名前
+- 実装内容: Playwrightを使用してGitHub Pagesにアクセスし、基本的な動作を確認
+- 確認項目:
+  - ページが正常にロードされること
+  - コンソールエラーがないこと
+  - 主要な要素（オシロスコープ、コントロールUI等）が存在すること
+  - WASM初期化が成功すること
+
+#### 検証スクリプトの実装
+デプロイ検証を自動化するため、`scripts/verify-deployment.js` スクリプトが用意されています。
+詳細は [docs/DEPLOYMENT_VERIFICATION.md](../docs/DEPLOYMENT_VERIFICATION.md) を参照してください。
+
+使用方法：
+```bash
+# GitHub Pagesの検証（本番環境）
+npm run verify-deployment
+
+# ローカルビルドの検証
+npm run preview  # 別のターミナルで実行
+npm run verify-deployment:local
+```
+
+---
+
 ## プロジェクト概要
 リアルタイムローパスフィルター(LPF)制御を備えたTypeScriptソフトウェアシンセサイザー。220Hzのノコギリ波を生成し、マウス制御のカットオフ(20-4000Hz)とレゾナンス(Q: 0.5-16)を持つbiquad LPFで処理し、Tone.jsで再生します。250msのオーディオバッファを使用した非リアルタイムレンダリング方式です。
 
@@ -91,6 +147,27 @@ npm run test:ui   # ビジュアルテストランナー(テストデバッグ�
 npm run build     # TypeScriptチェック + Vite本番ビルド
 npm run preview   # 本番ビルドをローカルでプレビュー
 ```
+
+### ビルドとデプロイのスクリプト一貫性
+
+**GitHub Actions workflowは、開発環境と同じnpm scriptsを使用すること。**
+
+#### 現状（良い例）
+- ✅ `.github/workflows/ci.yml` と `.github/workflows/deploy.yml` は `npm run build` を使用
+- ✅ `npm run build` は `package.json` で定義された同じスクリプトを呼び出す
+- ✅ ビルドロジックが一箇所（package.json）に集約されている
+
+#### 禁止事項
+- ❌ GitHub Actions workflowにビルドコマンドを直接ハードコーディングすること
+  - 悪い例: `cd wasm-audio && wasm-pack build --target web --release && tsc && vite build`
+  - 理由: ビルド手順が変更された時に複数箇所の修正が必要になる
+- ❌ CI専用の特別なビルドスクリプトを作成すること（環境変数による分岐は除く）
+  - 理由: ローカル開発とCI環境でビルド結果が異なる可能性がある
+
+#### 原則
+1. **package.jsonのscriptsがビルドロジックの唯一の情報源**
+2. **GitHub Actions workflowは常に `npm run <script>` を使用**
+3. **環境差異は環境変数で吸収し、スクリプト自体は共通化**
 
 ### テスト哲学 ([DEVELOPMENT.md](DEVELOPMENT.md) 参照)
 - **焦点**: 純粋関数の単体テスト(信号処理、WAV生成、フィルタ安定性)
