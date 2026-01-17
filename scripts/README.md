@@ -52,14 +52,17 @@ npx playwright install chromium
 
 **実行方法**:
 ```bash
-# デフォルトURL（localhost:8081）でテスト
+# GitHub Pages（本番環境）でテスト（デフォルト）
+npm run test:waveform-screenshot
+
+# ローカル開発サーバーでテスト
 npm run test:waveform-screenshot:local
 
 # カスタムURLでテスト
 node scripts/test-waveform-screenshot.js <URL>
 
 # スクリーンショットの保存先を指定
-SCREENSHOT_PATH=my-screenshot.png npm run test:waveform-screenshot:local
+SCREENSHOT_PATH=my-screenshot.png npm run test:waveform-screenshot
 ```
 
 **検証項目**:
@@ -73,9 +76,9 @@ SCREENSHOT_PATH=my-screenshot.png npm run test:waveform-screenshot:local
 ```bash
 npm install --save-dev playwright
 npx playwright install chromium
-# 開発サーバーを起動（別のターミナルで）
-npm run dev
 ```
+
+**注意**: デフォルトではGitHub Pagesの本番環境をテストします。ローカル開発サーバーをテストする場合は`test:waveform-screenshot:local`を使用してください。
 
 **詳細**: [Issue #94](../issue-notes/94.md) - 波形ビジュアライズのレイアウト問題の調査
 

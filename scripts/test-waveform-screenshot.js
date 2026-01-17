@@ -28,7 +28,9 @@ try {
 
 const { chromium } = require('playwright');
 
-const DEFAULT_URL = 'http://localhost:8081/wavlpf/';
+// デフォルトはGitHub Pages（本番環境）を使用
+// ローカルテスト時は引数でURLを指定するか、npm run test:waveform-screenshot:local を使用
+const DEFAULT_URL = 'https://cat2151.github.io/wavlpf/';
 const SCREENSHOT_PATH = process.env.SCREENSHOT_PATH || 'waveform-test.png';
 
 async function testWaveformVisualization(url) {
