@@ -45,10 +45,20 @@ npm run verify-deployment
 npm run build
 
 # プレビューサーバーを起動（別のターミナルで）
+# デフォルトではポート4173で起動します
 npm run preview
 
 # 検証を実行
 npm run verify-deployment:local
+```
+
+**注意**: `verify-deployment:local`スクリプトは`http://localhost:4173`を使用します（Viteのデフォルトpreviewポート）。
+異なるポートを使用する場合は、カスタムURLで検証してください：
+
+```bash
+# カスタムポートでpreviewを起動した場合
+npm run preview -- --port 5000
+node scripts/verify-deployment.js http://localhost:5000
 ```
 
 ### カスタムURLの検証

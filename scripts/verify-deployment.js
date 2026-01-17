@@ -17,9 +17,16 @@
  * 
  * URLを省略した場合は、デフォルトでGitHub PagesのURL（https://cat2151.github.io/wavlpf/）を使用します。
  * 
+ * 環境変数:
+ *   TIMEOUT - ページロードのタイムアウト（ミリ秒、デフォルト: 15000）
+ *   VERBOSE - 詳細ログを有効化（1で有効）
+ *   SAVE_SCREENSHOT - スクリーンショットの保存先（指定するとスクリーンショットを保存）
+ * 
  * 例:
  *   node scripts/verify-deployment.js
  *   node scripts/verify-deployment.js http://localhost:4173
+ *   TIMEOUT=30000 node scripts/verify-deployment.js
+ *   VERBOSE=1 SAVE_SCREENSHOT=screenshot.png node scripts/verify-deployment.js
  */
 
 const { chromium } = require('playwright');
@@ -83,7 +90,7 @@ async function verifyDeployment(url) {
     try {
       const response = await page.goto(url, {
         waitUntil: 'networkidle',
-        timeout: 30000
+        timeout: parseInt(process.env.TIMEOUT || '15000')
       });
       
       if (response && response.ok()) {
@@ -130,31 +137,19 @@ async function verifyDeployment(url) {
     // テスト3: WASM初期化の確認
     console.log('\nテスト3: WASM初期化の確認');
     try {
-      // コンソールログから初期化メッセージを探す
-      const hasWasmInit = consoleMessages.some(msg => 
-        msg.text.includes('WASM initialized') || 
-        msg.text.includes('wasm') ||
-        msg.text.includes('Oscilloscope initialized')
-      );
-      
-      // WASMエラーがないことを確認
+      // WASMエラーがないことを確認（これが最も重要）
       const hasWasmError = consoleErrors.some(err => 
-        err.includes('wasm') || 
-        err.includes('WASM') ||
-        err.includes('Failed to update oscilloscope')
+        err.toLowerCase().includes('wasm') || 
+        err.toLowerCase().includes('failed to update oscilloscope') ||
+        err.toLowerCase().includes('wasm initialization failed')
       );
       
       if (hasWasmError) {
         throw new Error('WASMエラーが検出されました');
       }
       
-      if (hasWasmInit || !hasWasmError) {
-        console.log('  ✅ WASM初期化が正常に完了しました');
-        passed++;
-      } else {
-        console.log('  ⚠️  WASM初期化メッセージが見つかりませんが、エラーもありません');
-        passed++;
-      }
+      console.log('  ✅ WASMエラーが検出されませんでした');
+      passed++;
     } catch (error) {
       console.log(`  ❌ WASM初期化に失敗: ${error.message}`);
       errors.push(`WASM初期化失敗: ${error.message}`);
@@ -224,6 +219,18 @@ const url = process.argv[2] || DEFAULT_URL;
 // Playwrightがインストールされているか確認
 try {
   require('playwright');
+  // Chromiumブラウザがインストールされているか確認
+  const { execSync } = require('child_process');
+  try {
+    execSync('npx playwright show-config', { stdio: 'pipe' });
+  } catch (browserError) {
+    console.error('❌ Playwrightはインストールされていますが、Chromiumブラウザがインストールされていません。');
+    console.error('');
+    console.error('以下のコマンドでブラウザをインストールしてください:');
+    console.error('  npx playwright install chromium');
+    console.error('');
+    process.exit(1);
+  }
 } catch (error) {
   console.error('❌ Playwrightがインストールされていません。');
   console.error('');
