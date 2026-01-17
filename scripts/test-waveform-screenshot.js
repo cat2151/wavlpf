@@ -13,6 +13,19 @@
  *   SCREENSHOT_PATH - スクリーンショットの保存先（デフォルト: waveform-test.png）
  */
 
+// Playwrightがインストールされているか確認
+try {
+  require('playwright');
+} catch (error) {
+  console.error('❌ Playwrightがインストールされていません。');
+  console.error('');
+  console.error('以下のコマンドでインストールしてください:');
+  console.error('  npm install --save-dev playwright');
+  console.error('  npx playwright install chromium');
+  console.error('');
+  process.exit(1);
+}
+
 const { chromium } = require('playwright');
 
 const DEFAULT_URL = 'http://localhost:8081/wavlpf/';
@@ -28,11 +41,11 @@ async function testWaveformVisualization(url) {
     // ブラウザを起動
     browser = await chromium.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']
     });
     
     const context = await browser.newContext({
-      viewport: { width: 1920, height: 1080 },
+      viewport: { width: 1280, height: 720 },
     });
     
     const page = await context.newPage();
