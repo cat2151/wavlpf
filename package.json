@@ -13,7 +13,9 @@
     "test:run": "vitest run",
     "coverage": "vitest run --coverage",
     "serve": "vite preview",
-    "postinstall": "node scripts/setup-cat-oscilloscope-wasm.js"
+    "postinstall": "node scripts/setup-cat-oscilloscope-wasm.js",
+    "verify-deployment": "node scripts/verify-deployment.js",
+    "verify-deployment:local": "node scripts/verify-deployment.js http://localhost:4173"
   },
   "keywords": [
     "synthesizer",
@@ -31,6 +33,7 @@
     "@types/node": "^20.10.0",
     "@vitest/ui": "^4.0.16",
     "happy-dom": "^20.0.11",
+    "playwright": "^1.57.0",
     "typescript": "^5.3.3",
     "vite": "^7.3.0",
     "vitest": "^4.0.16"
