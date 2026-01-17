@@ -110,15 +110,6 @@ function displayOscilloscopeError(message: string): void {
   // Create error message element
   const errorDiv = document.createElement('div');
   errorDiv.className = 'oscilloscope-error';
-  errorDiv.style.cssText = `
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.1);
-    border: 1px solid rgba(255, 107, 107, 0.3);
-    border-radius: 5px;
-    padding: 0.5em;
-    margin-top: 0.5em;
-    font-size: 0.9em;
-  `;
   errorDiv.textContent = message;
 
   container.appendChild(errorDiv);

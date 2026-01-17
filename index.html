@@ -186,6 +186,32 @@
       opacity: 0.5;
     }
     
+    /* Container for oscilloscope-related error messages.
+       This matches the selector used by displayOscilloscopeError in src/synth.ts. */
+    .oscilloscope-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      max-width: 320px;
+      z-index: 1000;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    /* Individual oscilloscope error message blocks. */
+    .oscilloscope-error {
+      pointer-events: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8em;
+      color: #ffdddd;
+      background: rgba(139, 0, 0, 0.9);
+      border: 1px solid rgba(255, 200, 200, 0.8);
+      border-radius: 4px;
+      padding: 0.5em 0.75em;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
     
     .sr-only {
       position: absolute;
@@ -203,6 +229,9 @@
 <body>
   <!-- Oscilloscope background canvas -->
   <canvas id="oscilloscope" role="img" aria-label="Waveform oscilloscope visualization showing the filtered audio signal"></canvas>
+  
+  <!-- Container for oscilloscope error messages (populated by displayOscilloscopeError in synth.ts) -->
+  <div class="oscilloscope-container"></div>
   
   <div class="container">
     <h1>WAVLPF Synthesizer</h1>
