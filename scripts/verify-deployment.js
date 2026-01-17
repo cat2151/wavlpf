@@ -36,7 +36,7 @@ const DEFAULT_URL = 'https://cat2151.github.io/wavlpf/';
 
 // 検証対象の要素セレクタ
 const SELECTORS = {
-  APP_ROOT: '#app',
+  APP_ROOT: '.container',  // GitHub Pagesの実際の構造に合わせて変更
   CANVAS: 'canvas',
   CONTROLS: '.controls',
 };
@@ -63,7 +63,7 @@ async function verifyDeployment(url) {
     try {
       browser = await chromium.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']
       });
     } catch (launchError) {
       // ブラウザの起動に失敗した場合、より詳細なエラーメッセージを表示
