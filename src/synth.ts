@@ -90,6 +90,36 @@ let scheduleNextPlayFn: (() => void) | null = null;
 // パフォーマンス統計トラッキング
 const performanceStats: PerformanceStats = createPerformanceStats(10);
 
+// Error tracking to prevent console spam
+let consecutiveErrorCount = 0;
+const MAX_CONSECUTIVE_ERRORS = 3;
+let oscilloscopeErrorLogged = false;
+let lastErrorMessage = '';
+let lastErrorTime = 0;
+const ERROR_LOG_COOLDOWN_MS = 5000; // Only log same error once per 5 seconds
+
+/**
+ * Log error to console with deduplication to prevent spam
+ * @param message - Error message to log
+ * @param error - Optional error object
+ * @returns true if error was logged, false if it was suppressed
+ */
+function logErrorOnce(message: string, error?: unknown): boolean {
+  const now = Date.now();
+  const errorString = `${message}${error ? `: ${String(error)}` : ''}`;
+  
+  // Check if this is the same error within cooldown period
+  if (errorString === lastErrorMessage && (now - lastErrorTime) < ERROR_LOG_COOLDOWN_MS) {
+    return false; // Suppress duplicate error
+  }
+  
+  // Log the error
+  console.error(message, error);
+  lastErrorMessage = errorString;
+  lastErrorTime = now;
+  return true;
+}
+
 /**
  * Display oscilloscope error message to the user
  * @param message - Error message to display
@@ -190,9 +220,13 @@ async function playAudioWav(): Promise<void> {
   // We don't await this to prevent delaying audio playback
   if (isOscilloscopeInitialized()) {
     updateOscilloscope(samples, SAMPLE_RATE).catch((error) => {
-      console.error('Failed to update oscilloscope:', error);
-      // Display error to user
-      displayOscilloscopeError('Visualization update failed. The oscilloscope may not be functioning correctly.');
+      // Only log oscilloscope errors once to prevent console spam
+      if (!oscilloscopeErrorLogged) {
+        console.error('Failed to update oscilloscope:', error);
+        // Display error to user
+        displayOscilloscopeError('Visualization update failed. The oscilloscope may not be functioning correctly.');
+        oscilloscopeErrorLogged = true;
+      }
     });
   }
   
@@ -271,6 +305,9 @@ async function playAudio(): Promise<void> {
  */
 async function handleModeSwitch(mode: PlaybackMode): Promise<void> {
   await switchMode(mode, () => {
+    // Reset error tracking when switching modes
+    consecutiveErrorCount = 0;
+    
     // Reschedule playback with appropriate interval
     if (isPlaybackLoopStarted && playbackTimeoutId !== null && scheduleNextPlayFn) {
       clearTimeout(playbackTimeoutId);
@@ -453,15 +490,52 @@ export async function init(): Promise<void> {
   
   // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {
-    if (isAudioContextRunning()) {
-      playAudio().catch((error: unknown) => {
-        console.error('Error while playing audio:', error);
-      });
+    // Check if we've hit the error limit
+    if (consecutiveErrorCount >= MAX_CONSECUTIVE_ERRORS) {
+      console.error(
+        `Playback stopped after ${MAX_CONSECUTIVE_ERRORS} consecutive errors. ` +
+        'Please check the console for details and reload the page to try again.'
+      );
+      isPlaybackLoopStarted = false;
+      
+      // Display user-friendly error message
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = 
+          '再生中にエラーが発生したため、自動再生を停止しました。ページを再読み込みしてください。';
+      }
+      return; // Stop the loop
     }
-    // Use 1 second interval for seq mode, otherwise use calculated duration
-    const mode = getCurrentMode();
-    const interval = mode === 'seq' ? 1000 : calculateDuration(bpm, beat) * 1000;
-    playbackTimeoutId = setTimeout(scheduleNextPlay, interval);
+    
+    if (isAudioContextRunning()) {
+      playAudio()
+        .then(() => {
+          // Reset error count on successful playback
+          consecutiveErrorCount = 0;
+        })
+        .catch((error: unknown) => {
+          consecutiveErrorCount++;
+          
+          // Use deduplication when logging errors
+          const errorLogged = logErrorOnce('Error while playing audio', error);
+          
+          // If this is a new error that was logged, show additional context
+          if (errorLogged && consecutiveErrorCount > 1) {
+            console.warn(
+              `Consecutive error count: ${consecutiveErrorCount}/${MAX_CONSECUTIVE_ERRORS}. ` +
+              `Playback will stop if errors persist.`
+            );
+          }
+        });
+    }
+    
+    // Only schedule next play if we haven't hit the error limit
+    if (consecutiveErrorCount < MAX_CONSECUTIVE_ERRORS) {
+      // Use 1 second interval for seq mode, otherwise use calculated duration
+      const mode = getCurrentMode();
+      const interval = mode === 'seq' ? 1000 : calculateDuration(bpm, beat) * 1000;
+      playbackTimeoutId = setTimeout(scheduleNextPlay, interval);
+    }
   }
   
   // Store reference for mode switching
@@ -492,6 +566,7 @@ export async function init(): Promise<void> {
     // Start playback loop only once
     if (!isPlaybackLoopStarted) {
       isPlaybackLoopStarted = true;
+      consecutiveErrorCount = 0; // Reset error count when starting playback
       scheduleNextPlay();
     }
   };
