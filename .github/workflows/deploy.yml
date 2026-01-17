@@ -74,6 +74,26 @@ jobs:
         with:
           version: 'v0.13.1'
 
+      - name: Cache binaryen
+        id: cache-binaryen
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/.wasm-pack/binaryen-version_117
+          key: ${{ runner.os }}-binaryen-v117
+
+      - name: Install binaryen (wasm-opt) if not cached
+        if: steps.cache-binaryen.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/.wasm-pack
+          cd ~/.cache/.wasm-pack
+          wget -q https://github.com/WebAssembly/binaryen/releases/download/version_117/binaryen-version_117-x86_64-linux.tar.gz
+          tar xzf binaryen-version_117-x86_64-linux.tar.gz
+          rm binaryen-version_117-x86_64-linux.tar.gz
+          echo "Binaryen installed successfully"
+
+      - name: Add binaryen to PATH
+        run: echo "$HOME/.cache/.wasm-pack/binaryen-version_117/bin" >> $GITHUB_PATH
+
       - name: Cache wasm-audio build
         uses: actions/cache@v4
         with:
