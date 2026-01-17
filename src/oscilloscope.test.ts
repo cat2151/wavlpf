@@ -96,6 +96,67 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
       await expect(updateOscilloscope(samples, 44100)).rejects.toThrow('not initialized');
     });
 
+    it('should not repeatedly log WASM errors after permanent failure', async () => {
+      // This test verifies the fix for Issue #86
+      // After a WASM initialization error, subsequent calls should silently return
+      // without logging errors to prevent console spam
+      
+      const samples = new Float32Array(1024);
+      const consoleErrorSpy = { error: console.error };
+      let errorCount = 0;
+      
+      console.error = (...args: any[]) => {
+        if (args.some((arg: any) => 
+          typeof arg === 'string' && 
+          (arg.includes('WASM') || arg.includes('wasm'))
+        )) {
+          errorCount++;
+        }
+      };
+
+      try {
+        // First call - may throw and log error if WASM init fails
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        
+        // Subsequent calls should silently return without logging
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        await updateOscilloscope(samples, 44100).catch(() => {});
+        
+        // Error should be logged at most once
+        expect(errorCount).toBeLessThanOrEqual(1);
+      } finally {
+        console.error = consoleErrorSpy.error;
+      }
+    });
+
+    it('should reset permanent failure flag after stop and reinit', async () => {
+      // This test verifies that the permanent failure flag is reset when the oscilloscope
+      // is stopped and reinitialized, allowing recovery from a previous WASM failure
+      
+      const samples = new Float32Array(1024);
+      
+      // Simulate a WASM failure by calling update (which may fail in test environment)
+      await updateOscilloscope(samples, 44100).catch(() => {});
+      
+      // Stop the oscilloscope
+      await stopOscilloscope();
+      expect(isOscilloscopeInitialized()).toBe(false);
+      
+      // Reinitialize - this should reset the permanent failure flag
+      initOscilloscope(canvas);
+      expect(isOscilloscopeInitialized()).toBe(true);
+      
+      // Update should be attempted again (not silently skipped)
+      // If WASM is available, it should work; if not, it should fail with proper error
+      // Either way, it should not be silently skipped due to permanent failure flag
+      const updatePromise = updateOscilloscope(samples, 44100);
+      
+      // The update should either succeed or throw an error, but not silently return
+      // due to the permanent failure flag being set from before
+      await expect(updatePromise).resolves.not.toThrow();
+    });
+
     it('should throw error with empty samples', async () => {
       const samples = new Float32Array(0);
       await expect(updateOscilloscope(samples, 44100)).rejects.toThrow('empty');

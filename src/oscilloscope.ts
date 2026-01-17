@@ -7,6 +7,7 @@ let oscilloscope: Oscilloscope | null = null;
 let currentBufferSource: BufferSource | null = null;
 let dummyCanvases: HTMLCanvasElement[] = [];
 let isUpdating = false; // Guard against concurrent updates
+let hasPermanentFailure = false; // Track if oscilloscope has failed permanently to avoid repeated error logging
 
 /**
  * Initialize the oscilloscope with a canvas element
@@ -27,6 +28,9 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
   if (!mainCanvas || !(mainCanvas instanceof HTMLCanvasElement)) {
     throw new Error('Invalid canvas element provided to initOscilloscope');
   }
+
+  // Reset permanent failure flag on reinitialization to allow recovery
+  hasPermanentFailure = false;
 
   // Clean up any existing dummy canvases from previous initialization
   cleanupDummyCanvases();
@@ -102,6 +106,12 @@ export async function updateOscilloscope(samples: Float32Array, sampleRate: numb
     throw new Error('Oscilloscope not initialized. Call initOscilloscope() first.');
   }
 
+  // If oscilloscope has permanently failed, silently skip updates to prevent console spam
+  // Note: This check is after initialization check to ensure proper error reporting for uninitialized state
+  if (hasPermanentFailure) {
+    return;
+  }
+
   // Prevent concurrent updates
   if (isUpdating) {
     console.warn('Oscilloscope update already in progress, skipping this update');
@@ -124,6 +134,19 @@ export async function updateOscilloscope(samples: Float32Array, sampleRate: numb
 
     // Start visualization from the buffer
     await oscilloscope.startFromBuffer(currentBufferSource);
+  } catch (error) {
+    // Check if this is a WASM initialization error using specific error message pattern
+    // We use a specific pattern to avoid false positives from generic errors that mention WASM
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('Failed to load WASM module script')) {
+      // Mark as permanent failure to prevent repeated error logging
+      hasPermanentFailure = true;
+      // Log once and throw to notify the caller
+      console.error('Oscilloscope WASM initialization failed permanently. Visualization will be disabled.', error);
+      throw error;
+    }
+    // For other errors, just re-throw without marking as permanent
+    throw error;
   } finally {
     isUpdating = false;
   }
@@ -139,11 +162,13 @@ export async function stopOscilloscope(): Promise<void> {
   }
   cleanupDummyCanvases();
   oscilloscope = null;
+  // Reset permanent failure flag to allow reinitialization with a fresh state
+  hasPermanentFailure = false;
 }
 
 /**
  * Check if oscilloscope is initialized
  */
 export function isOscilloscopeInitialized(): boolean {
-  return oscilloscope !== null;
+  return oscilloscope !== null && !hasPermanentFailure;
 }
