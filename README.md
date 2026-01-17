@@ -10,21 +10,21 @@ https://cat2151.github.io/wavlpf/
 
 ## Features
 
-- **Rust WASM Signal Processor**: High-speed DSP processing implemented in Rust
+- **Rust WASM Signal Processor**: High-performance DSP processing implemented in Rust
   - Millisecond-precision performance measurement
-  - Implemented as a Rust crate usable from native contexts
+  - Implemented as a Rust crate usable from native environments
 - **220Hz Waveform Generator**: Sawtooth or pulse wave, with configurable duty cycle
 - **Biquad Filter**: Interactive filter controlled by mouse
   - Multiple filter types: LPF, HPF, BPF, Notch, APF, Low Shelf, High Shelf
   - X-axis: Cutoff frequency (20Hz - configurable maximum)
-  - Y-axis: Resonance Q value (0.5 - configurable maximum, inverted: Up = high, Down = low)
+  - Y-axis: Resonance Q value (0.5 - configurable maximum, inverted: up = high, down = low)
   - Configurable cutoff decay (Hz or Cent/millisecond)
 - **Waveform Visualization**: Real-time oscilloscope display using [cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope)
-  - Rust/WASM-powered high-performance visualization
+  - High-performance visualization with Rust/WASM
   - Float32Array buffer visualization
-  - Loop playback support
-- **Non-Realtime Rendering**: WebAudio-independent signal processing
-- **Configurable Audio Buffer**: Audio generation timing based on BPM and beat
+  - Supports loop playback
+- **Non-Real-time Rendering**: WebAudio-independent signal processing
+- **Configurable Audio Buffer**: BPM and beat-based audio generation timing
 - **WAV Generation**: Converts processed audio to WAV format
 - **Tone.js Integration**: Clean audio playback
 - **Settings Persistence**: Import/export settings as JSON files
@@ -40,13 +40,13 @@ https://cat2151.github.io/wavlpf/
 
 ### Development Guide
 
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development framework and testing strategy
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development Framework and Testing Strategy
 
 ## Getting Started
 
-For details on the development framework and testing strategy, refer to [DEVELOPMENT.md](DEVELOPMENT.md).
+For details on the development framework and testing strategy, please refer to [DEVELOPMENT.md](DEVELOPMENT.md).
 
-For information on waveform visualization, refer to [docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md).
+For waveform visualization, please refer to [docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md).
 
 ### Prerequisites
 
@@ -71,7 +71,7 @@ npm install
 
 ### Development
 
-Start the development server with Hot Module Replacement:
+Start a development server with Hot Module Replacement:
 
 ```bash
 npm run dev
@@ -79,12 +79,12 @@ npm run dev
 
 This will start an instant HMR-enabled Vite development server. Your browser will automatically open to http://localhost:8080.
 
-### Build
+### Building
 
-Build the WASM modules and the entire application:
+Build the WASM module and the entire application:
 
 ```bash
-# Build WASM module only
+# Build only the WASM module
 npm run build:wasm
 
 # Build everything (WASM + TypeScript + Vite production bundle)
@@ -94,21 +94,21 @@ npm run build
 This performs TypeScript type checking, builds the Rust WASM module, and creates a production bundle with Vite.
 
 **⚠️ Strict Warning Regarding wasm-opt ⚠️**:
-- By default, the build uses `wasm-opt` (from binaryen) for WASM optimization.
+- Builds use `wasm-opt` (from binaryen) by default to optimize WASM.
 - **This has been verified to work correctly in all environments, including CI.**
 - **Setting `wasm-opt = false` in `wasm-audio/Cargo.toml` is strictly prohibited.**
-- In the past, an AI agent mistakenly added `wasm-opt = false` twice based on unfounded speculation.
-- The owner has verified that wasm-opt is effective and causes no issues.
+- In the past, an AI agent incorrectly added `wasm-opt = false` twice based on unsubstantiated assumptions.
+- The owner has verified that `wasm-opt` is effective and causes no issues.
 - Do not change the default setting (wasm-opt enabled).
 - Even if temporarily disabling it locally for debugging purposes, do not commit that change.
 
-### Preview Production Build
+### Previewing Production Build
 
 ```bash
 npm run preview
 ```
 
-Review the production build locally before deployment.
+Verify the production build locally before deployment.
 
 ### Testing
 
@@ -129,7 +129,7 @@ Note: The `serve` command now uses Vite's preview server:
 npm run serve
 ```
 
-Then, open http://localhost:8080 in your browser (for development, please use `npm run dev`).
+Then, open http://localhost:8080 in your browser (use `npm run dev` for development).
 
 ## Usage
 
@@ -138,25 +138,25 @@ Then, open http://localhost:8080 in your browser (for development, please use `n
 3. **Configure Parameters**:
    - Waveform type: Sawtooth or pulse wave
    - Duty cycle: For pulse wave (0-100%)
-   - BPM and Beat: Control audio generation timing
-   - Max Q: Maximum resonance value
-   - Max Cutoff Frequency: Maximum cutoff frequency
-   - Decay unit: Hz or Cent
-   - Decay rate: Decay rate per millisecond
+   - BPM and Beats: Control audio generation timing
+   - Q Max: Maximum resonance value
+   - Cutoff Frequency Max: Maximum cutoff frequency
+   - Decay Unit: Hz or Cent
+   - Decay Rate: Decay rate per millisecond
 4. Move your mouse to control filter parameters in real-time:
-   - **Horizontal position (X)**: Controls cutoff frequency (20Hz - max value)
-   - **Vertical position (Y)**: Controls resonance/Q value (0.5 - max value, inverted: Up = high, Down = low)
+   - **Horizontal position (X)**: Controls cutoff frequency (20Hz - maximum value)
+   - **Vertical position (Y)**: Controls resonance/Q value (0.5 - maximum value, inverted: up = high, down = low)
 5. Monitor performance by checking the **Generation Time** display
 6. Listen to new audio generated based on BPM and beat settings
 
 ## Architecture
 
-### Signal Processing (WebAudio Independent)
+### Signal Processing (WebAudio-Independent)
 
 #### Rust WASM Implementation
 - `wasm-audio/src/lib.rs`: Complete signal processing pipeline in Rust
-  - Oscillator generation (sawtooth wave, pulse wave)
-  - Biquad LPF filter using the official RBJ Audio EQ Cookbook formulas
+  - Oscillator generation (sawtooth, pulse wave)
+  - Biquad LPF filter using RBJ Audio EQ Cookbook formulas
   - Audio rendering including cutoff decay
 - `wasm-audio/pkg/`: Generated WASM bindings
 
@@ -175,7 +175,7 @@ Then, open http://localhost:8080 in your browser (for development, please use `n
 
 ## Deployment
 
-The application is automatically deployed to GitHub Pages when changes are pushed to the `main` branch. Deployment workflow:
+The application is automatically deployed to GitHub Pages when changes are pushed to the `main` branch. The deployment workflow:
 
 1. Install Node.js dependencies
 2. Build TypeScript to JavaScript
