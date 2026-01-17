@@ -131,6 +131,18 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
       expect(() => initOscilloscope(canvas)).toThrow('required oscilloscope canvas elements not found');
     });
 
+    it('should throw error when element is not a canvas', () => {
+      // Replace one canvas with a div
+      const previousWaveformCanvas = document.getElementById('previousWaveformCanvas');
+      if (previousWaveformCanvas && previousWaveformCanvas.parentNode) {
+        const div = document.createElement('div');
+        div.id = 'previousWaveformCanvas';
+        previousWaveformCanvas.parentNode.replaceChild(div, previousWaveformCanvas);
+      }
+      
+      expect(() => initOscilloscope(canvas)).toThrow('is not a canvas element');
+    });
+
     it('should clean up previous initialization on re-init', () => {
       initOscilloscope(canvas);
       expect(isOscilloscopeInitialized()).toBe(true);

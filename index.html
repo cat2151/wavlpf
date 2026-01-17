@@ -333,29 +333,29 @@
     <!-- Frame Buffer Display -->
     <div class="oscilloscope-panel frame-buffer-panel">
       <div class="panel-label">フレームバッファ全体</div>
-      <canvas id="frameBufferCanvas" width="800" height="120" aria-label="フレームバッファ全体に蓄積された波形のプレビュー"></canvas>
+      <canvas id="frameBufferCanvas" width="800" height="120" role="img" aria-label="フレームバッファ全体に蓄積された波形のプレビュー"></canvas>
     </div>
     
     <!-- Comparison Panels -->
     <div class="oscilloscope-panel comparison-panels">
       <div class="panel-item">
         <div class="panel-label">前回の波形</div>
-        <canvas id="previousWaveformCanvas" width="250" height="120" aria-label="前回の入力から取得した波形のプレビュー"></canvas>
+        <canvas id="previousWaveformCanvas" width="250" height="120" role="img" aria-label="前回の入力から取得した波形のプレビュー"></canvas>
       </div>
       <div class="panel-item">
         <div class="panel-label">今回の波形</div>
-        <canvas id="currentWaveformCanvas" width="250" height="120" aria-label="今回の入力波形のプレビュー"></canvas>
+        <canvas id="currentWaveformCanvas" width="250" height="120" role="img" aria-label="今回の入力波形のプレビュー"></canvas>
       </div>
       <div class="panel-item">
         <div class="panel-label">類似度推移</div>
-        <canvas id="similarityPlotCanvas" width="250" height="120" aria-label="前回の波形と今回の波形の類似度推移グラフ"></canvas>
+        <canvas id="similarityPlotCanvas" width="250" height="120" role="img" aria-label="前回の波形と今回の波形の類似度推移グラフ"></canvas>
       </div>
     </div>
     
     <!-- Piano Keyboard -->
     <div class="oscilloscope-panel piano-panel">
       <div class="panel-label">ピアノ鍵盤 (Piano Keyboard) - 50Hz～2000Hz</div>
-      <canvas id="pianoKeyboardCanvas" width="800" height="60" aria-label="Piano keyboard visualization showing highlighted key for detected fundamental frequency"></canvas>
+      <canvas id="pianoKeyboardCanvas" width="800" height="60" role="img" aria-label="Piano keyboard visualization showing highlighted key for detected fundamental frequency"></canvas>
     </div>
     
     <!-- Debug Overlay -->

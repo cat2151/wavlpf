@@ -33,28 +33,43 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
   hasPermanentFailure = false;
 
   // Get all required canvas elements from the DOM
-  const previousWaveformCanvas = document.getElementById('previousWaveformCanvas') as HTMLCanvasElement;
-  const currentWaveformCanvas = document.getElementById('currentWaveformCanvas') as HTMLCanvasElement;
-  const similarityPlotCanvas = document.getElementById('similarityPlotCanvas') as HTMLCanvasElement;
-  const frameBufferCanvas = document.getElementById('frameBufferCanvas') as HTMLCanvasElement;
-  const pianoKeyboardCanvas = document.getElementById('pianoKeyboardCanvas') as HTMLCanvasElement;
+  const previousWaveformCanvas = document.getElementById('previousWaveformCanvas');
+  const currentWaveformCanvas = document.getElementById('currentWaveformCanvas');
+  const similarityPlotCanvas = document.getElementById('similarityPlotCanvas');
+  const frameBufferCanvas = document.getElementById('frameBufferCanvas');
+  const pianoKeyboardCanvas = document.getElementById('pianoKeyboardCanvas');
 
-  // Validate all canvas elements
+  // Validate all canvas elements exist
   if (!previousWaveformCanvas || !currentWaveformCanvas || !similarityPlotCanvas || !frameBufferCanvas || !pianoKeyboardCanvas) {
     throw new Error('One or more required oscilloscope canvas elements not found in DOM');
   }
 
-  // Initialize the main oscilloscope
+  // Validate all elements are actually HTMLCanvasElement instances
+  const canvasElements = [
+    { element: previousWaveformCanvas, id: 'previousWaveformCanvas' },
+    { element: currentWaveformCanvas, id: 'currentWaveformCanvas' },
+    { element: similarityPlotCanvas, id: 'similarityPlotCanvas' },
+    { element: frameBufferCanvas, id: 'frameBufferCanvas' },
+    { element: pianoKeyboardCanvas, id: 'pianoKeyboardCanvas' }
+  ];
+
+  for (const { element, id } of canvasElements) {
+    if (!(element instanceof HTMLCanvasElement)) {
+      throw new Error(`Element with id "${id}" is not a canvas element`);
+    }
+  }
+
+  // Initialize the main oscilloscope (elements are now validated as HTMLCanvasElement)
   oscilloscope = new Oscilloscope(
     mainCanvas,
-    previousWaveformCanvas,
-    currentWaveformCanvas,
-    similarityPlotCanvas,
-    frameBufferCanvas
+    previousWaveformCanvas as HTMLCanvasElement,
+    currentWaveformCanvas as HTMLCanvasElement,
+    similarityPlotCanvas as HTMLCanvasElement,
+    frameBufferCanvas as HTMLCanvasElement
   );
 
   // Initialize piano keyboard renderer
-  pianoKeyboard = new PianoKeyboardRenderer(pianoKeyboardCanvas);
+  pianoKeyboard = new PianoKeyboardRenderer(pianoKeyboardCanvas as HTMLCanvasElement);
 
   // Start debug overlay updates
   startDebugOverlayUpdates();
@@ -139,7 +154,8 @@ function frequencyToNote(frequency: number): string {
 
   const halfSteps = 12 * Math.log2(frequency / c0);
   const octave = Math.floor(halfSteps / 12);
-  const note = Math.round(halfSteps % 12);
+  const noteIndexRaw = Math.floor(halfSteps % 12);
+  const note = Math.min(Math.max(noteIndexRaw, 0), noteNames.length - 1);
 
   return `${noteNames[note]}${octave}`;
 }
