@@ -18,7 +18,8 @@
     "verify-deployment:local": "node scripts/verify-deployment.js http://localhost:4173",
     "test:waveform-screenshot": "node scripts/test-waveform-screenshot.js",
     "test:waveform-screenshot:local": "node scripts/test-waveform-screenshot.js http://localhost:8081/wavlpf/",
-    "screenshot:github-pages": "node scripts/screenshot-github-pages.js"
+    "screenshot:github-pages": "node scripts/screenshot-github-pages.js",
+    "test:pr-local": "bash scripts/test-pr-changes-locally.sh"
   },
   "keywords": [
     "synthesizer",
