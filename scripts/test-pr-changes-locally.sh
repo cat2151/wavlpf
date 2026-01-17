@@ -3,6 +3,10 @@
 # Test PR changes locally - Full orchestration script
 # This script builds the application, starts a server, and captures screenshots
 # to verify layout changes before deployment
+#
+# NOTE: This script is specifically designed for screenshot verification purposes.
+# It will continue even if wasm-opt (binaryen) download fails, as wasm-opt
+# optimization does not affect the visual output captured in screenshots.
 
 set -e
 
@@ -50,7 +54,49 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔨 Step 3: Building application"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-npm run build
+echo "  Note: wasm-opt errors will be ignored for screenshot purposes"
+echo ""
+
+# Temporarily disable exit-on-error for the build step
+set +e
+npm run build 2>&1 | tee /tmp/build.log
+
+# Check if build succeeded or if it failed only due to wasm-opt
+BUILD_EXIT_CODE=${PIPESTATUS[0]}
+if [ $BUILD_EXIT_CODE -ne 0 ]; then
+    # Check if the failure was due to binaryen/wasm-opt download
+    if grep -q "failed to download.*binaryen" /tmp/build.log; then
+        echo -e "${YELLOW}⚠️  wasm-opt download failed, but WASM was built successfully${NC}"
+        echo -e "${YELLOW}   This is acceptable for screenshot purposes${NC}"
+        
+        # Check if WASM output files exist
+        if [ -f "wasm-audio/pkg/wasm_audio_bg.wasm" ] && [ -f "wasm-audio/pkg/wasm_audio.js" ]; then
+            echo -e "${GREEN}✅ WASM files generated successfully${NC}"
+            
+            # Continue with TypeScript and Vite build
+            echo "  Continuing with TypeScript and Vite build..."
+            npx tsc && npx vite build
+            if [ $? -eq 0 ]; then
+                echo -e "${GREEN}✅ Build completed (without wasm-opt optimization)${NC}"
+            else
+                echo -e "${RED}❌ TypeScript or Vite build failed${NC}"
+                exit 1
+            fi
+        else
+            echo -e "${RED}❌ WASM files were not generated${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${RED}❌ Build failed for reasons other than wasm-opt${NC}"
+        cat /tmp/build.log
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✅ Build completed successfully${NC}"
+fi
+
+# Re-enable exit-on-error
+set -e
 echo ""
 
 # Step 4: Start preview server in background
@@ -83,14 +129,13 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🎭 Step 5: Setting up Playwright"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if ! npm list playwright > /dev/null 2>&1; then
-    echo "  Installing Playwright..."
-    npm install --save-dev playwright
-fi
+# Always install playwright to ensure it's available
+echo "  Installing Playwright..."
+npm install playwright@latest > /tmp/playwright-install.log 2>&1
 
 if ! npx playwright --version > /dev/null 2>&1; then
     echo "  Installing Chromium browser..."
-    npx playwright install chromium
+    npx playwright install chromium > /dev/null 2>&1
 fi
 echo -e "${GREEN}✅ Playwright ready${NC}"
 echo ""
@@ -100,8 +145,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "📸 Step 6: Capturing screenshot"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Create screenshot script
-cat > /tmp/capture-screenshot.js << 'EOFJS'
+# Create screenshot script in project directory
+cat > capture-screenshot.js << 'EOFJS'
 const { chromium } = require('playwright');
 
 (async () => {
@@ -158,8 +203,9 @@ const { chromium } = require('playwright');
 })();
 EOFJS
 
-# Run the screenshot script
-node /tmp/capture-screenshot.js $PORT $SCREENSHOT_OUTPUT
+# Run the screenshot script from project directory
+node capture-screenshot.js $PORT $SCREENSHOT_OUTPUT
+rm capture-screenshot.js
 echo ""
 
 # Step 7: Results
