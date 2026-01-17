@@ -43,7 +43,9 @@ const SELECTORS = {
 
 // WASMエラーメッセージのパターン
 const WASM_ERROR_PATTERNS = [
-  'wasm',
+  'wasm error',
+  'wasm failed',
+  'could not load wasm',
   'failed to update oscilloscope',
   'wasm initialization failed',
 ];
