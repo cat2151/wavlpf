@@ -15,7 +15,9 @@
     "serve": "vite preview",
     "postinstall": "node scripts/setup-cat-oscilloscope-wasm.js",
     "verify-deployment": "node scripts/verify-deployment.js",
-    "verify-deployment:local": "node scripts/verify-deployment.js http://localhost:4173"
+    "verify-deployment:local": "node scripts/verify-deployment.js http://localhost:4173",
+    "test:waveform-screenshot": "node scripts/test-waveform-screenshot.js",
+    "test:waveform-screenshot:local": "node scripts/test-waveform-screenshot.js http://localhost:8081/wavlpf/"
   },
   "keywords": [
     "synthesizer",

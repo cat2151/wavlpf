@@ -46,6 +46,42 @@ npx playwright install chromium
 
 **詳細**: [デプロイ検証ガイド](../docs/DEPLOYMENT_VERIFICATION.md)を参照
 
+### test-waveform-screenshot.js
+
+**目的**: 波形ビジュアライズ機能をヘッドレスブラウザでテストし、スクリーンショットを撮影する
+
+**実行方法**:
+```bash
+# GitHub Pages（本番環境）でテスト（デフォルト）
+npm run test:waveform-screenshot
+
+# ローカル開発サーバーでテスト
+npm run test:waveform-screenshot:local
+
+# カスタムURLでテスト
+node scripts/test-waveform-screenshot.js <URL>
+
+# スクリーンショットの保存先を指定
+SCREENSHOT_PATH=my-screenshot.png npm run test:waveform-screenshot
+```
+
+**検証項目**:
+1. ページが正常にロードされること
+2. オシロスコープキャンバスが存在すること
+3. 画面クリックで音声再生が開始されること
+4. 波形が正しくキャンバスに描画されること
+5. スクリーンショットを自動撮影
+
+**前提条件**:
+```bash
+npm install --save-dev playwright
+npx playwright install chromium
+```
+
+**注意**: デフォルトではGitHub Pagesの本番環境をテストします。ローカル開発サーバーをテストする場合は`test:waveform-screenshot:local`を使用してください。
+
+**詳細**: [Issue #94](../issue-notes/94.md) - 波形ビジュアライズのレイアウト問題の調査
+
 ## 使用方法
 
 ### 開発時
@@ -54,6 +90,7 @@ npx playwright install chromium
 
 - `setup-cat-oscilloscope-wasm.js` は `npm install` 時に自動実行されます
 - `verify-deployment.js` はデプロイ後の検証時にのみ使用します
+- `test-waveform-screenshot.js` は波形ビジュアライズのデバッグやレイアウト問題の調査時に使用します
 
 ### デプロイ後の検証
 
