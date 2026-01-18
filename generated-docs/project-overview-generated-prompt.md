@@ -1,4 +1,4 @@
-Last updated: 2026-01-18
+Last updated: 2026-01-19
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -317,6 +317,10 @@ MIT
 🌐 index.html
 📁 issue-notes/
   📖 100.md
+  📖 102.md
+  📖 104.md
+  📖 105.md
+  📖 106.md
   📖 21.md
   📖 24.md
   📖 25.md
@@ -363,8 +367,10 @@ MIT
   📄 install-wasm-pack.sh
   📜 investigate-404.js
   📜 investigate-cat-oscilloscope.js
+  📜 screenshot-github-pages.js
   📜 setup-cat-oscilloscope-wasm.js
   📜 test-console-logs.js
+  📄 test-pr-changes-locally.sh
   📜 test-waveform-screenshot.js
   📜 verify-deployment.js
 📁 src/
@@ -398,7 +404,7 @@ MIT
 📄 waveform-test.png
 
 ## ファイル詳細分析
-**index.html** (475行, 13143バイト)
+**index.html** (475行, 13167バイト)
   - 関数: なし
   - インポート: なし
 
@@ -409,6 +415,10 @@ MIT
 **scripts/investigate-cat-oscilloscope.js** (165行, 5745バイト)
   - 関数: checkGitHubRepo, investigate, if, catch
   - インポート: https
+
+**scripts/screenshot-github-pages.js** (137行, 3733バイト)
+  - 関数: takeScreenshot, catch, if
+  - インポート: playwright, playwright
 
 **scripts/setup-cat-oscilloscope-wasm.js** (77行, 2569バイト)
   - 関数: for, if, catch
@@ -422,7 +432,7 @@ MIT
   - 関数: testWaveformVisualization, catch, if, for
   - インポート: playwright, playwright
 
-**scripts/verify-deployment.js** (273行, 7325バイト)
+**scripts/verify-deployment.js** (284行, 7719バイト)
   - 関数: verifyDeployment, catch, if, for
   - インポート: playwright, playwright
 
@@ -505,6 +515,7 @@ MIT
       - forEach ()
       - checkGitHubRepo (scripts/investigate-cat-oscilloscope.js)
       - investigate ()
+      - takeScreenshot (scripts/screenshot-github-pages.js)
       - testConsoleLogs (scripts/test-console-logs.js)
       - testWaveformVisualization (scripts/test-waveform-screenshot.js)
       - verifyDeployment (scripts/verify-deployment.js)
@@ -587,15 +598,15 @@ docs/OSCILLOSCOPE_LAYOUT.md
 docs/OSCILLOSCOPE_USAGE.md
 index.html
 issue-notes/100.md
+issue-notes/102.md
+issue-notes/104.md
+issue-notes/105.md
+issue-notes/106.md
 issue-notes/21.md
 issue-notes/24.md
 issue-notes/25.md
 issue-notes/28.md
 issue-notes/30.md
-issue-notes/31.md
-issue-notes/33.md
-issue-notes/35.md
-issue-notes/37.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -608,4 +619,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-18 07:03:01 JST
+Generated at: 2026-01-19 07:02:56 JST

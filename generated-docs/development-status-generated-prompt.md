@@ -1,4 +1,4 @@
-Last updated: 2026-01-18
+Last updated: 2026-01-19
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -226,6 +226,10 @@ Last updated: 2026-01-18
 - generated-docs/project-overview-generated-prompt.md
 - index.html
 - issue-notes/100.md
+- issue-notes/102.md
+- issue-notes/104.md
+- issue-notes/105.md
+- issue-notes/106.md
 - issue-notes/21.md
 - issue-notes/24.md
 - issue-notes/25.md
@@ -271,8 +275,10 @@ Last updated: 2026-01-18
 - scripts/install-wasm-pack.sh
 - scripts/investigate-404.js
 - scripts/investigate-cat-oscilloscope.js
+- scripts/screenshot-github-pages.js
 - scripts/setup-cat-oscilloscope-wasm.js
 - scripts/test-console-logs.js
+- scripts/test-pr-changes-locally.sh
 - scripts/test-waveform-screenshot.js
 - scripts/verify-deployment.js
 - src/audio-player.ts
@@ -303,41 +309,46 @@ Last updated: 2026-01-18
 - waveform-test.png
 
 ## 現在のオープンIssues
-## [Issue #101](../issue-notes/101.md): Fix oscilloscope panels layout and overlay positioning, improve screenshot verification tooling
-- [x] スクリーンショットの取得に成功
-- [x] 破綻内容を可視化
-- [x] 改善レイアウトの実装
-- [x] 修正の検証
-- [x] 一時ファイルの削除
-- [x] ドキュメントの修正
-- [x] クリック後のスクリーンショット取得
-- [x] スクリプトとドキュメントの更新
-- [x] npm scriptの追加とドキュメント改善
-- [x] オーバーレイレイアウト設定の追加
-- [x] ローカルPR検証オーケストレーションスクリプトの追加
+## [Issue #106](../issue-notes/106.md): 陳腐化したドキュメントを削除する
+[issue-notes/106.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/106.md)
 
-## 実装した修正
-
-### 1. コード修正
-**index.html**の`.oscilloscope-panels`のCSSを修正：
 ...
 ラベル: 
---- issue-notes/101.md の内容 ---
+--- issue-notes/106.md の内容 ---
 
 ```markdown
+# issue 陳腐化したドキュメントを削除する #106
+[issues #106](https://github.com/cat2151/wavlpf/issues/106)
+
+
 
 ```
 
-## [Issue #100](../issue-notes/100.md): 波形表示の表示レイアウトが破綻している
-[issue-notes/100.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/100.md)
+## [Issue #105](../issue-notes/105.md): README.ja.mdに、cat2151の直近project同様に、バッジをつける
+[issue-notes/105.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/105.md)
 
 ...
 ラベル: 
---- issue-notes/100.md の内容 ---
+--- issue-notes/105.md の内容 ---
 
 ```markdown
-# issue 波形表示の表示レイアウトが破綻している #100
-[issues #100](https://github.com/cat2151/wavlpf/issues/100)
+# issue README.ja.mdに、cat2151の直近project同様に、バッジをつける #105
+[issues #105](https://github.com/cat2151/wavlpf/issues/105)
+
+
+
+```
+
+## [Issue #104](../issue-notes/104.md): 周波数推定に失敗している。シーケンサのライブラリ側で対処するので、それまで待つ
+[issue-notes/104.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/104.md)
+
+...
+ラベル: 
+--- issue-notes/104.md の内容 ---
+
+```markdown
+# issue 周波数推定に失敗している。シーケンサのライブラリ側の対応を待つ #104
+[issues #104](https://github.com/cat2151/wavlpf/issues/104)
 
 
 
@@ -374,6 +385,255 @@ Last updated: 2026-01-18
 ```
 
 ## ドキュメントで言及されているファイルの内容
+### .github/actions-tmp/README.ja.md
+```md
+{% raw %}
+# GitHub Actions 共通ワークフロー集
+
+このリポジトリは、**複数プロジェクトで使い回せるGitHub Actions共通ワークフロー集**です
+
+<p align="left">
+  <a href="README.ja.md"><img src="https://img.shields.io/badge/🇯🇵-Japanese-red.svg" alt="Japanese"></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/🇺🇸-English-blue.svg" alt="English"></a>
+</p>
+
+# 3行で説明
+- 🚀 プロジェクトごとのGitHub Actions管理をもっと楽に
+- 🔗 共通化されたワークフローで、どのプロジェクトからも呼ぶだけでOK
+- ✅ メンテは一括、プロジェクト開発に集中できます
+
+## Quick Links
+| 項目 | リンク |
+|------|--------|
+| 📖 プロジェクト概要 | [generated-docs/project-overview.md](generated-docs/project-overview.md) |
+| 📖 コールグラフ | [generated-docs/callgraph.html](https://cat2151.github.io/github-actions/generated-docs/callgraph.html) |
+| 📊 開発状況 | [generated-docs/development-status.md](generated-docs/development-status.md) |
+
+# notes
+- まだ共通化の作業中です
+- まだワークフロー内容を改善中です
+
+※README.md は README.ja.md を元にGeminiの翻訳でGitHub Actionsで自動生成しています
+
+{% endraw %}
+```
+
+### README.ja.md
+```md
+{% raw %}
+# wavlpf
+
+Rust WASMで実装されたローパスフィルター（LPF）付きシンプルソフトウェアシンセサイザー
+
+## デモ
+
+https://cat2151.github.io/wavlpf/
+
+※このドキュメントは仮で、取り急ぎLLMで生成しました。今後修正します
+
+## 機能
+
+- **Rust WASM信号プロセッサ**: 高速なDSP処理をRustで実装
+  - ミリ秒精度でのパフォーマンス測定
+  - ネイティブからも利用可能なRustクレートとして実装
+- **220Hz波形ジェネレーター**: ノコギリ波またはパルス波、デューティー比設定可能
+- **Biquadフィルター**: マウス制御によるインタラクティブなフィルター
+  - 複数のフィルタータイプ: LPF、HPF、BPF、Notch、APF、Low Shelf、High Shelf
+  - X軸: カットオフ周波数（20Hz - 設定可能な最大値）
+  - Y軸: レゾナンスQ値（0.5 - 設定可能な最大値、反転: 上 = 高、下 = 低）
+  - 設定可能なカットオフ減衰（HzまたはCent/ミリ秒）
+- **波形ビジュアライゼーション**: [cat-oscilloscope](https://github.com/cat2151/cat-oscilloscope)を使用したリアルタイムオシロスコープ表示
+  - Rust/WASMによる高性能ビジュアライゼーション
+  - Float32Arrayバッファの可視化
+  - ループ再生対応
+- **非リアルタイムレンダリング**: WebAudio非依存の信号処理
+- **設定可能なオーディオバッファ**: BPMとビート基準のオーディオ生成タイミング
+- **WAV生成**: 処理済みオーディオをWAVフォーマットに変換
+- **Tone.js統合**: クリーンなオーディオ再生
+- **設定の永続化**: 設定をJSONファイルでインポート/エクスポート
+
+## 関連ドキュメント
+
+### オシロスコープ統合
+
+**📘 使用ガイド** - [docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md) - **現在の実装と使用方法**（日本語）
+
+**技術詳細**:
+- [docs/CAT_OSCILLOSCOPE_WASM_SETUP.md](docs/CAT_OSCILLOSCOPE_WASM_SETUP.md) - WASMセットアップの詳細
+
+### 開発ガイド
+
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - 開発フレームワークとテスト戦略
+
+## はじめに
+
+開発フレームワークとテスト戦略の詳細については、[DEVELOPMENT.md](DEVELOPMENT.md)を参照してください。
+
+波形可視化については、[docs/OSCILLOSCOPE_USAGE.md](docs/OSCILLOSCOPE_USAGE.md)を参照してください。
+
+### 前提条件
+
+- Node.js（v14以上）
+- npm
+- Rustとwasm-pack（WASMモジュールのビルド用）
+
+#### Rustとwasm-packのインストール
+
+**方法1: 自動インストールスクリプト（推奨）**
+
+プロジェクトに用意されているスクリプトを使用してwasm-packをインストール:
+
+```bash
+# wasm-packをインストール
+bash scripts/install-wasm-pack.sh
+```
+
+このスクリプトは:
+- Rustとcargoがインストールされているか確認
+- wasm-packが既にインストールされているか確認
+- cargo経由でwasm-packをインストール（ネットワーク制限がある環境でも動作）
+- インストールの成功を確認
+
+**方法2: 手動インストール**
+
+Rustとwasm-packを手動でインストール:
+
+```bash
+# Rustのインストール
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# wasm-packのインストール
+cargo install wasm-pack
+```
+
+### インストール
+
+```bash
+npm install
+```
+
+### 開発
+
+ホットモジュールリプレースメント付きの開発サーバーを起動:
+
+```bash
+npm run dev
+```
+
+これにより、即時HMR対応のVite開発サーバーが起動します。ブラウザはhttp://localhost:8080で自動的に開きます。
+
+### ビルド
+
+WASMモジュールとアプリケーション全体をビルド:
+
+```bash
+# WASMモジュールのみビルド
+npm run build:wasm
+
+# すべてをビルド（WASM + TypeScript + Vite本番バンドル）
+npm run build
+```
+
+TypeScriptの型チェック、Rust WASMモジュールのビルド、Viteで本番用バンドルを作成します。
+
+**⚠️ wasm-optに関する厳重な注意 ⚠️**: 
+- ビルドはデフォルトで`wasm-opt`（binaryenから）を使用してWASMの最適化を行います
+- **これはCI環境を含むすべての環境で正常に動作することが検証済みです**
+- **`wasm-audio/Cargo.toml`で`wasm-opt = false`を設定することは厳重に禁止されています**
+- 過去にAI agentが2回、根拠のない憶測で`wasm-opt = false`を追加する誤りを犯しました
+- ownerが検証した結果、wasm-optは有効で問題ないことが確認されています
+- デフォルト設定（wasm-opt有効）を変更しないでください
+- デバッグ目的でローカルで一時的に無効化する場合も、その変更をコミットしないでください
+
+### 本番ビルドのプレビュー
+
+```bash
+npm run preview
+```
+
+デプロイ前に本番ビルドをローカルで確認します。
+
+### テスト
+
+テストスイートを実行:
+
+```bash
+npm test         # ウォッチモード
+npm run test:run # 一度だけ実行
+npm run test:ui  # ビジュアルテストランナー
+npm run coverage # カバレッジレポート生成
+```
+
+### 実行（レガシー）
+
+注意: `serve`コマンドは現在Viteのプレビューサーバーを使用しています:
+
+```bash
+npm run serve
+```
+
+その後、ブラウザでhttp://localhost:8080を開きます（開発には`npm run dev`を使用してください）。
+
+## 使い方
+
+1. ブラウザでアプリケーションを開く
+2. ページ上の任意の場所をクリックしてオーディオコンテキストを開始
+3. **パラメータを設定**:
+   - 波形タイプ: ノコギリ波またはパルス波
+   - デューティー比: パルス波用（0-100%）
+   - BPMとビート: オーディオ生成タイミングを制御
+   - Q最大値: 最大レゾナンス値
+   - カットオフ周波数最大値: 最大カットオフ周波数
+   - 減衰単位: HzまたはCent
+   - 減衰レート: ミリ秒あたりの減衰率
+4. マウスを動かしてリアルタイムでフィルターパラメータを制御:
+   - **水平位置（X）**: カットオフ周波数を制御（20Hz - 最大値）
+   - **垂直位置（Y）**: レゾナンス/Q値を制御（0.5 - 最大値、反転: 上 = 高、下 = 低）
+5. **生成時間**表示を確認してパフォーマンスを監視
+6. BPMとビート設定に基づいて生成される新しいオーディオを聴く
+
+## アーキテクチャ
+
+### 信号処理（WebAudio非依存）
+
+#### Rust WASM実装
+- `wasm-audio/src/lib.rs`: Rustによる完全な信号処理パイプライン
+  - オシレーター生成（ノコギリ波、パルス波）
+  - RBJ Audio EQ Cookbook公式を使用したBiquad LPFフィルター
+  - カットオフ減衰を含むオーディオレンダリング
+- `wasm-audio/pkg/`: 生成されたWASMバインディング
+
+#### 統合
+- `src/wasmAudio.ts`: WASMモジュールのTypeScriptラッパー
+  - 動的WASMロード
+  - パフォーマンス測定
+
+### アプリケーション
+
+- `src/synth.ts`: マウストラッキング、オーディオ再生を含むメインシンセサイザーロジック
+- `src/wav.ts`: WAVファイルフォーマット生成
+- `src/settings.ts`: 設定の永続化（localStorageとJSONインポート/エクスポート）
+- `src/index.ts`: エントリーポイント
+- `index.html`: Webインターフェース
+
+## デプロイ
+
+アプリケーションは`main`ブランチに変更がプッシュされると自動的にGitHub Pagesにデプロイされます。デプロイワークフロー:
+
+1. Node.js依存関係をインストール
+2. TypeScriptをJavaScriptにビルド
+3. `index.html`、`dist/`、および`node_modules/`から必要なファイルをデプロイディレクトリにコピー
+4. GitHub Pagesにデプロイ
+
+ワークフローは`.github/workflows/deploy.yml`で定義されています。
+
+## ライセンス
+
+MIT
+
+{% endraw %}
+```
+
 ### .github/actions-tmp/issue-notes/2.md
 ```md
 {% raw %}
@@ -549,6 +809,152 @@ jobs:
 {% endraw %}
 ```
 
+### .github/actions-tmp/issue-notes/4.md
+```md
+{% raw %}
+# issue GitHub Actions「project概要生成」を共通ワークフロー化する #4
+[issues #4](https://github.com/cat2151/github-actions/issues/4)
+
+# prompt
+```
+あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
+このymlファイルを、以下の2つのファイルに分割してください。
+1. 共通ワークフロー       cat2151/github-actions/.github/workflows/daily-project-summary.yml
+2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-daily-project-summary.yml
+まずplanしてください
+```
+
+# 結果、あちこちハルシネーションのあるymlが生成された
+- agentの挙動があからさまにハルシネーション
+    - インデントが修正できない、「失敗した」という
+    - 構文誤りを認識できない
+- 人力で修正した
+
+# このagentによるセルフレビューが信頼できないため、別のLLMによるセカンドオピニオンを試す
+```
+あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
+以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
+
+--- 呼び出し元
+
+name: Call Daily Project Summary
+
+on:
+  schedule:
+    # 日本時間 07:00 (UTC 22:00 前日)
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  call-daily-project-summary:
+    uses: cat2151/github-actions/.github/workflows/daily-project-summary.yml
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+--- 共通ワークフロー
+name: Daily Project Summary
+on:
+  workflow_call:
+
+jobs:
+  generate-summary:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # 履歴を取得するため
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          # 一時的なディレクトリで依存関係をインストール
+          mkdir -p /tmp/summary-deps
+          cd /tmp/summary-deps
+          npm init -y
+          npm install @google/generative-ai @octokit/rest
+          # generated-docsディレクトリを作成
+          mkdir -p $GITHUB_WORKSPACE/generated-docs
+
+      - name: Generate project summary
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          NODE_PATH: /tmp/summary-deps/node_modules
+        run: |
+          node .github/scripts/generate-project-summary.cjs
+
+      - name: Check for generated summaries
+        id: check_summaries
+        run: |
+          if [ -f "generated-docs/project-overview.md" ] && [ -f "generated-docs/development-status.md" ]; then
+            echo "summaries_generated=true" >> $GITHUB_OUTPUT
+          else
+            echo "summaries_generated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push summaries
+        if: steps.check_summaries.outputs.summaries_generated == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          # package.jsonの変更のみリセット（generated-docsは保持）
+          git restore package.json 2>/dev/null || true
+          # サマリーファイルのみを追加
+          git add generated-docs/project-overview.md
+          git add generated-docs/development-status.md
+          git commit -m "Update project summaries (overview & development status)"
+          git push
+
+      - name: Summary generation result
+        run: |
+          if [ "${{ steps.check_summaries.outputs.summaries_generated }}" == "true" ]; then
+            echo "✅ Project summaries updated successfully"
+            echo "📊 Generated: project-overview.md & development-status.md"
+          else
+            echo "ℹ️ No summaries generated (likely no user commits in the last 24 hours)"
+          fi
+```
+
+# 上記promptで、2つのLLMにレビューさせ、合格した
+
+# 細部を、先行する2つのymlを参照に手直しした
+
+# ローカルtestをしてからcommitできるとよい。方法を検討する
+- ローカルtestのメリット
+    - 素早く修正のサイクルをまわせる
+    - ムダにgit historyを汚さない
+        - これまでの事例：「実装したつもり」「エラー。修正したつもり」「エラー。修正したつもり」...（以降エラー多数）
+- 方法
+    - ※検討、WSL + act を環境構築済みである。test可能であると判断する
+    - 呼び出し元のURLをコメントアウトし、相対パス記述にする
+    - ※備考、テスト成功すると結果がcommit pushされる。それでよしとする
+- 結果
+    - OK
+    - secretsを簡略化できるか試した、できなかった、現状のsecrets記述が今わかっている範囲でベストと判断する
+    - OK
+
+# test green
+
+# commit用に、yml 呼び出し元 uses をlocal用から本番用に書き換える
+
+# closeとする
+
+{% endraw %}
+```
+
 ### .github/actions-tmp/issue-notes/7.md
 ```md
 {% raw %}
@@ -561,492 +967,33 @@ jobs:
 {% endraw %}
 ```
 
-### index.html
-```html
+### issue-notes/104.md
+```md
 {% raw %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WAVLPF Synthesizer</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Courier New', monospace;
-      background: #000;
-      color: white;
-      min-height: 100vh;
-      cursor: default;
-      overflow-x: hidden;
-      position: relative;
-    }
-    
-    /* Oscilloscope background canvas */
-    #oscilloscope {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 1800px;
-      height: 1000px;
-      max-width: 100vw;
-      max-height: 100vh;
-      background: rgba(0,0,0,0.8);
-      z-index: 0;
-      display: block;
-    }
-    
-    .container {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      user-select: none;
-      max-width: 800px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 15px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 0.3em;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 1em;
-      justify-content: center;
-    }
-    
-    .tab {
-      font-family: 'Courier New', monospace;
-      font-size: 1em;
-      padding: 0.7em 1.5em;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    
-    .tab:hover {
-      background: rgba(0,0,0,0.8);
-    }
-    
-    .tab.active {
-      background: rgba(255,255,255,0.3);
-      border-color: rgba(255,255,255,0.6);
-      font-weight: bold;
-    }
-    
-    .instructions {
-      font-size: 1em;
-      margin-bottom: 1em;
-      opacity: 0.9;
-    }
-    
-    #params {
-      font-size: 1.3em;
-      font-weight: bold;
-      padding: 0.7em 1.5em;
-      background: rgba(0,0,0,0.7);
-      border-radius: 10px;
-      min-width: 400px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-    }
-    
-    .controls {
-      margin-top: 1em;
-      padding: 1em;
-      background: rgba(0,0,0,0.7);
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-      text-align: left;
-    }
-    
-    .control-group {
-      margin-bottom: 0.6em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .control-group:last-child {
-      margin-bottom: 0;
-    }
-    
-    .control-label {
-      flex: 0 0 200px;
-      font-size: 0.9em;
-      opacity: 0.9;
-    }
-    
-    .control-input {
-      flex: 1;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9em;
-      padding: 0.3em 0.5em;
-      background: rgba(255,255,255,0.9);
-      color: #333;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 5px;
-      resize: vertical;
-      min-height: 30px;
-    }
-    
-    select.control-input {
-      cursor: pointer;
-    }
-    
-    textarea.control-input {
-      min-height: 30px;
-      max-height: 80px;
-    }
-    
-    .buttons {
-      margin-top: 1em;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-    
-    .button {
-      font-family: 'Courier New', monospace;
-      font-size: 0.9em;
-      padding: 0.5em 1.5em;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    
-    .button:hover {
-      background: rgba(0,0,0,0.8);
-    }
-    
-    .info {
-      margin-top: 1em;
-      font-size: 0.85em;
-      opacity: 0.7;
-    }
-    
-    .status {
-      margin-top: 0.5em;
-      font-size: 0.75em;
-      opacity: 0.5;
-    }
-    
-    /* Oscilloscope panels container */
-    .oscilloscope-panels {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      gap: 10px;
-    }
-    
-    .oscilloscope-panel {
-      background: rgba(0, 0, 0, 0.8);
-      border: 2px solid rgba(0, 136, 255, 0.5);
-      border-radius: 4px;
-      padding: 8px;
-      box-shadow: 0 0 10px rgba(0, 136, 255, 0.3);
-    }
-    
-    .frame-buffer-panel {
-      margin-top: 10px;
-    }
-    
-    .comparison-panels {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    
-    .panel-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .piano-panel {
-      margin-bottom: 10px;
-    }
-    
-    .panel-label {
-      font-size: 12px;
-      color: #aaaaaa;
-      text-align: center;
-      font-family: 'Courier New', monospace;
-      margin-bottom: 5px;
-    }
-    
-    .oscilloscope-panels canvas {
-      background-color: #000000;
-      border-radius: 2px;
-    }
-    
-    /* Debug overlay in top-right corner */
-    .oscilloscope-debug-overlay {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 100;
-      background: rgba(0, 0, 0, 0.8);
-      border: 2px solid rgba(0, 255, 0, 0.5);
-      border-radius: 4px;
-      padding: 10px;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-      pointer-events: none;
-    }
-    
-    .debug-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 5px;
-    }
-    
-    .debug-item:last-child {
-      margin-bottom: 0;
-    }
-    
-    .debug-label {
-      color: #aaaaaa;
-      font-weight: bold;
-    }
-    
-    .debug-value {
-      color: #00ff00;
-      min-width: 100px;
-      text-align: right;
-    }
-    
-    /* Container for oscilloscope-related error messages.
-       This matches the selector used by displayOscilloscopeError in src/synth.ts. */
-    .oscilloscope-container {
-      position: fixed;
-      top: 150px;
-      right: 10px;
-      max-width: 320px;
-      z-index: 1000;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    
-    /* Individual oscilloscope error message blocks. */
-    .oscilloscope-error {
-      pointer-events: auto;
-      font-family: 'Courier New', monospace;
-      font-size: 0.8em;
-      color: #ffdddd;
-      background: rgba(139, 0, 0, 0.9);
-      border: 1px solid rgba(255, 200, 200, 0.8);
-      border-radius: 4px;
-      padding: 0.5em 0.75em;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-    }
-    
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
-      white-space: nowrap;
-      border-width: 0;
-    }
-  </style>
-</head>
-<body>
-  <!-- Oscilloscope background canvas -->
-  <canvas id="oscilloscope" role="img" aria-label="Waveform oscilloscope visualization showing the filtered audio signal"></canvas>
-  
-  <!-- Oscilloscope additional canvases -->
-  <div class="oscilloscope-panels">
-    <!-- Frame Buffer Display -->
-    <div class="oscilloscope-panel frame-buffer-panel">
-      <div class="panel-label">フレームバッファ全体</div>
-      <canvas id="frameBufferCanvas" width="800" height="120" role="img" aria-label="フレームバッファ全体に蓄積された波形のプレビュー"></canvas>
-    </div>
-    
-    <!-- Comparison Panels -->
-    <div class="oscilloscope-panel comparison-panels">
-      <div class="panel-item">
-        <div class="panel-label">前回の波形</div>
-        <canvas id="previousWaveformCanvas" width="250" height="120" role="img" aria-label="前回の入力から取得した波形のプレビュー"></canvas>
-      </div>
-      <div class="panel-item">
-        <div class="panel-label">今回の波形</div>
-        <canvas id="currentWaveformCanvas" width="250" height="120" role="img" aria-label="今回の入力波形のプレビュー"></canvas>
-      </div>
-      <div class="panel-item">
-        <div class="panel-label">類似度推移</div>
-        <canvas id="similarityPlotCanvas" width="250" height="120" role="img" aria-label="前回の波形と今回の波形の類似度推移グラフ"></canvas>
-      </div>
-    </div>
-    
-    <!-- Piano Keyboard -->
-    <div class="oscilloscope-panel piano-panel">
-      <div class="panel-label">ピアノ鍵盤 (Piano Keyboard) - 50Hz～2000Hz</div>
-      <canvas id="pianoKeyboardCanvas" width="800" height="60" role="img" aria-label="Piano keyboard visualization showing highlighted key for detected fundamental frequency"></canvas>
-    </div>
-    
-    <!-- Debug Overlay -->
-    <div class="oscilloscope-debug-overlay">
-      <div class="debug-item">
-        <span class="debug-label">Frequency:</span>
-        <span id="frequencyValue" class="debug-value">--- Hz</span>
-      </div>
-      <div class="debug-item">
-        <span class="debug-label">Note:</span>
-        <span id="noteValue" class="debug-value">---</span>
-      </div>
-      <div class="debug-item">
-        <span class="debug-label">Gain:</span>
-        <span id="gainValue" class="debug-value">---x</span>
-      </div>
-      <div class="debug-item">
-        <span class="debug-label">Similarity:</span>
-        <span id="similarityValue" class="debug-value">---</span>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Container for oscilloscope error messages (populated by displayOscilloscopeError in synth.ts) -->
-  <div class="oscilloscope-container"></div>
-  
-  <div class="container">
-    <h1>WAVLPF Synthesizer</h1>
-    <div class="tabs">
-      <button id="tabWav" class="tab active" type="button" aria-pressed="true">WAV Generation Mode</button>
-      <button id="tabSeq" class="tab" type="button" aria-pressed="false">Seq Mode</button>
-    </div>
-    <div class="instructions">
-      Click anywhere to start<br>
-      Move your mouse to control the filter
-    </div>
-    <div id="params">Cutoff: 510Hz | Q: 1.25</div>
-    
-    <div class="controls">
-      <div class="control-group">
-        <label class="control-label" for="waveformType">Waveform Type:</label>
-        <select id="waveformType" class="control-input">
-          <option value="sawtooth">Sawtooth</option>
-          <option value="pulse">Pulse</option>
-        </select>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="filterType">Filter Type:</label>
-        <select id="filterType" class="control-input">
-          <option value="lpf">LPF (Low-pass)</option>
-          <option value="hpf">HPF (High-pass)</option>
-          <option value="bpf">BPF (Band-pass)</option>
-          <option value="notch">Notch (Band-reject)</option>
-          <option value="apf">APF (All-pass)</option>
-          <option value="lowshelf">Low Shelf</option>
-          <option value="highshelf">High Shelf</option>
-        </select>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="dutyRatio">Duty Ratio (%):</label>
-        <textarea id="dutyRatio" class="control-input">50</textarea>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="bpm">BPM:</label>
-        <textarea id="bpm" class="control-input">120</textarea>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="beat">Beat:</label>
-        <textarea id="beat" class="control-input">8</textarea>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="qMax">Q Max Value:</label>
-        <textarea id="qMax" class="control-input">16</textarea>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="cutoffMax">Cutoff Freq Max (Hz):</label>
-        <textarea id="cutoffMax" class="control-input">4000</textarea>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="decayUnit">Decay Unit:</label>
-        <select id="decayUnit" class="control-input">
-          <option value="Hz">Hz</option>
-          <option value="Cent">Cent</option>
-        </select>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="decayRate">Decay Rate per ms:</label>
-        <textarea id="decayRate" class="control-input">1</textarea>
-      </div>
-    </div>
-    
-    <div class="buttons">
-      <button id="exportSettings" class="button" aria-label="Export current settings to JSON file">Export Settings</button>
-      <button id="importSettings" class="button" aria-label="Import settings from JSON file">Import Settings</button>
-    </div>
-    
-    <div class="info">
-      X-axis: Cutoff Frequency (20Hz - Max)<br>
-      Y-axis: Resonance Q (0.5 - Max)<br>
-      <br>
-      220Hz wave with biquad filter (Sawtooth or Pulse)<br>
-      Cutoff decays based on settings
-    </div>
-    <div class="status" id="status">
-      New audio generated based on BPM and beat
-    </div>
-    <div class="status" id="generationTime">
-      Generation time: --
-    </div>
-    
-    <div class="sr-only" id="oscilloscope-status">Oscilloscope displaying filtered audio waveform in real-time</div>
-  </div>
-  
-  <script type="module" src="/src/index.ts"></script>
-</body>
-</html>
+# issue 周波数推定に失敗している。シーケンサのライブラリ側の対応を待つ #104
+[issues #104](https://github.com/cat2151/wavlpf/issues/104)
+
+
 
 {% endraw %}
 ```
 
-### issue-notes/100.md
+### issue-notes/105.md
 ```md
 {% raw %}
-# issue 波形表示の表示レイアウトが破綻している #100
-[issues #100](https://github.com/cat2151/wavlpf/issues/100)
+# issue README.ja.mdに、cat2151の直近project同様に、バッジをつける #105
+[issues #105](https://github.com/cat2151/wavlpf/issues/105)
+
+
+
+{% endraw %}
+```
+
+### issue-notes/106.md
+```md
+{% raw %}
+# issue 陳腐化したドキュメントを削除する #106
+[issues #106](https://github.com/cat2151/wavlpf/issues/106)
 
 
 
@@ -1077,31 +1024,34 @@ jobs:
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-fc892cf Add issue note for #100 [auto]
-3ab5de4 Merge pull request #99 from cat2151/copilot/adjust-oscilloscope-display-layout
-f8d93bb Address PR review feedback: add canvas validation, role attributes, fix note calculation
-9ad5c31 Add detailed oscilloscope layout documentation
-f2b2fad Add 9 oscilloscope display elements with layout
-3ee2084 Initial plan
-88d4df7 Add issue note for #98 [auto]
-ad3c857 Add issue note for #96 [auto]
-ed50b31 Merge pull request #95 from cat2151/copilot/fix-wave-visualization-layout
-40571ee デフォルトURLをGitHub Pagesに変更し、レイアウト破綻のスクリーンショット取得に成功
+c484ac6 Add issue note for #106 [auto]
+cd3b230 Add issue note for #105 [auto]
+93ec9d8 Add issue note for #104 [auto]
+c15ac17 Merge pull request #103 from cat2151/copilot/fix-orange-border-issue
+a99b840 Update OSCILLOSCOPE_LAYOUT.md to document canvas width/height requirement
+ccc7c44 Fix orange border overlay by adding canvas width/height attributes
+37fb681 Initial plan
+900d956 Add issue note for #102 [auto]
+a7bf7ec Merge pull request #101 from cat2151/copilot/fix-waveform-display-layout
+ee773b2 Enable screenshot capture bypassing wasm-opt download errors
 
 ### 変更されたファイル:
+docs/DEPLOYMENT_VERIFICATION.md
 docs/OSCILLOSCOPE_LAYOUT.md
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview-generated-prompt.md
+generated-docs/project-overview.md
 index.html
-issue-notes/100.md
-issue-notes/94.md
-issue-notes/96.md
-issue-notes/98.md
+issue-notes/102.md
+issue-notes/104.md
+issue-notes/105.md
+issue-notes/106.md
 package.json
-scripts/README.md
-scripts/test-waveform-screenshot.js
-src/oscilloscope.test.ts
-src/oscilloscope.ts
-waveform-test.png
+scripts/screenshot-github-pages.js
+scripts/test-pr-changes-locally.sh
+scripts/verify-deployment.js
 
 
 ---
-Generated at: 2026-01-18 07:03:01 JST
+Generated at: 2026-01-19 07:02:56 JST
