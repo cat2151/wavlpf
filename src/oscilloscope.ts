@@ -10,19 +10,24 @@ let isUpdating = false; // Guard against concurrent updates
 let hasPermanentFailure = false; // Track if oscilloscope has failed permanently to avoid repeated error logging
 let debugUpdateInterval: number | null = null; // Interval ID for debug overlay updates
 
+// Canvas dimensions for comparison panels (following demo-simple pattern)
+const COMPARISON_PANEL_WIDTH = 250;
+const COMPARISON_PANEL_HEIGHT = 120;
+const FRAME_BUFFER_WIDTH = 800;
+const FRAME_BUFFER_HEIGHT = 120;
+
 /**
- * Initialize the oscilloscope with all required canvas elements
- * cat-oscilloscope requires 5 canvas elements for full functionality:
- * - Main oscilloscope display
- * - Previous waveform comparison
- * - Current waveform comparison
- * - Similarity plot
- * - Frame buffer display
+ * Initialize the oscilloscope following the demo-simple pattern from cat-oscilloscope
  * 
- * Additionally, we use PianoKeyboardRenderer for piano keyboard visualization.
+ * This implementation follows the recommended usage pattern from cat-oscilloscope's demo-simple.html:
+ * - Main canvas is passed as parameter
+ * - Hidden canvas elements are created for comparison panels (not displayed in UI)
+ * - This allows flexibility in showing/hiding comparison panels without DOM dependencies
  * 
- * @param mainCanvas - Canvas element for main rendering
- * @throws Error if any required canvas element is not found or invalid
+ * Reference: https://cat2151.github.io/cat-oscilloscope/demo-simple.html
+ * 
+ * @param mainCanvas - Canvas element for main oscilloscope rendering
+ * @throws Error if canvas element is invalid
  */
 export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
   if (!mainCanvas || !(mainCanvas instanceof HTMLCanvasElement)) {
@@ -32,44 +37,45 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
   // Reset permanent failure flag on reinitialization to allow recovery
   hasPermanentFailure = false;
 
-  // Get all required canvas elements from the DOM
-  const previousWaveformCanvas = document.getElementById('previousWaveformCanvas');
-  const currentWaveformCanvas = document.getElementById('currentWaveformCanvas');
-  const similarityPlotCanvas = document.getElementById('similarityPlotCanvas');
-  const frameBufferCanvas = document.getElementById('frameBufferCanvas');
-  const pianoKeyboardCanvas = document.getElementById('pianoKeyboardCanvas');
+  // Create separate hidden canvas elements for comparison panels
+  // These are not displayed but required by the Oscilloscope constructor
+  // Each canvas is created separately to avoid potential rendering conflicts
+  const previousWaveformCanvas = document.createElement('canvas');
+  previousWaveformCanvas.width = COMPARISON_PANEL_WIDTH;
+  previousWaveformCanvas.height = COMPARISON_PANEL_HEIGHT;
 
-  // Validate all canvas elements exist
-  if (!previousWaveformCanvas || !currentWaveformCanvas || !similarityPlotCanvas || !frameBufferCanvas || !pianoKeyboardCanvas) {
-    throw new Error('One or more required oscilloscope canvas elements not found in DOM');
-  }
+  const currentWaveformCanvas = document.createElement('canvas');
+  currentWaveformCanvas.width = COMPARISON_PANEL_WIDTH;
+  currentWaveformCanvas.height = COMPARISON_PANEL_HEIGHT;
 
-  // Validate all elements are actually HTMLCanvasElement instances
-  const canvasElements = [
-    { element: previousWaveformCanvas, id: 'previousWaveformCanvas' },
-    { element: currentWaveformCanvas, id: 'currentWaveformCanvas' },
-    { element: similarityPlotCanvas, id: 'similarityPlotCanvas' },
-    { element: frameBufferCanvas, id: 'frameBufferCanvas' },
-    { element: pianoKeyboardCanvas, id: 'pianoKeyboardCanvas' }
-  ];
+  const similarityPlotCanvas = document.createElement('canvas');
+  similarityPlotCanvas.width = COMPARISON_PANEL_WIDTH;
+  similarityPlotCanvas.height = COMPARISON_PANEL_HEIGHT;
 
-  for (const { element, id } of canvasElements) {
-    if (!(element instanceof HTMLCanvasElement)) {
-      throw new Error(`Element with id "${id}" is not a canvas element`);
-    }
-  }
+  const frameBufferCanvas = document.createElement('canvas');
+  frameBufferCanvas.width = FRAME_BUFFER_WIDTH;
+  frameBufferCanvas.height = FRAME_BUFFER_HEIGHT;
 
-  // Initialize the main oscilloscope (elements are now validated as HTMLCanvasElement)
+  // Initialize the main oscilloscope using the demo-simple pattern
+  // but with separate hidden canvases for each comparison panel
   oscilloscope = new Oscilloscope(
     mainCanvas,
-    previousWaveformCanvas as HTMLCanvasElement,
-    currentWaveformCanvas as HTMLCanvasElement,
-    similarityPlotCanvas as HTMLCanvasElement,
-    frameBufferCanvas as HTMLCanvasElement
+    previousWaveformCanvas,
+    currentWaveformCanvas,
+    similarityPlotCanvas,
+    frameBufferCanvas
   );
 
-  // Initialize piano keyboard renderer
-  pianoKeyboard = new PianoKeyboardRenderer(pianoKeyboardCanvas as HTMLCanvasElement);
+  // Disable debug overlays for a cleaner display
+  // This follows the demo-simple approach
+  oscilloscope.setDebugOverlaysEnabled(false);
+
+  // Get piano keyboard canvas from DOM (optional feature)
+  const pianoKeyboardCanvas = document.getElementById('pianoKeyboardCanvas');
+  if (pianoKeyboardCanvas && pianoKeyboardCanvas instanceof HTMLCanvasElement) {
+    // Initialize piano keyboard renderer
+    pianoKeyboard = new PianoKeyboardRenderer(pianoKeyboardCanvas);
+  }
 
   // Start debug overlay updates
   startDebugOverlayUpdates();
