@@ -66,9 +66,8 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
     frameBufferCanvas
   );
 
-  // Disable debug overlays for a cleaner display
-  // This follows the demo-simple approach
-  oscilloscope.setDebugOverlaysEnabled(false);
+  // Note: Debug overlays are controlled through individual settings in the latest cat-oscilloscope
+  // FFT display can be toggled with setFFTDisplay() if needed
 
   // Get piano keyboard canvas from DOM (optional feature)
   const pianoKeyboardCanvas = document.getElementById('pianoKeyboardCanvas');
