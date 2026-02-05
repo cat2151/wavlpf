@@ -31,19 +31,33 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
   // Reset permanent failure flag on reinitialization to allow recovery
   hasPermanentFailure = false;
 
-  // Create hidden canvas elements for comparison panels
+  // Create separate hidden canvas elements for comparison panels
   // These are not displayed but required by the Oscilloscope constructor
-  const hiddenCanvas = document.createElement('canvas');
-  hiddenCanvas.width = 250;
-  hiddenCanvas.height = 120;
+  // Each canvas is created separately to avoid potential rendering conflicts
+  const previousWaveformCanvas = document.createElement('canvas');
+  previousWaveformCanvas.width = 250;
+  previousWaveformCanvas.height = 120;
+
+  const currentWaveformCanvas = document.createElement('canvas');
+  currentWaveformCanvas.width = 250;
+  currentWaveformCanvas.height = 120;
+
+  const similarityPlotCanvas = document.createElement('canvas');
+  similarityPlotCanvas.width = 250;
+  similarityPlotCanvas.height = 120;
+
+  const frameBufferCanvas = document.createElement('canvas');
+  frameBufferCanvas.width = 800;
+  frameBufferCanvas.height = 120;
 
   // Initialize the main oscilloscope using the demo-simple pattern
+  // but with separate hidden canvases for each comparison panel
   oscilloscope = new Oscilloscope(
     mainCanvas,
-    hiddenCanvas,  // previousWaveformCanvas
-    hiddenCanvas,  // currentWaveformCanvas
-    hiddenCanvas,  // similarityPlotCanvas
-    hiddenCanvas   // frameBufferCanvas
+    previousWaveformCanvas,
+    currentWaveformCanvas,
+    similarityPlotCanvas,
+    frameBufferCanvas
   );
 
   // Disable debug overlays for a cleaner display
