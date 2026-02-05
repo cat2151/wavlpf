@@ -22,10 +22,6 @@ const shouldSkipTests = !canvasSupported();
 
 describe.skipIf(shouldSkipTests)('oscilloscope', () => {
   let canvas: HTMLCanvasElement;
-  let previousWaveformCanvas: HTMLCanvasElement;
-  let currentWaveformCanvas: HTMLCanvasElement;
-  let similarityPlotCanvas: HTMLCanvasElement;
-  let frameBufferCanvas: HTMLCanvasElement;
   let pianoKeyboardCanvas: HTMLCanvasElement;
 
   beforeEach(() => {
@@ -36,31 +32,8 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
     canvas.height = 300;
     document.body.appendChild(canvas);
 
-    // Create additional required canvas elements
-    previousWaveformCanvas = document.createElement('canvas');
-    previousWaveformCanvas.id = 'previousWaveformCanvas';
-    previousWaveformCanvas.width = 250;
-    previousWaveformCanvas.height = 120;
-    document.body.appendChild(previousWaveformCanvas);
-
-    currentWaveformCanvas = document.createElement('canvas');
-    currentWaveformCanvas.id = 'currentWaveformCanvas';
-    currentWaveformCanvas.width = 250;
-    currentWaveformCanvas.height = 120;
-    document.body.appendChild(currentWaveformCanvas);
-
-    similarityPlotCanvas = document.createElement('canvas');
-    similarityPlotCanvas.id = 'similarityPlotCanvas';
-    similarityPlotCanvas.width = 250;
-    similarityPlotCanvas.height = 120;
-    document.body.appendChild(similarityPlotCanvas);
-
-    frameBufferCanvas = document.createElement('canvas');
-    frameBufferCanvas.id = 'frameBufferCanvas';
-    frameBufferCanvas.width = 800;
-    frameBufferCanvas.height = 120;
-    document.body.appendChild(frameBufferCanvas);
-
+    // Create optional piano keyboard canvas (following demo-simple pattern)
+    // Other canvas elements are now created internally as hidden elements
     pianoKeyboardCanvas = document.createElement('canvas');
     pianoKeyboardCanvas.id = 'pianoKeyboardCanvas';
     pianoKeyboardCanvas.width = 800;
@@ -89,10 +62,9 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
     // Clean up
     await stopOscilloscope();
     
-    // Remove all canvas elements
-    [canvas, previousWaveformCanvas, currentWaveformCanvas, 
-     similarityPlotCanvas, frameBufferCanvas, pianoKeyboardCanvas].forEach(c => {
-      if (c.parentNode) {
+    // Remove canvas elements
+    [canvas, pianoKeyboardCanvas].forEach(c => {
+      if (c && c.parentNode) {
         c.parentNode.removeChild(c);
       }
     });
@@ -121,26 +93,23 @@ describe.skipIf(shouldSkipTests)('oscilloscope', () => {
       expect(() => initOscilloscope(div as any)).toThrow('Invalid canvas element');
     });
 
-    it('should throw error when required canvases are missing', () => {
-      // Remove one of the required canvases
-      const missingCanvas = document.getElementById('previousWaveformCanvas');
-      if (missingCanvas && missingCanvas.parentNode) {
-        missingCanvas.parentNode.removeChild(missingCanvas);
+    it('should work without piano keyboard canvas in DOM', () => {
+      // Remove piano keyboard canvas - this is optional
+      const pianoCanvas = document.getElementById('pianoKeyboardCanvas');
+      if (pianoCanvas && pianoCanvas.parentNode) {
+        pianoCanvas.parentNode.removeChild(pianoCanvas);
       }
       
-      expect(() => initOscilloscope(canvas)).toThrow('required oscilloscope canvas elements not found');
+      // Should still initialize successfully with just main canvas
+      expect(() => initOscilloscope(canvas)).not.toThrow();
+      expect(isOscilloscopeInitialized()).toBe(true);
     });
 
-    it('should throw error when element is not a canvas', () => {
-      // Replace one canvas with a div
-      const previousWaveformCanvas = document.getElementById('previousWaveformCanvas');
-      if (previousWaveformCanvas && previousWaveformCanvas.parentNode) {
-        const div = document.createElement('div');
-        div.id = 'previousWaveformCanvas';
-        previousWaveformCanvas.parentNode.replaceChild(div, previousWaveformCanvas);
-      }
-      
-      expect(() => initOscilloscope(canvas)).toThrow('is not a canvas element');
+    it('should initialize without requiring comparison panel canvases in DOM', () => {
+      // Following demo-simple pattern: comparison canvases are created internally as hidden elements
+      // No need to have them in the DOM
+      expect(() => initOscilloscope(canvas)).not.toThrow();
+      expect(isOscilloscopeInitialized()).toBe(true);
     });
 
     it('should clean up previous initialization on re-init', () => {
