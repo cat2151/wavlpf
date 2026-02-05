@@ -10,6 +10,12 @@ let isUpdating = false; // Guard against concurrent updates
 let hasPermanentFailure = false; // Track if oscilloscope has failed permanently to avoid repeated error logging
 let debugUpdateInterval: number | null = null; // Interval ID for debug overlay updates
 
+// Canvas dimensions for comparison panels (following demo-simple pattern)
+const COMPARISON_PANEL_WIDTH = 250;
+const COMPARISON_PANEL_HEIGHT = 120;
+const FRAME_BUFFER_WIDTH = 800;
+const FRAME_BUFFER_HEIGHT = 120;
+
 /**
  * Initialize the oscilloscope following the demo-simple pattern from cat-oscilloscope
  * 
@@ -35,20 +41,20 @@ export function initOscilloscope(mainCanvas: HTMLCanvasElement): void {
   // These are not displayed but required by the Oscilloscope constructor
   // Each canvas is created separately to avoid potential rendering conflicts
   const previousWaveformCanvas = document.createElement('canvas');
-  previousWaveformCanvas.width = 250;
-  previousWaveformCanvas.height = 120;
+  previousWaveformCanvas.width = COMPARISON_PANEL_WIDTH;
+  previousWaveformCanvas.height = COMPARISON_PANEL_HEIGHT;
 
   const currentWaveformCanvas = document.createElement('canvas');
-  currentWaveformCanvas.width = 250;
-  currentWaveformCanvas.height = 120;
+  currentWaveformCanvas.width = COMPARISON_PANEL_WIDTH;
+  currentWaveformCanvas.height = COMPARISON_PANEL_HEIGHT;
 
   const similarityPlotCanvas = document.createElement('canvas');
-  similarityPlotCanvas.width = 250;
-  similarityPlotCanvas.height = 120;
+  similarityPlotCanvas.width = COMPARISON_PANEL_WIDTH;
+  similarityPlotCanvas.height = COMPARISON_PANEL_HEIGHT;
 
   const frameBufferCanvas = document.createElement('canvas');
-  frameBufferCanvas.width = 800;
-  frameBufferCanvas.height = 120;
+  frameBufferCanvas.width = FRAME_BUFFER_WIDTH;
+  frameBufferCanvas.height = FRAME_BUFFER_HEIGHT;
 
   // Initialize the main oscilloscope using the demo-simple pattern
   // but with separate hidden canvases for each comparison panel
