@@ -1,4 +1,4 @@
-Last updated: 2026-02-02
+Last updated: 2026-02-07
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -220,6 +220,11 @@ Last updated: 2026-02-02
 - issue-notes/104.md
 - issue-notes/105.md
 - issue-notes/106.md
+- issue-notes/109.md
+- issue-notes/111.md
+- issue-notes/112.md
+- issue-notes/113.md
+- issue-notes/114.md
 - issue-notes/21.md
 - issue-notes/24.md
 - issue-notes/25.md
@@ -299,31 +304,31 @@ Last updated: 2026-02-02
 - waveform-test.png
 
 ## 現在のオープンIssues
-## [Issue #104](../issue-notes/104.md): 周波数推定に失敗している。シーケンサのライブラリ側で対処するので、それまで待つ
-[issue-notes/104.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/104.md)
+## [Issue #113](../issue-notes/113.md): （待ち）tonejs-mml-to-jsonをライブラリとして利用し、MMLをtextareaに書いたら演奏できるようにする（issue 112完了待ち）
+[issue-notes/113.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/113.md)
 
 ...
 ラベル: 
---- issue-notes/104.md の内容 ---
+--- issue-notes/113.md の内容 ---
 
 ```markdown
-# issue 周波数推定に失敗している。シーケンサのライブラリ側の対応を待つ #104
-[issues #104](https://github.com/cat2151/wavlpf/issues/104)
+# issue （待ち）tonejs-mml-to-jsonをライブラリとして利用し、MMLをtextareaに書いたら演奏できるようにする（sequence実装されるまで待ち） #113
+[issues #113](https://github.com/cat2151/wavlpf/issues/113)
 
 
 
 ```
 
-## [Issue #57](../issue-notes/57.md): tonejs-json-sequencer がCDN importできるようになるまで待つ
-[issue-notes/57.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/57.md)
+## [Issue #112](../issue-notes/112.md): （待ち）tonejs-json-sequencer を利用して複数音符を演奏できるようにする（stream demoのライブラリ利用版ができるまで待つ）
+[issue-notes/112.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/112.md)
 
 ...
 ラベル: 
---- issue-notes/57.md の内容 ---
+--- issue-notes/112.md の内容 ---
 
 ```markdown
-# issue tonejs-json-sequencer がCDN importできるようになるまで待つ #57
-[issues #57](https://github.com/cat2151/wavlpf/issues/57)
+# issue （待ち）tonejs-json-sequencer を利用して複数音符を演奏できるようにする（stream demoかつライブラリ利用build demoになるまで待つ） #112
+[issues #112](https://github.com/cat2151/wavlpf/issues/112)
 
 
 
@@ -345,6 +350,49 @@ Last updated: 2026-02-02
 ```
 
 ## ドキュメントで言及されているファイルの内容
+### .github/actions-tmp/issue-notes/12.md
+```md
+{% raw %}
+# issue project-summary を他projectから使いやすくする #12
+[issues #12](https://github.com/cat2151/github-actions/issues/12)
+
+# 保留、別projectでの検証待ちのもの
+- promptsをcall側ymlで指定可能にする
+  - 保留の理由
+    - YAGNI原則
+      - 現状の共通workflow側のpromptsで問題ないうちは、保留とする
+        - そのままで使える可能性が高い見込み
+      - 検証が必要
+      - 別promptsを実際に書く必要が出たときに、追加実装をする
+# 課題、 docs/ をメンテする
+- 対象は、 daily-summary-setup.md
+- call-daily-project-summary.yml の導入手順を書く
+- どうする？
+  - 次の日次バッチでagent用promptを生成させる
+- 結果
+  - 生成させた
+  - 導入手順をメンテさせた
+  - 人力でさらにメンテした
+  - これでOKと判断する。
+  - あとは必要に応じてissue起票すればよい、今すぐのissue起票は不要（YAGNI原則）、と判断する
+
+# closeとする
+
+{% endraw %}
+```
+
+### .github/actions-tmp/issue-notes/13.md
+```md
+{% raw %}
+# issue issue-note を他projectから使いやすくする #13
+[issues #13](https://github.com/cat2151/github-actions/issues/13)
+
+- docs
+    - call導入手順を書く
+
+{% endraw %}
+```
+
 ### .github/actions-tmp/issue-notes/2.md
 ```md
 {% raw %}
@@ -520,169 +568,103 @@ jobs:
 {% endraw %}
 ```
 
-### .github/actions-tmp/issue-notes/4.md
+### .github/actions-tmp/issue-notes/3.md
 ```md
 {% raw %}
-# issue GitHub Actions「project概要生成」を共通ワークフロー化する #4
-[issues #4](https://github.com/cat2151/github-actions/issues/4)
+# issue GitHub Actions「issue note生成」を共通ワークフロー化する #3
+[issues #3](https://github.com/cat2151/github-actions/issues/3)
 
-# prompt
+- 前提
+  - userは、translateのworkflowを共通ワークフロー化し、動くようにしたので、共通ワークフロー化の知識がある
+  - よって、今回は、promptでplanさせ、そのplanをuserがレビューし、planの改善を指示できるので、ハルシネーションのリスクを下げることができる
+
+- prompt
 ```
 あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-このymlファイルを、以下の2つのファイルに分割してください。
-1. 共通ワークフロー       cat2151/github-actions/.github/workflows/daily-project-summary.yml
-2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-daily-project-summary.yml
+このymlはまだ共通ワークフロー化されず、
+呼び出し元からコピーされたままの状態です。
+このymlファイル名のまま、
+中身を共通ワークフロー化してください。
+呼び出し元ymlは別途書きますので気にしないでください。
 まずplanしてください
 ```
 
-# 結果、あちこちハルシネーションのあるymlが生成された
-- agentの挙動があからさまにハルシネーション
-    - インデントが修正できない、「失敗した」という
-    - 構文誤りを認識できない
-- 人力で修正した
-
-# このagentによるセルフレビューが信頼できないため、別のLLMによるセカンドオピニオンを試す
+- plan 生成結果
 ```
-あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
+共通ワークフロー化のためのplanは以下の通りです。
 
---- 呼び出し元
-
-name: Call Daily Project Summary
-
-on:
-  schedule:
-    # 日本時間 07:00 (UTC 22:00 前日)
-    - cron: '0 22 * * *'
-  workflow_dispatch:
-
-jobs:
-  call-daily-project-summary:
-    uses: cat2151/github-actions/.github/workflows/daily-project-summary.yml
-    secrets:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
---- 共通ワークフロー
-name: Daily Project Summary
-on:
-  workflow_call:
-
-jobs:
-  generate-summary:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      issues: read
-      pull-requests: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # 履歴を取得するため
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          # 一時的なディレクトリで依存関係をインストール
-          mkdir -p /tmp/summary-deps
-          cd /tmp/summary-deps
-          npm init -y
-          npm install @google/generative-ai @octokit/rest
-          # generated-docsディレクトリを作成
-          mkdir -p $GITHUB_WORKSPACE/generated-docs
-
-      - name: Generate project summary
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          NODE_PATH: /tmp/summary-deps/node_modules
-        run: |
-          node .github/scripts/generate-project-summary.cjs
-
-      - name: Check for generated summaries
-        id: check_summaries
-        run: |
-          if [ -f "generated-docs/project-overview.md" ] && [ -f "generated-docs/development-status.md" ]; then
-            echo "summaries_generated=true" >> $GITHUB_OUTPUT
-          else
-            echo "summaries_generated=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push summaries
-        if: steps.check_summaries.outputs.summaries_generated == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # package.jsonの変更のみリセット（generated-docsは保持）
-          git restore package.json 2>/dev/null || true
-          # サマリーファイルのみを追加
-          git add generated-docs/project-overview.md
-          git add generated-docs/development-status.md
-          git commit -m "Update project summaries (overview & development status)"
-          git push
-
-      - name: Summary generation result
-        run: |
-          if [ "${{ steps.check_summaries.outputs.summaries_generated }}" == "true" ]; then
-            echo "✅ Project summaries updated successfully"
-            echo "📊 Generated: project-overview.md & development-status.md"
-          else
-            echo "ℹ️ No summaries generated (likely no user commits in the last 24 hours)"
-          fi
+1. 目的
+現在の issue-note.yml を「共通ワークフロー」として再設計し、他リポジトリや他ワークフローから workflow_call で呼び出せるようにする。
+2. 主な変更点
+on: トリガーを workflow_call に変更（直接イベントで起動しない）。
+必要な入力（inputs）やシークレット（secrets）を workflow_call セクションで定義。
+github.event.issue などのイベント依存部分を、inputs経由で受け取る形に修正。
+既存の処理（issueノート生成、コミット、issue body更新）はそのまま活かすが、パラメータ化する。
+3. 具体的な修正内容
+on: issues: → on: workflow_call: に変更。
+inputs で必要な値（例: issue_title, issue_number, issue_body, issue_url など）を受け取る。
+スクリプト内の ${{ github.event.issue.xxx }} を ${{ inputs.xxx }} に置換。
+github-script ステップも同様にinputsを参照。
+必要に応じて secrets も workflow_call で受け取れるようにする。
+4. ファイル名・配置
+ファイル名はそのまま issue-note.yml。
+配置場所は workflows でOK（共通ワークフローとしてもこの場所で良い）。
+5. 呼び出し元への影響
+呼び出し元ワークフローで uses: <repo>/.github/workflows/issue-note.yml@main のように参照し、inputsを渡す形になる。
+このplanで進めます。次に、実際の共通ワークフロー化のためのyml修正案を作成しますか？
 ```
 
-# 上記promptで、2つのLLMにレビューさせ、合格した
+- userがplanレビューし、OKを出した
+- agentに生成結果ymlをレビューさせた、OKとなった
+  - userはこのレビューは認知負荷が高いのでskipとする（単純な細かい間違い探し作業になるので、それはagentに任せた）
+-  エラー。呼び出し元ymlのエラーがあり修正。共通ワークフローのエラー指摘があり、共通ワークフロー側の修正が必要となった
+```
+原因の分析：
 
-# 細部を、先行する2つのymlを参照に手直しした
+呼び出し元（tonejs-mml-to-jsonのissue-note.yml）は、reusable workflow（cat2151/github-actions/.github/workflows/issue-note.yml@main）をusesで呼び出し、inputsをwithで渡しています。
+共通ワークフロー（reusable workflow）は inputs を workflow_call で受け取り、各ステップで ${{ inputs.xxx }} で参照しています。
+しかし、エラーが発生したのは actions/github-script@v7 の script 内です。
+エラーの本質的な原因：
 
-# ローカルtestをしてからcommitできるとよい。方法を検討する
-- ローカルtestのメリット
-    - 素早く修正のサイクルをまわせる
-    - ムダにgit historyを汚さない
-        - これまでの事例：「実装したつもり」「エラー。修正したつもり」「エラー。修正したつもり」...（以降エラー多数）
-- 方法
-    - ※検討、WSL + act を環境構築済みである。test可能であると判断する
-    - 呼び出し元のURLをコメントアウトし、相対パス記述にする
-    - ※備考、テスト成功すると結果がcommit pushされる。それでよしとする
-- 結果
-    - OK
-    - secretsを簡略化できるか試した、できなかった、現状のsecrets記述が今わかっている範囲でベストと判断する
-    - OK
+actions/github-script の script: で ${{ inputs.issue_number }} のような式を直接 JavaScript テンプレートリテラル内で使っていますが、これはサポートされていません。
+script: の中は JavaScript であり、YAMLの ${{ ... }} は展開されません（または意図通りに展開されません）。
+そのため、inputs 変数は script 内の JavaScript で未定義となり、ReferenceError になります。
+正しい書き方：
 
-# test green
+actions/github-script の script: でワークフローの inputs を使いたい場合は、with: で input を environment 変数や script の引数として渡し、JavaScript で process.env から取得するか、github-script の input 機能を使う必要があります。
+例（修正版）：
 
-# commit用に、yml 呼び出し元 uses をlocal用から本番用に書き換える
+このように、inputs の値を env で渡し、script 内では process.env で参照してください。
 
-# closeとする
+まとめ：
 
-{% endraw %}
+actions/github-script の script 内で ${{ inputs.xxx }} を直接使うと ReferenceError になる
+env: で値を渡し、process.env で参照するのが正しい
+修正が必要です。修正版のワークフローが必要な場合はお知らせください。
 ```
 
-### .github/actions-tmp/issue-notes/7.md
-```md
-{% raw %}
-# issue issue note生成できるかのtest用 #7
-[issues #7](https://github.com/cat2151/github-actions/issues/7)
-
-- 生成できた
+- test green
 - closeとする
 
 {% endraw %}
 ```
 
-### issue-notes/104.md
+### issue-notes/112.md
 ```md
 {% raw %}
-# issue 周波数推定に失敗している。シーケンサのライブラリ側の対応を待つ #104
-[issues #104](https://github.com/cat2151/wavlpf/issues/104)
+# issue （待ち）tonejs-json-sequencer を利用して複数音符を演奏できるようにする（stream demoかつライブラリ利用build demoになるまで待つ） #112
+[issues #112](https://github.com/cat2151/wavlpf/issues/112)
+
+
+
+{% endraw %}
+```
+
+### issue-notes/113.md
+```md
+{% raw %}
+# issue （待ち）tonejs-mml-to-jsonをライブラリとして利用し、MMLをtextareaに書いたら演奏できるようにする（sequence実装されるまで待ち） #113
+[issues #113](https://github.com/cat2151/wavlpf/issues/113)
 
 
 
@@ -700,52 +682,30 @@ jobs:
 {% endraw %}
 ```
 
-### issue-notes/57.md
-```md
-{% raw %}
-# issue tonejs-json-sequencer がCDN importできるようになるまで待つ #57
-[issues #57](https://github.com/cat2151/wavlpf/issues/57)
-
-
-
-{% endraw %}
-```
-
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-d703d3d Merge pull request #108 from cat2151/copilot/remove-deprecated-documentation
-ca1c9e0 陳腐化したドキュメントを削除し、参照を更新
-12c1f72 Auto-translate README.ja.md to README.md [auto]
-edbe2af Initial plan
-eb0079e Merge pull request #107 from cat2151/copilot/add-badges-to-readme
-c95587a Add badges to README.ja.md and README.md similar to cat2151's recent projects
-1a0ae73 Initial plan
+ebc887b Merge pull request #115 from cat2151/copilot/fix-waves-visualizer-error
+517a164 Fix oscilloscope TypeScript compatibility with latest cat-oscilloscope
+3cd9fb7 Initial plan
+da9605e Add issue note for #114 [auto]
+00e2ef5 Add issue note for #113 [auto]
+d0b785e Add issue note for #112 [auto]
+eb9bac5 Merge pull request #110 from cat2151/copilot/improve-waveform-visualizer
+92181c8 Extract canvas dimensions as named constants
+f358e03 Use separate hidden canvases for each comparison panel
+c450dbe Remove comparison panel canvases from HTML following demo-simple pattern
 
 ### 変更されたファイル:
-ISSUE_39_SUMMARY.md
-MODULE_DEPENDENCIES.md
-NETWORK_RESTRICTIONS_INVESTIGATION.md
-PERFORMANCE_DISPLAY_DEMO.md
-PERFORMANCE_TIMING_ANALYSIS.md
-README.ja.md
-README.md
-REFACTORING_SUMMARY.md
-SUMMARY.md
-docs/GITHUB_PAGES_ACCESS_PROPOSAL.md
-docs/ISSUE_76_RESOLUTION.md
-docs/ISSUE_78_RESOLUTION.md
-generated-docs/development-status-generated-prompt.md
-generated-docs/development-status.md
-generated-docs/project-overview-generated-prompt.md
-generated-docs/project-overview.md
-issue-notes/104.md
-issue-notes/105.md
-issue-notes/106.md
-issue-notes/39.md
-issue-notes/76.md
-issue-notes/78.md
-issue-notes/80.md
+index.html
+issue-notes/109.md
+issue-notes/111.md
+issue-notes/112.md
+issue-notes/113.md
+issue-notes/114.md
+package-lock.json
+src/oscilloscope.test.ts
+src/oscilloscope.ts
 
 
 ---
-Generated at: 2026-02-02 07:03:21 JST
+Generated at: 2026-02-07 07:03:14 JST

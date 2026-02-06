@@ -1,4 +1,4 @@
-Last updated: 2026-02-02
+Last updated: 2026-02-07
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -319,6 +319,11 @@ MIT
   📖 104.md
   📖 105.md
   📖 106.md
+  📖 109.md
+  📖 111.md
+  📖 112.md
+  📖 113.md
+  📖 114.md
   📖 21.md
   📖 24.md
   📖 25.md
@@ -402,7 +407,7 @@ MIT
 📄 waveform-test.png
 
 ## ファイル詳細分析
-**index.html** (475行, 13167バイト)
+**index.html** (460行, 12540バイト)
   - 関数: なし
   - インポート: なし
 
@@ -442,12 +447,12 @@ MIT
   - 関数: if
   - インポート: ./synth
 
-**src/oscilloscope.test.ts** (364行, 13249バイト)
+**src/oscilloscope.test.ts** (333行, 11960バイト)
   - 関数: canvasSupported, forEach, if, for
   - インポート: vitest
 
-**src/oscilloscope.ts** (264行, 9335バイト)
-  - 関数: initOscilloscope, startDebugOverlayUpdates, stopDebugOverlayUpdates, frequencyToNote, validateInputs, updateOscilloscope, stopOscilloscope, isOscilloscopeInitialized, if, for, catch
+**src/oscilloscope.ts** (269行, 9574バイト)
+  - 関数: initOscilloscope, startDebugOverlayUpdates, stopDebugOverlayUpdates, frequencyToNote, validateInputs, updateOscilloscope, stopOscilloscope, isOscilloscopeInitialized, if, catch
   - インポート: cat-oscilloscope
 
 **src/performance-stats.test.ts** (208行, 6502バイト)
@@ -590,6 +595,11 @@ issue-notes/102.md
 issue-notes/104.md
 issue-notes/105.md
 issue-notes/106.md
+issue-notes/109.md
+issue-notes/111.md
+issue-notes/112.md
+issue-notes/113.md
+issue-notes/114.md
 issue-notes/21.md
 issue-notes/24.md
 issue-notes/25.md
@@ -600,11 +610,6 @@ issue-notes/33.md
 issue-notes/35.md
 issue-notes/37.md
 issue-notes/39.md
-issue-notes/41.md
-issue-notes/44.md
-issue-notes/46.md
-issue-notes/48.md
-issue-notes/50.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -617,4 +622,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-02 07:03:21 JST
+Generated at: 2026-02-07 07:03:14 JST
