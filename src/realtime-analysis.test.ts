@@ -1,7 +1,7 @@
 /**
  * Tests for real-time analysis module
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   isRealtimeAnalysisInitialized,
 } from './realtime-analysis';

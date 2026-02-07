@@ -146,7 +146,9 @@ function drawFFT(): void {
   fftContext.beginPath();
   for (let i = 0; i < values.length; i++) {
     // Convert from dB (-100 to 0) to canvas height (0 to 1)
-    const value = (values[i] + 100) / 100;
+    // Clamp to avoid -Infinity or other non-finite values
+    const dbValue = Number.isFinite(values[i]) ? values[i] : -100;
+    const value = Math.max(0, Math.min(1, (dbValue + 100) / 100));
     const barHeight = value * height;
     const x = i * barWidth;
     const y = height - barHeight;
@@ -164,7 +166,13 @@ function drawFFT(): void {
   fftContext.font = '10px monospace';
   fftContext.fillText('FFT Spectrum', 5, 15);
   fftContext.fillText('0Hz', 5, height - 5);
-  fftContext.fillText('22kHz', width - 40, height - 5);
+
+  // Use actual Nyquist frequency from audio context
+  const nyquistHz = fftAnalyzer.context.sampleRate / 2;
+  const nyquistLabel = nyquistHz >= 1000
+    ? `${(nyquistHz / 1000).toFixed(0)}kHz`
+    : `${Math.round(nyquistHz)}Hz`;
+  fftContext.fillText(nyquistLabel, width - 40, height - 5);
 }
 
 /**

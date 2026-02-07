@@ -48,8 +48,14 @@ export function drawFullWaveform(samples: Float32Array, sampleRate: number): voi
   const samplesPerPixel = Math.ceil(samples.length / width);
 
   fullWaveformContext.beginPath();
-  for (let x = 0; x < width; x++) {
+  // Prevent out-of-bounds access when canvas width exceeds sample count
+  const drawWidth = Math.min(width, samples.length);
+  for (let x = 0; x < drawWidth; x++) {
     const startSample = x * samplesPerPixel;
+    // Skip if startSample is beyond array bounds
+    if (startSample >= samples.length) {
+      break;
+    }
     const endSample = Math.min(startSample + samplesPerPixel, samples.length);
 
     // Find min and max in this pixel range for better visualization
