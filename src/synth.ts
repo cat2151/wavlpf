@@ -28,6 +28,7 @@ import {
   isAudioContextRunning,
   playWavUrl,
   stopAndCleanup,
+  getTone,
 } from './audio-player';
 import {
   type PlaybackMode,
@@ -39,6 +40,19 @@ import {
   updateOscilloscope,
   isOscilloscopeInitialized,
 } from './oscilloscope';
+import {
+  initRealtimeAnalysis,
+  startRealtimeVisualization,
+  stopRealtimeVisualization,
+  isRealtimeAnalysisInitialized,
+  disposeRealtimeAnalysis,
+} from './realtime-analysis';
+import {
+  initFullWaveformDisplay,
+  drawFullWaveform,
+  clearFullWaveform,
+  isFullWaveformDisplayInitialized,
+} from './full-waveform-display';
 
 // Global storage for the most recently generated WAV
 let lastGeneratedWavUrl: string | null = null;
@@ -176,10 +190,10 @@ async function playAudioWav(): Promise<void> {
     console.warn('Tone.js not loaded yet');
     return;
   }
-  
+
   // Render audio
   const { samples, generationTimeMs } = renderAudio();
-  
+
   // Update oscilloscope visualization with generated samples (non-blocking)
   // We don't await this to prevent delaying audio playback
   if (isOscilloscopeInitialized()) {
@@ -193,21 +207,26 @@ async function playAudioWav(): Promise<void> {
       }
     });
   }
-  
+
+  // Update full waveform display with rendered samples
+  if (isFullWaveformDisplayInitialized()) {
+    drawFullWaveform(samples, SAMPLE_RATE);
+  }
+
   // Generate WAV
   const wavData = generateWav(samples, SAMPLE_RATE);
   const wavUrl = createWavBlobUrl(wavData);
-  
+
   // Store the generated WAV URL for seq mode
   // Revoke the previous URL to prevent memory leaks
   if (lastGeneratedWavUrl) {
     URL.revokeObjectURL(lastGeneratedWavUrl);
   }
   lastGeneratedWavUrl = wavUrl;
-  
+
   // Play audio
   await playWavUrl(wavUrl);
-  
+
   // Update generation time display
   updateGenerationTimeDisplay(generationTimeMs);
 }
@@ -290,17 +309,17 @@ export async function init(): Promise<void> {
   // Initialize WASM module - required for all audio processing
   await initWasm().catch((error) => {
     console.error('Failed to initialize WASM module:', error);
-    
+
     // WASM初期化エラーをユーザーに分かりやすく通知
     const statusEl = document.getElementById('status');
     if (statusEl) {
       statusEl.textContent =
         'シンセサイザーの初期化に失敗しました。ページを再読み込みしてください。';
     }
-    
+
     throw new Error('WASM initialization failed. The synthesizer cannot run without Rust WASM module.');
   });
-  
+
   // Initialize oscilloscope
   const canvas = document.getElementById('oscilloscope') as HTMLCanvasElement | null;
   if (canvas) {
@@ -318,7 +337,19 @@ export async function init(): Promise<void> {
       'Waveform visualization will not be available.'
     );
   }
-  
+
+  // Initialize full waveform display
+  const fullWaveformCanvas = document.getElementById('fullWaveformCanvas') as HTMLCanvasElement | null;
+  if (fullWaveformCanvas) {
+    try {
+      initFullWaveformDisplay(fullWaveformCanvas);
+    } catch (error) {
+      console.error('Failed to initialize full waveform display:', error);
+    }
+  } else {
+    console.warn('Full waveform canvas element not found. Full waveform display will not be available.');
+  }
+
   // マウス位置を追跡
   document.addEventListener('mousemove', (e) => {
     mousePosition = {
@@ -474,19 +505,42 @@ export async function init(): Promise<void> {
     if (event.type === 'touchstart') {
       event.preventDefault();
     }
-    
+
     // Load Tone.js dynamically on first user interaction to comply with browser autoplay policies.
     // Dynamic import ensures AudioContext is only created after a user gesture.
     if (!isToneLoaded()) {
       await loadTone();
     }
-    
+
     if (!isToneLoaded()) {
       return; // Failed to load
     }
-    
+
     await startAudioContext();
-    
+
+    // Initialize real-time analysis after Tone.js is loaded and AudioContext is started
+    if (!isRealtimeAnalysisInitialized()) {
+      const Tone = getTone();
+      if (Tone) {
+        const fftCanvas = document.getElementById('fftCanvas') as HTMLCanvasElement | null;
+        const realtimeWaveformCanvas = document.getElementById('realtimeWaveformCanvas') as HTMLCanvasElement | null;
+
+        if (fftCanvas && realtimeWaveformCanvas) {
+          try {
+            initRealtimeAnalysis(Tone, fftCanvas, realtimeWaveformCanvas);
+            startRealtimeVisualization();
+          } catch (error) {
+            console.error('Failed to initialize real-time analysis:', error);
+          }
+        } else {
+          console.warn('Real-time analysis canvas elements not found');
+        }
+      }
+    } else {
+      // If already initialized, just start visualization
+      startRealtimeVisualization();
+    }
+
     // Start playback loop only once
     if (!isPlaybackLoopStarted) {
       isPlaybackLoopStarted = true;
@@ -549,13 +603,20 @@ export function dispose(): void {
     clearTimeout(playbackTimeoutId);
     playbackTimeoutId = null;
   }
-  
+
   // Reset playback loop flag
   isPlaybackLoopStarted = false;
-  
+
   // Stop and dispose current player
   stopAndCleanup();
-  
+
+  // Clean up real-time analysis
+  stopRealtimeVisualization();
+  disposeRealtimeAnalysis();
+
+  // Clear full waveform display
+  clearFullWaveform();
+
   // Clean up stored WAV URL
   if (lastGeneratedWavUrl) {
     URL.revokeObjectURL(lastGeneratedWavUrl);

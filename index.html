@@ -322,12 +322,76 @@
       white-space: nowrap;
       border-width: 0;
     }
+
+    /* Real-time analysis panels (FFT and Waveform) */
+    .realtime-analysis-container {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .analysis-panel {
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid rgba(0, 255, 0, 0.5);
+      border-radius: 4px;
+      padding: 8px;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+
+    .analysis-panel canvas {
+      display: block;
+    }
+
+    /* Full waveform display panel */
+    .full-waveform-container {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .full-waveform-panel {
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid rgba(255, 136, 0, 0.5);
+      border-radius: 4px;
+      padding: 8px;
+      box-shadow: 0 0 10px rgba(255, 136, 0, 0.3);
+    }
+
+    .full-waveform-panel canvas {
+      display: block;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
   <!-- Oscilloscope background canvas -->
   <canvas id="oscilloscope" width="1800" height="1000" role="img" aria-label="Waveform oscilloscope visualization showing the filtered audio signal"></canvas>
-  
+
+  <!-- Real-time analysis panels (FFT and Waveform) at top left -->
+  <div class="realtime-analysis-container">
+    <div class="analysis-panel">
+      <canvas id="fftCanvas" width="400" height="150" role="img" aria-label="FFT spectrum display showing frequency content in real-time"></canvas>
+    </div>
+    <div class="analysis-panel">
+      <canvas id="realtimeWaveformCanvas" width="400" height="150" role="img" aria-label="Real-time waveform display at 60 FPS"></canvas>
+    </div>
+  </div>
+
+  <!-- Full waveform display at bottom -->
+  <div class="full-waveform-container">
+    <div class="full-waveform-panel">
+      <canvas id="fullWaveformCanvas" width="1400" height="120" role="img" aria-label="Full rendered waveform showing complete audio buffer"></canvas>
+    </div>
+  </div>
+
   <!-- Oscilloscope additional UI elements (following demo-simple pattern) -->
   <div class="oscilloscope-panels">
     <!-- 
