@@ -60,6 +60,14 @@ export function isToneLoaded(): boolean {
 }
 
 /**
+ * Toneモジュールを取得
+ * @returns Toneモジュール (未ロードの場合はnull)
+ */
+export function getTone(): typeof ToneTypes | null {
+  return Tone;
+}
+
+/**
  * AudioContextを開始
  * @returns Promise<void>
  */
