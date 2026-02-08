@@ -1,4 +1,4 @@
-Last updated: 2026-02-07
+Last updated: 2026-02-09
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -324,6 +324,7 @@ MIT
   📖 112.md
   📖 113.md
   📖 114.md
+  📖 116.md
   📖 21.md
   📖 24.md
   📖 25.md
@@ -378,12 +379,16 @@ MIT
   📜 verify-deployment.js
 📁 src/
   📘 audio-player.ts
+  📘 full-waveform-display.test.ts
+  📘 full-waveform-display.ts
   📘 index.ts
   📘 oscilloscope.test.ts
   📘 oscilloscope.ts
   📘 performance-stats.test.ts
   📘 performance-stats.ts
   📘 playback-mode.ts
+  📘 realtime-analysis.test.ts
+  📘 realtime-analysis.ts
   📘 settings.test.ts
   📘 settings.ts
   📘 synth.ts
@@ -407,7 +412,7 @@ MIT
 📄 waveform-test.png
 
 ## ファイル詳細分析
-**index.html** (460行, 12540バイト)
+**index.html** (524行, 14365バイト)
   - 関数: なし
   - インポート: なし
 
@@ -439,9 +444,17 @@ MIT
   - 関数: verifyDeployment, catch, if, for
   - インポート: playwright, playwright
 
-**src/audio-player.ts** (125行, 2760バイト)
-  - 関数: loadTone, isToneLoaded, startAudioContext, isAudioContextRunning, playWavUrl, stopAndCleanup, if, catch
+**src/audio-player.ts** (133行, 2892バイト)
+  - 関数: loadTone, isToneLoaded, getTone, startAudioContext, isAudioContextRunning, playWavUrl, stopAndCleanup, if, catch
   - インポート: tone
+
+**src/full-waveform-display.test.ts** (20行, 615バイト)
+  - 関数: なし
+  - インポート: vitest
+
+**src/full-waveform-display.ts** (113行, 3620バイト)
+  - 関数: initFullWaveformDisplay, drawFullWaveform, clearFullWaveform, isFullWaveformDisplayInitialized, if, for
+  - インポート: なし
 
 **src/index.ts** (21行, 450バイト)
   - 関数: if
@@ -467,6 +480,14 @@ MIT
   - 関数: getCurrentMode, updateModeUI, switchMode, if
   - インポート: なし
 
+**src/realtime-analysis.test.ts** (20行, 586バイト)
+  - 関数: なし
+  - インポート: vitest
+
+**src/realtime-analysis.ts** (259行, 6829バイト)
+  - 関数: initRealtimeAnalysis, startRealtimeVisualization, stopRealtimeVisualization, animate, drawFFT, drawWaveform, isRealtimeAnalysisInitialized, disposeRealtimeAnalysis, if, for
+  - インポート: tone
+
 **src/settings.test.ts** (126行, 4869バイト)
   - 関数: なし
   - インポート: vitest
@@ -475,7 +496,7 @@ MIT
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (565行, 16524バイト)
+**src/synth.ts** (626行, 18489バイト)
   - 関数: getCurrentSettings, displayOscilloscopeError, readParameters, renderAudio, playAudioWav, playAudioSeq, playAudio, handleModeSwitch, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
   - インポート: ./wav, ./wasmAudio, ./timing
 
@@ -524,6 +545,7 @@ MIT
       - verifyDeployment (scripts/verify-deployment.js)
       - loadTone (src/audio-player.ts)
       - isToneLoaded ()
+      - getTone ()
       - startAudioContext ()
       - isAudioContextRunning ()
       - playWavUrl ()
@@ -542,11 +564,20 @@ MIT
       - saveSettings ()
       - exportSettingsToFile ()
       - importSettingsFromFile ()
+      - initFullWaveformDisplay (src/full-waveform-display.ts)
+      - drawFullWaveform ()
+      - clearFullWaveform ()
+      - isFullWaveformDisplayInitialized ()
       - createPerformanceStats (src/performance-stats.ts)
       - addPerformanceSample ()
       - calculatePerformanceStats ()
       - getCurrentMode (src/playback-mode.ts)
       - switchMode ()
+      - initRealtimeAnalysis (src/realtime-analysis.ts)
+      - startRealtimeVisualization ()
+      - stopRealtimeVisualization ()
+      - isRealtimeAnalysisInitialized ()
+      - disposeRealtimeAnalysis ()
       - getCurrentSettings (src/synth.ts)
       - displayOscilloscopeError ()
       - readParameters ()
@@ -572,6 +603,9 @@ MIT
   - canvasSupported (src/oscilloscope.test.ts)
   - resetPerformanceStats ()
   - updateModeUI ()
+  - animate ()
+    - drawFFT ()
+      - drawWaveform ()
   - readNumericParameter (src/ui-params.ts)
   - writeString ()
 - for (scripts/setup-cat-oscilloscope-wasm.js)
@@ -600,6 +634,7 @@ issue-notes/111.md
 issue-notes/112.md
 issue-notes/113.md
 issue-notes/114.md
+issue-notes/116.md
 issue-notes/21.md
 issue-notes/24.md
 issue-notes/25.md
@@ -609,7 +644,6 @@ issue-notes/31.md
 issue-notes/33.md
 issue-notes/35.md
 issue-notes/37.md
-issue-notes/39.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -622,4 +656,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-07 07:03:14 JST
+Generated at: 2026-02-09 07:04:58 JST

@@ -1,69 +1,51 @@
-Last updated: 2026-02-07
+Last updated: 2026-02-09
 
 # Development Status
 
 ## 現在のIssues
--   [Issue #113](../issue-notes/113.md) は、MMLからJSONへの変換を扱うライブラリの利用を提案していますが、これは[Issue #112](../issue-notes/112.md)でシーケンサー機能が実装されるまで保留されています。
--   [Issue #112](../issue-notes/112.md) は、複数音符を演奏するための`tonejs-json-sequencer`の導入を目指しており、外部のストリームデモのライブラリ利用版が利用可能になるまで待機中です。
--   [Issue #52](../issue-notes/52.md) は、複数のシーケンサー実装後に、Tone.jsや自前レンダラーなど複数の演奏・レンダリング方式をプルダウンで選択できるUIの追加を計画しています。
+- MMLを用いた複数音符の演奏機能 ([Issue #113](../issue-notes/113.md)) とその基盤となるシーケンサー機能 ([Issue #112](../issue-notes/112.md)) の実装が、外部ライブラリの利用状況待ちで保留されています。
+- シーケンサー機能の実装後には、異なるレンダリング方法（Tone.js sampler、WAVプリレンダリング、自前レンダリング）を切り替えるUI ([Issue #52](../issue-notes/52.md)) の実装が控えています。
+- これらは、MMLからの音楽生成と様々な方式での再生・分析機能の提供を目指す上で、現在最も重要な開発ブロックとなっています。
 
 ## 次の一手候補
-1.  [Issue #112](../issue-notes/112.md) - `tonejs-json-sequencer` の導入と最小動作確認
-    -   最初の小さな一歩: `tonejs-json-sequencer` を `package.json` に追加し、簡単なJSONシーケンスを再生する最小限のコードを `src/synth.ts` に実装する。
-    -   Agent実行プロンプト:
-        ```
-        対象ファイル: package.json, src/index.ts, src/synth.ts
+1.  Tone.jsシーケンサーライブラリの最新状況調査とプロジェクト依存関係の確認 ([Issue #112](../issue-notes/112.md), [Issue #113](../issue-notes/113.md))
+    - 最初の小さな一歩: `package.json` を確認し、`tonejs-json-sequencer` や `tonejs-mml-to-json` などの関連ライブラリが既にプロジェクトに導入されているか、または導入予定のライブラリのバージョン情報、リポジトリ情報を特定する。その後、これらのライブラリの公式GitHubリポジトリ等で「stream demoのライブラリ利用版」やMML変換機能に関する最新の進捗状況やリリース情報を調査する。
+    - Agent実行プロンプ:
+      ```
+      対象ファイル: package.json, package-lock.json
 
-        実行内容:
-        1. `tonejs-json-sequencer` を `package.json` の依存関係に追加してください。
-        2. `src/synth.ts` に `tonejs-json-sequencer` をインポートし、最小限のJSONデータ（例: `[{ time: 0, note: 'C4' }, { time: 0.5, note: 'D4' }]`）を使って単一の音を再生するSequencerインスタンスを生成する関数を実装してください。
-        3. この関数を `src/index.ts` から呼び出し、ページのロード時に一度だけ実行されるように設定してください。既存の音生成ロジックに影響を与えないよう、一時的なデバッグ目的のコードとして追加し、後で簡単に削除できるようにコメントを加えてください。
+      実行内容: `package.json` および `package-lock.json` 内で `tonejs-json-sequencer` および `tonejs-mml-to-json` と名付けられた、または関連するTone.jsライブラリの依存関係とバージョンを特定してください。その後、これらのライブラリの公式GitHubリポジトリの最新リリースやIssue、プルリクエストを確認し、「stream demoのライブラリ利用版」やMMLからJSONへの変換機能に関する進捗状況を調査してください。
 
-        確認事項:
-        - `tonejs-json-sequencer` がnpmレジストリで利用可能か確認してください。
-        - 既存のオーディオコンテキストやシンセサイザーの初期化ロジックと競合しないか確認してください。
-        - Minimalな実装とし、エラーが発生しないことを確認してください。
+      確認事項: 現在のプロジェクトで利用しているTone.js関連ライブラリのバージョンと、外部ライブラリの最新情報を照合し、互換性に影響がないかを確認してください。
 
-        期待する出力: `package.json` と `src/synth.ts`, `src/index.ts` の変更内容を記載したMarkdown。変更箇所は差分形式で表示し、追加されたコードの簡単な説明を含めてください。
-        ```
+      期待する出力: 調査結果をMarkdown形式で出力してください。具体的には、特定したライブラリ名、バージョン、公式リポジトリへのリンク、および「stream demoのライブラリ利用版」やMML変換機能に関する最新の状況を記述してください。
+      ```
 
-2.  [Issue #113](../issue-notes/113.md) - `tonejs-mml-to-json` のAPI調査と簡単なMML変換
-    -   最初の小さな一歩: `tonejs-mml-to-json` のドキュメントを読み込み、簡単なMML文字列（例: `CDEFGAB`）をJSONに変換するコードスニペットを生成し、その結果を確認する。
-    -   Agent実行プロンプト:
-        ```
-        対象ファイル: package.json, src/mml-test.ts (新規作成), tsconfig.json
+2.  `wasmAudio`と`synth`モジュールのシーケンサー連携インターフェース分析 ([Issue #112](../issue-notes/112.md))
+    - 最初の小さな一歩: `src/wasmAudio.ts` および `src/synth.ts` を分析し、外部からの音符データやシーケンスデータを受け入れるための現在のインターフェース、または将来的に拡張が必要となる可能性のある部分を特定する。
+    - Agent実行プロンプ:
+      ```
+      対象ファイル: src/wasmAudio.ts, src/synth.ts
 
-        実行内容:
-        1. `tonejs-mml-to-json` を `package.json` の依存関係に追加してください。
-        2. `src/mml-test.ts` (新規作成) に `tonejs-mml-to-json` をインポートし、簡単なMML文字列（例: `"C4 D4 E4"`）をJSON形式に変換する関数を実装してください。
-        3. この関数を実行し、変換されたJSONオブジェクトをコンソールに出力するコードを追加してください。
-        4. この `src/mml-test.ts` がビルドプロセスに含まれるように `tsconfig.json` を更新してください (もし必要であれば)。
+      実行内容: `src/wasmAudio.ts` と `src/synth.ts` を分析し、外部からの音符データやシーケンスデータを受け取るための現在のインターフェースやAPIを特定してください。特に、`tonejs-json-sequencer` からの入力を想定した場合に、どのような変更や拡張が必要となるか、または既存の構造がどのように利用できるかを考察してください。
 
-        確認事項:
-        - `tonejs-mml-to-json` がnpmレジストリで利用可能か確認してください。
-        - 変換後のJSON形式が `tonejs-json-sequencer` で利用可能な形式と互換性があるか、ドキュメントベースで予備的に確認してください。
-        - 既存のプロジェクト設定（特に`tsconfig.json`）に変更が必要ないか確認してください。
+      確認事項: 現在の `wasmAudio` および `synth` の役割と責任範囲を確認し、シーケンサー統合による機能追加が既存の設計思想と整合しているかを確認してください。
 
-        期待する出力: `package.json` と `src/mml-test.ts` (および必要であれば `tsconfig.json`) の変更内容を記載したMarkdown。追加されたコードの簡単な説明と、MML変換のサンプル出力を含めてください。
-        ```
+      期待する出力: 分析結果をMarkdown形式で出力してください。現在のインターフェースの概要、シーケンサー統合時の潜在的な変更点や拡張ポイント、およびコードの例を記述してください。
+      ```
 
-3.  [Issue #52](../issue-notes/52.md) - 演奏モード選択プルダウンのUI骨格作成
-    -   最初の小さな一歩: `index.html` に「演奏モード」を選択するプルダウンメニューのHTML要素を追加し、`src/ui-params.ts` でそのプルダウンの値を読み込むダミーロジックを追加する。
-    -   Agent実行プロンプト:
-        ```
-        対象ファイル: index.html, src/ui-params.ts, src/index.ts
+3.  シーケンス演奏切り替えUIの既存HTML/TypeScript構成分析 ([Issue #52](../issue-notes/52.md))
+    - 最初の小さな一歩: [Issue #52](../issue-notes/52.md) で提案されている「プルダウンで選べるようにする」UIの実現可能性を評価するため、`index.html`と`src/index.ts`を分析し、既存のUI要素の追加・変更が容易であるか、またそれらの表示・非表示を制御するメカニズムを検討する。
+    - Agent実行プロンプ:
+      ```
+      対象ファイル: index.html, src/index.ts
 
-        実行内容:
-        1. `index.html` の適切な箇所に、IDが `playback-mode-select` となる `<select>` 要素を追加してください。このプルダウンには、現時点ではダミーのオプションとして「Tone.js Sampler」「Pre-render WAV」「Custom Renderer」の3つを含めてください。
-        2. `src/ui-params.ts` に、新しいgetter `getPlaybackMode()` を追加してください。このgetterは `playback-mode-select` の現在の選択値を取得するダミーロジック（例: `document.getElementById('playback-mode-select').value`）を実装してください。
-        3. `src/index.ts` から `uiParams.getPlaybackMode()` を呼び出し、コンソールに選択されたモードを出力するデバッグコードを、UI初期化後に追加してください。
+      実行内容: `index.html` と `src/index.ts` を分析し、[Issue #52](../issue-notes/52.md) で言及されているような「Tone.js instrument sampler による演奏 / WAVプリレンダリング / 自前実装seq & rendererによる演奏」の選択肢を切り替えるためのプルダウンメニューを導入する際のUI/UX上の課題と、既存のDOM構造やTypeScriptコードにおける実装のしやすさを評価してください。
 
-        確認事項:
-        - `index.html` の変更が既存のレイアウトを壊さないことを確認してください。
-        - `src/ui-params.ts` に新しいUIパラメータを追加する既存のパターンと整合性があることを確認してください。
-        - JavaScriptがDOM要素を正しく取得できることを確認してください。
+      確認事項: 現在のUIコンポーネントの構造と、イベントハンドリングの仕組みを確認し、新しい選択メニューが既存の機能と干渉しないことを確認してください。
 
-        期待する出力: `index.html`, `src/ui-params.ts`, `src/index.ts` の変更内容を記載したMarkdown。HTML要素の追加場所と、JavaScriptの新しい関数、およびデバッグ出力の例を含めてください。
+      期待する出力: 分析結果をMarkdown形式で出力してください。UIの追加候補箇所、`index.ts`でのイベント処理の案、および必要となるDOM操作の概要を記述してください。
+      ```
 
 ---
-Generated at: 2026-02-07 07:03:32 JST
+Generated at: 2026-02-09 07:05:23 JST

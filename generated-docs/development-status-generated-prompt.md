@@ -1,4 +1,4 @@
-Last updated: 2026-02-07
+Last updated: 2026-02-09
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -109,6 +109,7 @@ Last updated: 2026-02-07
 - .github/actions-tmp/.github/workflows/call-rust-windows-check.yml
 - .github/actions-tmp/.github/workflows/call-translate-readme.yml
 - .github/actions-tmp/.github/workflows/callgraph.yml
+- .github/actions-tmp/.github/workflows/check-large-files.yml
 - .github/actions-tmp/.github/workflows/check-recent-human-commit.yml
 - .github/actions-tmp/.github/workflows/daily-project-summary.yml
 - .github/actions-tmp/.github/workflows/issue-note.yml
@@ -131,6 +132,9 @@ Last updated: 2026-02-07
 - .github/actions-tmp/.github_automation/callgraph/scripts/find-process-results.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/generate-html-graph.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/generateHTML.cjs
+- .github/actions-tmp/.github_automation/check-large-files/README.md
+- .github/actions-tmp/.github_automation/check-large-files/check-large-files.toml.example
+- .github/actions-tmp/.github_automation/check-large-files/scripts/check_large_files.py
 - .github/actions-tmp/.github_automation/check_recent_human_commit/scripts/check-recent-human-commit.cjs
 - .github/actions-tmp/.github_automation/project_summary/docs/daily-summary-setup.md
 - .github/actions-tmp/.github_automation/project_summary/prompts/development-status-prompt.md
@@ -187,6 +191,7 @@ Last updated: 2026-02-07
 - .github/actions-tmp/issue-notes/29.md
 - .github/actions-tmp/issue-notes/3.md
 - .github/actions-tmp/issue-notes/30.md
+- .github/actions-tmp/issue-notes/31.md
 - .github/actions-tmp/issue-notes/4.md
 - .github/actions-tmp/issue-notes/7.md
 - .github/actions-tmp/issue-notes/8.md
@@ -225,6 +230,7 @@ Last updated: 2026-02-07
 - issue-notes/112.md
 - issue-notes/113.md
 - issue-notes/114.md
+- issue-notes/116.md
 - issue-notes/21.md
 - issue-notes/24.md
 - issue-notes/25.md
@@ -277,12 +283,16 @@ Last updated: 2026-02-07
 - scripts/test-waveform-screenshot.js
 - scripts/verify-deployment.js
 - src/audio-player.ts
+- src/full-waveform-display.test.ts
+- src/full-waveform-display.ts
 - src/index.ts
 - src/oscilloscope.test.ts
 - src/oscilloscope.ts
 - src/performance-stats.test.ts
 - src/performance-stats.ts
 - src/playback-mode.ts
+- src/realtime-analysis.test.ts
+- src/realtime-analysis.ts
 - src/settings.test.ts
 - src/settings.ts
 - src/synth.ts
@@ -684,28 +694,35 @@ env: で値を渡し、process.env で参照するのが正しい
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+f5098de Merge pull request #117 from cat2151/claude/add-fft-and-waveform-display
+0ca23c8 Fix edge cases in visualization rendering
+832ba2f Add tests for new visualization modules
+434b5f7 Add FFT and waveform display functionality
+bd10dd3 Initial plan
+17f0681 Add issue note for #116 [auto]
+979d79e Update project summaries (overview & development status) [auto]
 ebc887b Merge pull request #115 from cat2151/copilot/fix-waves-visualizer-error
 517a164 Fix oscilloscope TypeScript compatibility with latest cat-oscilloscope
 3cd9fb7 Initial plan
-da9605e Add issue note for #114 [auto]
-00e2ef5 Add issue note for #113 [auto]
-d0b785e Add issue note for #112 [auto]
-eb9bac5 Merge pull request #110 from cat2151/copilot/improve-waveform-visualizer
-92181c8 Extract canvas dimensions as named constants
-f358e03 Use separate hidden canvases for each comparison panel
-c450dbe Remove comparison panel canvases from HTML following demo-simple pattern
 
 ### 変更されたファイル:
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview-generated-prompt.md
+generated-docs/project-overview.md
 index.html
-issue-notes/109.md
-issue-notes/111.md
 issue-notes/112.md
 issue-notes/113.md
 issue-notes/114.md
-package-lock.json
-src/oscilloscope.test.ts
+issue-notes/116.md
+src/audio-player.ts
+src/full-waveform-display.test.ts
+src/full-waveform-display.ts
 src/oscilloscope.ts
+src/realtime-analysis.test.ts
+src/realtime-analysis.ts
+src/synth.ts
 
 
 ---
-Generated at: 2026-02-07 07:03:14 JST
+Generated at: 2026-02-09 07:04:58 JST
