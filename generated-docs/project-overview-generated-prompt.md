@@ -1,4 +1,4 @@
-Last updated: 2026-02-09
+Last updated: 2026-02-10
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -325,6 +325,7 @@ MIT
   📖 113.md
   📖 114.md
   📖 116.md
+  📖 118.md
   📖 21.md
   📖 24.md
   📖 25.md
@@ -409,7 +410,6 @@ MIT
     📄 filter.rs
     📄 lib.rs
     📄 oscillator.rs
-📄 waveform-test.png
 
 ## ファイル詳細分析
 **index.html** (524行, 14365バイト)
@@ -448,12 +448,12 @@ MIT
   - 関数: loadTone, isToneLoaded, getTone, startAudioContext, isAudioContextRunning, playWavUrl, stopAndCleanup, if, catch
   - インポート: tone
 
-**src/full-waveform-display.test.ts** (20行, 615バイト)
+**src/full-waveform-display.test.ts** (51行, 1564バイト)
   - 関数: なし
   - インポート: vitest
 
-**src/full-waveform-display.ts** (113行, 3620バイト)
-  - 関数: initFullWaveformDisplay, drawFullWaveform, clearFullWaveform, isFullWaveformDisplayInitialized, if, for
+**src/full-waveform-display.ts** (122行, 3916バイト)
+  - 関数: initFullWaveformDisplay, drawFullWaveform, clearFullWaveform, disposeFullWaveformDisplay, isFullWaveformDisplayInitialized, if, for
   - インポート: なし
 
 **src/index.ts** (21行, 450バイト)
@@ -600,6 +600,7 @@ MIT
       - renderAudioWasm ()
       - generateWav ()
       - createWavBlobUrl ()
+  - disposeFullWaveformDisplay ()
   - canvasSupported (src/oscilloscope.test.ts)
   - resetPerformanceStats ()
   - updateModeUI ()
@@ -635,6 +636,7 @@ issue-notes/112.md
 issue-notes/113.md
 issue-notes/114.md
 issue-notes/116.md
+issue-notes/118.md
 issue-notes/21.md
 issue-notes/24.md
 issue-notes/25.md
@@ -643,7 +645,6 @@ issue-notes/30.md
 issue-notes/31.md
 issue-notes/33.md
 issue-notes/35.md
-issue-notes/37.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -656,4 +657,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-09 07:04:58 JST
+Generated at: 2026-02-10 07:10:18 JST

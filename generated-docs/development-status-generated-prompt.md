@@ -1,4 +1,4 @@
-Last updated: 2026-02-09
+Last updated: 2026-02-10
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -231,6 +231,7 @@ Last updated: 2026-02-09
 - issue-notes/113.md
 - issue-notes/114.md
 - issue-notes/116.md
+- issue-notes/118.md
 - issue-notes/21.md
 - issue-notes/24.md
 - issue-notes/25.md
@@ -311,9 +312,23 @@ Last updated: 2026-02-09
 - wasm-audio/src/filter.rs
 - wasm-audio/src/lib.rs
 - wasm-audio/src/oscillator.rs
-- waveform-test.png
 
 ## 現在のオープンIssues
+## [Issue #118](../issue-notes/118.md): 画面下部の波形表示で、波形の上下がはみ出して？消えて表示されてしまうことがある。画面左上のリアルタイム波形表示は問題ない
+[issue-notes/118.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/118.md)
+
+...
+ラベル: 
+--- issue-notes/118.md の内容 ---
+
+```markdown
+# issue 画面下部の波形表示で、波形の上下がはみ出して？消えて表示されてしまうことがある。画面左上のリアルタイム波形表示は問題ない #118
+[issues #118](https://github.com/cat2151/wavlpf/issues/118)
+
+
+
+```
+
 ## [Issue #113](../issue-notes/113.md): （待ち）tonejs-mml-to-jsonをライブラリとして利用し、MMLをtextareaに書いたら演奏できるようにする（issue 112完了待ち）
 [issue-notes/113.md](https://github.com/cat2151/wavlpf/blob/main/issue-notes/113.md)
 
@@ -399,6 +414,36 @@ Last updated: 2026-02-09
 
 - docs
     - call導入手順を書く
+
+{% endraw %}
+```
+
+### .github/actions-tmp/issue-notes/18.md
+```md
+{% raw %}
+# issue DevelopmentStatusGenerator.cjs 内に、Geminiに与えるpromptがハードコーディングされてしまっている #18
+[issues #18](https://github.com/cat2151/github-actions/issues/18)
+
+# 何が困るの？
+- project把握しづらい。どこにpromptが書いてあるのか、把握しづらい。
+- prompts/ にほかのpromptがあるため、方針がブレていると、読みづらい。
+- 備忘、いくらテンプレートリテラルとプレースホルダーで密結合しているからとはいえ、ハードコーディングはNG。
+    - それらはreplaceを使う等で楽に切り出しできるので。
+
+# 問題のcjsの場所は？
+- ファイルパス : .github_automation/project_summary/scripts/development/DevelopmentStatusGenerator.cjs
+- 関数 : generateDevelopmentStatus
+
+# 結果
+- Geminiに生成させたpromptを、agentに投げて、リファクタリングさせてみた
+- ハルシネーションした。使い物にならなかった
+- 人力でやる
+
+# 結果
+- test green
+
+# closeとする
+
 
 {% endraw %}
 ```
@@ -659,6 +704,85 @@ env: で値を渡し、process.env で参照するのが正しい
 {% endraw %}
 ```
 
+### .github/actions-tmp/issue-notes/8.md
+```md
+{% raw %}
+# issue 関数コールグラフhtmlビジュアライズ生成の対象ソースファイルを、呼び出し元ymlで指定できるようにする #8
+[issues #8](https://github.com/cat2151/github-actions/issues/8)
+
+# これまでの課題
+- 以下が決め打ちになっていた
+```
+  const allowedFiles = [
+    'src/main.js',
+    'src/mml2json.js',
+    'src/play.js'
+  ];
+```
+
+# 対策
+- 呼び出し元ymlで指定できるようにする
+
+# agent
+- agentにやらせることができれば楽なので、初手agentを試した
+- 失敗
+    - ハルシネーションしてscriptを大量破壊した
+- 分析
+    - 修正対象scriptはagentが生成したもの
+    - 低品質な生成結果でありソースが巨大
+    - ハルシネーションで破壊されやすいソース
+    - AIの生成したソースは、必ずしもAIフレンドリーではない
+
+# 人力リファクタリング
+- 低品質コードを、最低限agentが扱えて、ハルシネーションによる大量破壊を防止できる内容、にする
+- 手短にやる
+    - そもそもビジュアライズは、agentに雑に指示してやらせたもので、
+    - 今後別のビジュアライザを選ぶ可能性も高い
+    - 今ここで手間をかけすぎてコンコルド効果（サンクコストバイアス）を増やすのは、project群をトータルで俯瞰して見たとき、損
+- 対象
+    - allowedFiles のあるソース
+        - callgraph-utils.cjs
+            - たかだか300行未満のソースである
+            - この程度でハルシネーションされるのは予想外
+            - やむなし、リファクタリングでソース分割を進める
+
+# agentに修正させる
+## prompt
+```
+allowedFilesを引数で受け取るようにしたいです。
+ないならエラー。
+最終的に呼び出し元すべてに波及して修正したいです。
+
+呼び出し元をたどってエントリポイントも見つけて、
+エントリポイントにおいては、
+引数で受け取ったjsonファイル名 allowedFiles.js から
+jsonファイル allowedFiles.jsonの内容をreadして
+変数 allowedFilesに格納、
+後続処理に引き渡す、としたいです。
+
+まずplanしてください。
+planにおいては、修正対象のソースファイル名と関数名を、呼び出し元を遡ってすべて特定し、listしてください。
+```
+
+# 修正が順調にできた
+- コマンドライン引数から受け取る作りになっていなかったので、そこだけ指示して修正させた
+- yml側は人力で修正した
+
+# 他のリポジトリから呼び出した場合にバグらないよう修正する
+- 気付いた
+    - 共通ワークフローとして他のリポジトリから使った場合はバグるはず。
+        - ymlから、共通ワークフロー側リポジトリのcheckoutが漏れているので。
+- 他のyml同様に修正する
+- あわせて全体にymlをリファクタリングし、修正しやすくし、今後のyml読み書きの学びにしやすくする
+
+# local WSL + act : test green
+
+# closeとする
+- もし生成されたhtmlがNGの場合は、別issueとするつもり
+
+{% endraw %}
+```
+
 ### issue-notes/112.md
 ```md
 {% raw %}
@@ -681,6 +805,17 @@ env: で値を渡し、process.env で参照するのが正しい
 {% endraw %}
 ```
 
+### issue-notes/118.md
+```md
+{% raw %}
+# issue 画面下部の波形表示で、波形の上下がはみ出して？消えて表示されてしまうことがある。画面左上のリアルタイム波形表示は問題ない #118
+[issues #118](https://github.com/cat2151/wavlpf/issues/118)
+
+
+
+{% endraw %}
+```
+
 ### issue-notes/52.md
 ```md
 {% raw %}
@@ -694,16 +829,16 @@ env: で値を渡し、process.env で参照するのが正しい
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+37db31c Merge pull request #119 from cat2151/codex/fix-waveform-display-issue
+154a331 chore: apply PR review feedback
+564ae64 fix: clamp full waveform rendering to canvas bounds
+cb0f5d0 Add issue note for #118 [auto]
+c8484ff Initial plan
+b7e3f52 Update project summaries (overview & development status) [auto]
 f5098de Merge pull request #117 from cat2151/claude/add-fft-and-waveform-display
 0ca23c8 Fix edge cases in visualization rendering
 832ba2f Add tests for new visualization modules
 434b5f7 Add FFT and waveform display functionality
-bd10dd3 Initial plan
-17f0681 Add issue note for #116 [auto]
-979d79e Update project summaries (overview & development status) [auto]
-ebc887b Merge pull request #115 from cat2151/copilot/fix-waves-visualizer-error
-517a164 Fix oscilloscope TypeScript compatibility with latest cat-oscilloscope
-3cd9fb7 Initial plan
 
 ### 変更されたファイル:
 generated-docs/development-status-generated-prompt.md
@@ -711,10 +846,8 @@ generated-docs/development-status.md
 generated-docs/project-overview-generated-prompt.md
 generated-docs/project-overview.md
 index.html
-issue-notes/112.md
-issue-notes/113.md
-issue-notes/114.md
 issue-notes/116.md
+issue-notes/118.md
 src/audio-player.ts
 src/full-waveform-display.test.ts
 src/full-waveform-display.ts
@@ -722,7 +855,8 @@ src/oscilloscope.ts
 src/realtime-analysis.test.ts
 src/realtime-analysis.ts
 src/synth.ts
+waveform-test.png
 
 
 ---
-Generated at: 2026-02-09 07:04:58 JST
+Generated at: 2026-02-10 07:10:18 JST
