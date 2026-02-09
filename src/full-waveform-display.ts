@@ -59,12 +59,13 @@ export function drawFullWaveform(samples: Float32Array, sampleRate: number): voi
     const endSample = Math.min(startSample + samplesPerPixel, samples.length);
 
     // Find min and max in this pixel range for better visualization
-    let min = samples[startSample];
-    let max = samples[startSample];
+    let min = Math.max(-1, Math.min(1, samples[startSample]));
+    let max = min;
 
     for (let i = startSample; i < endSample; i++) {
-      if (samples[i] < min) min = samples[i];
-      if (samples[i] > max) max = samples[i];
+      const clampedSample = Math.max(-1, Math.min(1, samples[i]));
+      if (clampedSample < min) min = clampedSample;
+      if (clampedSample > max) max = clampedSample;
     }
 
     // Draw vertical line from min to max
@@ -102,6 +103,14 @@ export function clearFullWaveform(): void {
   if (fullWaveformContext && fullWaveformCanvas) {
     fullWaveformContext.clearRect(0, 0, fullWaveformCanvas.width, fullWaveformCanvas.height);
   }
+}
+
+/**
+ * Dispose of full waveform display resources (used in tests to avoid shared state)
+ */
+export function disposeFullWaveformDisplay(): void {
+  fullWaveformCanvas = null;
+  fullWaveformContext = null;
 }
 
 /**
