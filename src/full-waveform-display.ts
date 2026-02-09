@@ -106,6 +106,14 @@ export function clearFullWaveform(): void {
 }
 
 /**
+ * Dispose of full waveform display resources (used in tests to avoid shared state)
+ */
+export function disposeFullWaveformDisplay(): void {
+  fullWaveformCanvas = null;
+  fullWaveformContext = null;
+}
+
+/**
  * Check if full waveform display is initialized
  */
 export function isFullWaveformDisplayInitialized(): boolean {
