@@ -69,8 +69,22 @@ export function drawFullWaveform(samples: Float32Array, sampleRate: number): voi
     }
 
     // Draw vertical line from min to max
-    const yMin = centerY - (max * centerY * 0.9);
-    const yMax = centerY - (min * centerY * 0.9);
+    let yMin = centerY - (max * centerY * 0.9);
+    let yMax = centerY - (min * centerY * 0.9);
+
+    // Ensure flat/clipped regions remain visible by drawing at least a 1px stroke
+    if (yMin === yMax) {
+      const halfPixel = 0.5;
+      yMin -= halfPixel;
+      yMax += halfPixel;
+    }
+
+    yMin = Math.max(0, Math.min(height, yMin));
+    yMax = Math.max(0, Math.min(height, yMax));
+
+    if (yMin === yMax) {
+      yMax = Math.min(height, yMax + 1);
+    }
 
     fullWaveformContext.moveTo(x, yMin);
     fullWaveformContext.lineTo(x, yMax);
