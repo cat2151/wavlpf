@@ -47,10 +47,10 @@ describe('full-waveform-display', () => {
       expect(Math.max(...recordedY)).toBeLessThanOrEqual(canvas.height);
     });
 
-    it('draws a visible stroke for flat clipped regions', () => {
+    it('draws a visible ≥1px stroke for flat clipped regions', () => {
       const canvas = document.createElement('canvas');
       canvas.width = 2;
-      canvas.height = 120;
+      canvas.height = 1;
 
       const segmentHeights: number[] = [];
       let lastY = 0;
@@ -77,8 +77,10 @@ describe('full-waveform-display', () => {
       initFullWaveformDisplay(canvas as HTMLCanvasElement);
       drawFullWaveform(new Float32Array([1, 1]), 48000);
 
-      expect(segmentHeights.some((height) => height > 0)).toBe(true);
-      expect(segmentHeights.every((height) => height <= canvas.height)).toBe(true);
+      const visibleSegments = segmentHeights.filter((height) => height > 0);
+      expect(visibleSegments.length).toBeGreaterThan(0);
+      expect(visibleSegments.every((height) => height >= 1)).toBe(true);
+      expect(visibleSegments.every((height) => height <= canvas.height)).toBe(true);
     });
   });
 });

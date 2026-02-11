@@ -82,8 +82,19 @@ export function drawFullWaveform(samples: Float32Array, sampleRate: number): voi
     yMin = Math.max(0, Math.min(height, yMin));
     yMax = Math.max(0, Math.min(height, yMax));
 
-    if (yMin === yMax) {
-      yMax = Math.min(height, yMax + 1);
+    const diff = Math.abs(yMax - yMin);
+    if (diff < 1) {
+      const padding = (1 - diff) / 2;
+      yMin = Math.max(0, yMin - padding);
+      yMax = Math.min(height, yMax + padding);
+
+      if (yMax - yMin < 1) {
+        if (yMin === 0) {
+          yMax = Math.min(height, 1);
+        } else {
+          yMin = Math.max(0, yMax - 1);
+        }
+      }
     }
 
     fullWaveformContext.moveTo(x, yMin);
