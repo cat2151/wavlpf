@@ -392,6 +392,14 @@
       border-color: rgba(255, 255, 255, 0.45);
       color: #fff;
     }
+
+    .repo-link:focus-visible {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.45);
+      color: #fff;
+      outline: 2px solid rgba(255, 255, 255, 0.9);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
@@ -552,5 +560,16 @@
   >
     GitHub: cat2151/wavlpf
   </a>
+  <script>
+    (function () {
+      var repoLink = document.querySelector('.repo-link');
+      if (!repoLink) return;
+      function stopPropagationOnly(event) {
+        event.stopPropagation();
+      }
+      repoLink.addEventListener('click', stopPropagationOnly);
+      repoLink.addEventListener('touchstart', stopPropagationOnly);
+    })();
+  </script>
 </body>
 </html>
