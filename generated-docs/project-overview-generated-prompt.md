@@ -1,4 +1,4 @@
-Last updated: 2026-02-10
+Last updated: 2026-02-12
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -412,7 +412,7 @@ MIT
     📄 oscillator.rs
 
 ## ファイル詳細分析
-**index.html** (524行, 14365バイト)
+**index.html** (576行, 15801バイト)
   - 関数: なし
   - インポート: なし
 
@@ -657,4 +657,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-10 07:10:18 JST
+Generated at: 2026-02-12 07:06:52 JST
