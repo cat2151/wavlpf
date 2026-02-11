@@ -369,6 +369,37 @@
       display: block;
       width: 100%;
     }
+
+    .repo-link {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      z-index: 120;
+      padding: 8px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .repo-link:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.45);
+      color: #fff;
+    }
+
+    .repo-link:focus-visible {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.45);
+      color: #fff;
+      outline: 2px solid rgba(255, 255, 255, 0.9);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
@@ -517,7 +548,28 @@
     
     <div class="sr-only" id="oscilloscope-status">Oscilloscope displaying filtered audio waveform in real-time</div>
   </div>
-  
+
   <script type="module" src="/src/index.ts"></script>
+
+  <a
+    class="repo-link"
+    href="https://github.com/cat2151/wavlpf"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Open the wavlpf repository on GitHub"
+  >
+    GitHub: cat2151/wavlpf
+  </a>
+  <script>
+    (function () {
+      var repoLink = document.querySelector('.repo-link');
+      if (!repoLink) return;
+      function stopPropagationOnly(event) {
+        event.stopPropagation();
+      }
+      repoLink.addEventListener('click', stopPropagationOnly);
+      repoLink.addEventListener('touchstart', stopPropagationOnly);
+    })();
+  </script>
 </body>
 </html>
