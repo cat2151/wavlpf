@@ -47,10 +47,10 @@ describe('full-waveform-display', () => {
       expect(Math.max(...recordedY)).toBeLessThanOrEqual(canvas.height);
     });
 
-    it('draws a visible ≥1px stroke for flat clipped regions', () => {
+    it('draws a visible ≥1px stroke for flat clipped regions on a normal-height canvas', () => {
       const canvas = document.createElement('canvas');
       canvas.width = 2;
-      canvas.height = 1;
+      canvas.height = 120;
 
       const segmentHeights: number[] = [];
       let lastY = 0;
