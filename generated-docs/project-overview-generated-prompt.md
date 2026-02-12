@@ -1,4 +1,4 @@
-Last updated: 2026-02-12
+Last updated: 2026-02-13
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -314,57 +314,14 @@ MIT
 📁 generated-docs/
 🌐 index.html
 📁 issue-notes/
-  📖 100.md
-  📖 102.md
-  📖 104.md
-  📖 105.md
-  📖 106.md
-  📖 109.md
-  📖 111.md
   📖 112.md
   📖 113.md
-  📖 114.md
-  📖 116.md
-  📖 118.md
-  📖 21.md
-  📖 24.md
-  📖 25.md
-  📖 28.md
-  📖 30.md
-  📖 31.md
-  📖 33.md
-  📖 35.md
-  📖 37.md
+  📖 122.md
   📖 39.md
-  📖 41.md
-  📖 44.md
-  📖 46.md
-  📖 48.md
-  📖 50.md
   📖 52.md
-  📖 53.md
-  📖 55.md
-  📖 57.md
-  📖 58.md
-  📖 59.md
-  📖 61.md
-  📖 63.md
-  📖 66.md
-  📖 68.md
-  📖 70.md
-  📖 74.md
   📖 76.md
   📖 78.md
   📖 80.md
-  📖 82.md
-  📖 84.md
-  📖 86.md
-  📖 88.md
-  📖 90.md
-  📖 92.md
-  📖 94.md
-  📖 96.md
-  📖 98.md
 📊 package-lock.json
 📊 package.json
 📁 scripts/
@@ -410,6 +367,7 @@ MIT
     📄 filter.rs
     📄 lib.rs
     📄 oscillator.rs
+📄 waveform-gh.png
 
 ## ファイル詳細分析
 **index.html** (576行, 15801バイト)
@@ -448,11 +406,11 @@ MIT
   - 関数: loadTone, isToneLoaded, getTone, startAudioContext, isAudioContextRunning, playWavUrl, stopAndCleanup, if, catch
   - インポート: tone
 
-**src/full-waveform-display.test.ts** (51行, 1564バイト)
+**src/full-waveform-display.test.ts** (87行, 2782バイト)
   - 関数: なし
   - インポート: vitest
 
-**src/full-waveform-display.ts** (122行, 3916バイト)
+**src/full-waveform-display.ts** (147行, 4566バイト)
   - 関数: initFullWaveformDisplay, drawFullWaveform, clearFullWaveform, disposeFullWaveformDisplay, isFullWaveformDisplayInitialized, if, for
   - インポート: なし
 
@@ -625,27 +583,27 @@ docs/DEPLOYMENT_VERIFICATION.md
 docs/OSCILLOSCOPE_LAYOUT.md
 docs/OSCILLOSCOPE_USAGE.md
 index.html
-issue-notes/100.md
-issue-notes/102.md
-issue-notes/104.md
-issue-notes/105.md
-issue-notes/106.md
-issue-notes/109.md
-issue-notes/111.md
 issue-notes/112.md
 issue-notes/113.md
-issue-notes/114.md
-issue-notes/116.md
-issue-notes/118.md
-issue-notes/21.md
-issue-notes/24.md
-issue-notes/25.md
-issue-notes/28.md
-issue-notes/30.md
-issue-notes/31.md
-issue-notes/33.md
-issue-notes/35.md
+issue-notes/122.md
+issue-notes/39.md
+issue-notes/52.md
+issue-notes/76.md
+issue-notes/78.md
+issue-notes/80.md
 package-lock.json
+package.json
+scripts/README.md
+scripts/investigate-404.js
+scripts/investigate-cat-oscilloscope.js
+scripts/screenshot-github-pages.js
+scripts/setup-cat-oscilloscope-wasm.js
+scripts/test-console-logs.js
+scripts/test-waveform-screenshot.js
+scripts/verify-deployment.js
+src/audio-player.ts
+src/full-waveform-display.test.ts
+tsconfig.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
 特に以下の点を重視してください：
@@ -657,4 +615,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-12 07:06:52 JST
+Generated at: 2026-02-13 07:07:09 JST

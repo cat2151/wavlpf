@@ -1,4 +1,4 @@
-Last updated: 2026-02-12
+Last updated: 2026-02-13
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -221,57 +221,14 @@ Last updated: 2026-02-12
 - docs/OSCILLOSCOPE_USAGE.md
 - generated-docs/project-overview-generated-prompt.md
 - index.html
-- issue-notes/100.md
-- issue-notes/102.md
-- issue-notes/104.md
-- issue-notes/105.md
-- issue-notes/106.md
-- issue-notes/109.md
-- issue-notes/111.md
 - issue-notes/112.md
 - issue-notes/113.md
-- issue-notes/114.md
-- issue-notes/116.md
-- issue-notes/118.md
-- issue-notes/21.md
-- issue-notes/24.md
-- issue-notes/25.md
-- issue-notes/28.md
-- issue-notes/30.md
-- issue-notes/31.md
-- issue-notes/33.md
-- issue-notes/35.md
-- issue-notes/37.md
+- issue-notes/122.md
 - issue-notes/39.md
-- issue-notes/41.md
-- issue-notes/44.md
-- issue-notes/46.md
-- issue-notes/48.md
-- issue-notes/50.md
 - issue-notes/52.md
-- issue-notes/53.md
-- issue-notes/55.md
-- issue-notes/57.md
-- issue-notes/58.md
-- issue-notes/59.md
-- issue-notes/61.md
-- issue-notes/63.md
-- issue-notes/66.md
-- issue-notes/68.md
-- issue-notes/70.md
-- issue-notes/74.md
 - issue-notes/76.md
 - issue-notes/78.md
 - issue-notes/80.md
-- issue-notes/82.md
-- issue-notes/84.md
-- issue-notes/86.md
-- issue-notes/88.md
-- issue-notes/90.md
-- issue-notes/92.md
-- issue-notes/94.md
-- issue-notes/96.md
-- issue-notes/98.md
 - package-lock.json
 - package.json
 - scripts/README.md
@@ -313,6 +270,7 @@ Last updated: 2026-02-12
 - wasm-audio/src/filter.rs
 - wasm-audio/src/lib.rs
 - wasm-audio/src/oscillator.rs
+- waveform-gh.png
 
 ## 現在のオープンIssues
 ## [Issue #113](../issue-notes/113.md): （待ち）tonejs-mml-to-jsonをライブラリとして利用し、MMLをtextareaに書いたら演奏できるようにする（issue 112完了待ち）
@@ -695,16 +653,16 @@ env: で値を渡し、process.env で参照するのが正しい
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+284d427 Merge pull request #123 from cat2151/codex/fix-orange-waveform-issue
+291224e test: adjust clipped stroke case to normal-height canvas
+e651e36 chore: capture gh-pages screenshot
+054755f fix: ensure clipped strokes reach 1px after clamping
+521d605 fix: show clipped waveform peaks
+600a44b Add issue note for #122 [auto]
+fbf486e Initial plan
+3f60587 Update project summaries (overview & development status) [auto]
 6386c1e Merge pull request #121 from cat2151/codex/add-repository-link-demo
 5e4912f fix: isolate repo link interactions
-8a5d540 feat: add repository link overlay
-28a6a19 Initial plan
-1de5835 Update project summaries (overview & development status) [auto]
-37db31c Merge pull request #119 from cat2151/codex/fix-waveform-display-issue
-154a331 chore: apply PR review feedback
-564ae64 fix: clamp full waveform rendering to canvas bounds
-cb0f5d0 Add issue note for #118 [auto]
-c8484ff Initial plan
 
 ### 変更されたファイル:
 generated-docs/development-status-generated-prompt.md
@@ -712,16 +670,55 @@ generated-docs/development-status.md
 generated-docs/project-overview-generated-prompt.md
 generated-docs/project-overview.md
 index.html
+issue-notes/100.md
+issue-notes/102.md
+issue-notes/104.md
+issue-notes/105.md
+issue-notes/106.md
+issue-notes/109.md
+issue-notes/111.md
+issue-notes/114.md
 issue-notes/116.md
-issue-notes/118.md
-src/audio-player.ts
+issue-notes/122.md
+issue-notes/21.md
+issue-notes/24.md
+issue-notes/25.md
+issue-notes/28.md
+issue-notes/30.md
+issue-notes/31.md
+issue-notes/33.md
+issue-notes/35.md
+issue-notes/37.md
+issue-notes/41.md
+issue-notes/44.md
+issue-notes/46.md
+issue-notes/48.md
+issue-notes/50.md
+issue-notes/53.md
+issue-notes/55.md
+issue-notes/57.md
+issue-notes/58.md
+issue-notes/59.md
+issue-notes/61.md
+issue-notes/63.md
+issue-notes/66.md
+issue-notes/68.md
+issue-notes/70.md
+issue-notes/74.md
+issue-notes/82.md
+issue-notes/84.md
+issue-notes/86.md
+issue-notes/88.md
+issue-notes/90.md
+issue-notes/92.md
+issue-notes/94.md
+issue-notes/96.md
+issue-notes/98.md
 src/full-waveform-display.test.ts
 src/full-waveform-display.ts
-src/realtime-analysis.test.ts
-src/realtime-analysis.ts
-src/synth.ts
+waveform-gh.png
 waveform-test.png
 
 
 ---
-Generated at: 2026-02-12 07:06:52 JST
+Generated at: 2026-02-13 07:07:10 JST
