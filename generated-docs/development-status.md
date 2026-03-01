@@ -1,81 +1,63 @@
-Last updated: 2026-02-13
+Last updated: 2026-03-02
 
 # Development Status
 
 ## 現在のIssues
-- [Issue #112](../issue-notes/112.md) は、Tone.js JSONシーケンサーを利用し、複数音符のプログラム的再生機能の導入を待っています。
-- [Issue #113](../issue-notes/113.md) は、MMLテキストをJSONに変換し、上記シーケンサーで再生する機能の実装を[Issue #112](../issue-notes/112.md)の完了を前提としています。
-- [Issue #52](../issue-notes/52.md) は、複数音符再生の実装後に、Tone.jsと自前レンダラーの切り替え検証メカニズムの追加を計画しています。
+- [Issue #124](../issue-notes/124.md) は、`src/synth.ts`と`index.html`が500行を超えており、コード品質改善のためのリファクタリングが推奨されています。
+- [Issue #113](../issue-notes/113.md) と [Issue #112](../issue-notes/112.md) は、Tone.js関連ライブラリ（`tonejs-mml-to-json`、`tonejs-json-sequencer`）の利用を前提としたMMLと複数音符の演奏機能実装について、ライブラリの準備が整うまで「待ち」の状態です。
+- [Issue #52](../issue-notes/52.md) は、シーケンス機能実装後にTone.jsや自前レンダリングを用いた多様な演奏/分析オプションをユーザーに提供するもので、これも先行issueの完了を「待ち」の状態です。
 
 ## 次の一手候補
-1. [Issue #112](../issue-notes/112.md): tonejs-json-sequencer を利用して複数音符を演奏できるようにする
-   - 最初の小さな一歩: `tonejs-json-sequencer` npmパッケージをインストールし、`src/synth.ts`に最小限の`Sequencer`インスタンスを作成。簡単なノートイベント配列をハードコードし、再生機能を実装する。
-   - Agent実行プロンプト:
+1. [Issue #124](../issue-notes/124.md): `src/synth.ts` の機能分割と可読性向上
+   - 最初の小さな一歩: `src/synth.ts` を開き、初期化、UI操作、オーディオ処理、WAV生成、モード切り替えなど、主要な機能ブロックを特定し、コメントで区切る。
+   - Agent実行プロンプ:
      ```
-     対象ファイル: `package.json`, `src/synth.ts`, `src/index.ts`
+     対象ファイル: src/synth.ts
 
-     実行内容:
-     1. `package.json`に`tonejs-json-sequencer`パッケージを追加。
-     2. `src/synth.ts`に`tonejs-json-sequencer`をインポートし、`Tone.Sampler`または`Tone.Synth`と連携する`Sequencer`インスタンスを初期化するコードを追加。
-     3. `[{ time: 0, note: "C4", duration: "8n" }, { time: 0.5, note: "E4", duration: "8n" }]`のような簡単なJSON配列をシーケンサーに渡し、再生を開始・停止できる関数を`src/synth.ts`に実装。
-     4. `src/index.ts`からこれらの関数を呼び出し、ボタンクリックなどでデモ再生ができるようにする。
+     実行内容: `src/synth.ts` ファイルを分析し、以下の観点から機能分割の提案をmarkdown形式で出力してください：
+     1) ファイル内で定義されている主要な関数、クラス、グローバル変数を列挙する。
+     2) それらがどの機能（UI操作、オーディオレンダリング、WAV生成、設定管理、モード管理、パフォーマンス統計、リアルタイム分析、オシロスコープ表示など）に属するかを特定する。
+     3) 各機能ブロックを独立したモジュールとして分割した場合のメリットとデメリットを記述する。
+     4) 特に、`init()`, `playAudio()`, `renderAudio()` 関数が関与する責務を明確にし、肥大化している部分を特定する。
 
-     確認事項:
-     * `tonejs-json-sequencer`の正確なnpmパッケージ名とバージョンを確認。
-     * `Tone.js`のインスタンス（`Tone.Synth`や`Tone.Sampler`など）が正しく初期化され、`Sequencer`に接続されていることを確認。
-     * シーケンサーが期待通りに音符を再生することを確認（再生時間、音程、音長など）。
-     * 既存のコードベース（特に`src/synth.ts`と`src/index.ts`）との統合がスムーズに行われるように、既存の`Tone.js`関連コードに影響がないことを確認。
+     確認事項: `src/index.ts` や他の関連ファイルが `src/synth.ts` の機能にどのように依存しているかを確認し、分割がこれらの依存関係に与える影響を考慮してください。
 
-     期待する出力:
-     * `package.json`の`dependencies`に`tonejs-json-sequencer`が追加された状態。
-     * `src/synth.ts`に`Sequencer`の初期化、ノートイベントのロード、再生/停止機能が実装された状態。
-     * `src/index.ts`に`src/synth.ts`のシーケンサー再生/停止関数を呼び出すためのデモUI（ボタンなど）が追加され、手動で複数音符の再生が確認できる状態。
+     期待する出力: `src/synth.ts` の機能分割に関する分析レポートをmarkdown形式で出力してください。レポートには、提案される新しいモジュール構造、各モジュールの責務、および分割によって影響を受ける既存の依存関係に関する考察を含めてください。
      ```
 
-2. [Issue #113](../issue-notes/113.md): tonejs-mml-to-jsonをライブラリとして利用し、MMLをtextareaに書いたら演奏できるようにする
-   - 最初の小さな一歩: `tonejs-mml-to-json`をインストールし、MML文字列をJSON配列に変換するユーティリティを作成する。
-   - Agent実行プロンプト:
+2. [Issue #124](../issue-notes/124.md): `index.html` のCSS分離による軽量化
+   - 最初の小さな一歩: `index.html` を開き、`<style>` タグ内のCSSルールを新しい `style.css` ファイルに移動するための計画を立てる。
+   - Agent実行プロンプ:
      ```
-     対象ファイル: `package.json`, `src/synth.ts`, `src/index.ts`
+     対象ファイル: index.html
 
-     実行内容:
-     1. `package.json`に`tonejs-mml-to-json`パッケージを追加。
-     2. `src/synth.ts`に`tonejs-mml-to-json`をインポートし、MML文字列を受け取って、[Issue #112](../issue-notes/112.md)で導入される`tonejs-json-sequencer`が解釈できる形式のJSON配列に変換する関数を実装。
-     3. `src/index.ts`にMML入力用のtextareaと、変換ボタン、および変換されたJSONを表示する領域（またはシーケンサーに渡して再生するデモ）を追加。
+     実行内容: `index.html` ファイルを分析し、`<style>` タグ内のCSSを外部CSSファイルに分離するための具体的な手順と、その影響をmarkdown形式で出力してください：
+     1) `<style>` タグ内の全CSSルールを抽出する。
+     2) 抽出したCSSを `style.css` という新しいファイルとして作成する。
+     3) `index.html` から `<style>` タグを削除し、代わりに `style.css` を読み込む `<link>` タグを追加する。
+     4) 分離による潜在的な表示崩れやパスの問題がないかを確認する。
 
-     確認事項:
-     * `tonejs-mml-to-json`の正確なnpmパッケージ名とバージョンを確認。
-     * 基本的なMML文字列（例: `C4 D4 E4`）が正しくJSON配列に変換されるか、特に時間情報（`time`プロパティ）が`tonejs-json-sequencer`と互換性のある形式であることを確認。
-     * 変換後のJSONが期待通りのノートイベント（`note`, `duration`など）を含んでいることを確認。
-     * 既存のコードベースに影響を与えず、MML入力UIが適切に統合されることを確認。
+     確認事項: CSSの分離が、GitHub Pagesでのデプロイやローカル開発環境での表示に影響を与えないことを確認してください。また、既存のJavaScriptコードがインラインスタイルに直接アクセスしている箇所がないか、あるいは分離されたスタイルシートに依存する他の問題がないかを確認してください。
 
-     期待する出力:
-     * `package.json`の`dependencies`に`tonejs-mml-to-json`が追加された状態。
-     * `src/synth.ts`にMMLからJSONへの変換関数が実装された状態。
-     * `src/index.ts`にMML入力用のtextareaと、MMLをJSONに変換し、[Issue #112](../issue-notes/112.md)で導入されたシーケンサーで再生できるデモUIが追加された状態。
+     期待する出力: `index.html` からCSSを分離するための具体的な変更計画をmarkdown形式で出力してください。変更計画には、新しい `style.css` の内容、`index.html` の修正内容、および確認すべき事項のチェックリストを含めてください。
      ```
 
-3. [Issue #52](../issue-notes/52.md): seqタブにおいて、Tone.js instrument sampler による演奏 / それを一度wavにprerenderしてから演奏（分析用） / 自前実装seq & rendererでWebAudio非依存renderした演奏（分析用）とを、プルダウンで選べるようにする。
-   - 最初の小さな一歩: Tone.jsが提供する異なる音源（例: `Tone.Sampler`や`Tone.PolySynth`）の基本的なインスタンス化と再生を試す。
-   - Agent実行プロンプト:
+3. [Issue #112](../issue-notes/112.md), [Issue #113](../issue-notes/113.md): `tonejs-json-sequencer` と `tonejs-mml-to-json` の「待ち」状態解除のための調査
+   - 最初の小さな一歩: `tonejs-json-sequencer` と `tonejs-mml-to-json` のGitHubリポジトリやドキュメントを訪問し、`stream demo` や `ライブラリ利用版` の提供状況、またはそれに代わる進捗がないか確認する。
+   - Agent実行プロンプ:
      ```
-     対象ファイル: `src/synth.ts`, `src/index.ts`
+     対象ファイル: なし
 
-     実行内容:
-     1. `src/synth.ts`に、現在の`Tone.Synth`だけでなく、`Tone.Sampler`や`Tone.PolySynth`など、複数の種類の音源を初期化する例を追加。
-     2. これらの異なる音源を切り替えて（例: トグルボタンで切り替え）、簡単な音符（例: `C4`）を再生できるデモ関数を`src/synth.ts`に実装。
-     3. `src/index.ts`に、これらの音源切り替え機能を呼び出すUI（例: ラジオボタンまたはプルダウン）を追加し、各音源で単一の音符が再生できることを確認。
+     実行内容: 以下のTone.js関連ライブラリの最新の開発状況および利用可能性についてインターネットで調査し、markdown形式でレポートしてください：
+     1) `tonejs-json-sequencer`: 「stream demoのライブラリ利用版」が提供されているか、またはそれに代わるシーケンス機能が安定して利用可能か。
+     2) `tonejs-mml-to-json`: MMLをJSON形式に変換する機能が安定しており、ライブラリとして利用可能か。
+     3) これらのライブラリをプロジェクトに導入するために必要な前提条件、または障壁となっている点（もしあれば）。
+     4) 調査結果に基づき、[Issue #112](../issue-notes/112.md) と [Issue #113](../issue-notes/113.md) の「待ち」状態を解除できる可能性について考察する。
 
-     確認事項:
-     * 各`Tone.js`音源（`Synth`, `Sampler`, `PolySynth`など）の初期化に必要なパラメータと、音符再生のためのAPIを正確に把握する。
-     * 特に`Tone.Sampler`の場合、サンプルファイルのパス解決方法（`baseUrl`など）が適切に設定されていることを確認。必要であれば、ダミーのサンプル音源を一時的に使用。
-     * 複数の音源が同時に、または切り替え時に適切に動作し、オーディオコンテキストに問題がないことを確認。
-     * 既存の`src/synth.ts`の構造を極力維持しつつ、新しい音源を追加する拡張性を考慮する。
+     確認事項: 公式ドキュメント、GitHubリポジトリのREADME、最新のリリースノート、または関連する開発コミュニティの議論を参照し、正確かつ最新の情報を収集してください。
 
-     期待する出力:
-     * `src/synth.ts`に複数のTone.js音源（`Synth`, `Sampler`, `PolySynth`など）の初期化と、それらを切り替えて音を鳴らすための関数が実装された状態。
-     * `src/index.ts`に音源を切り替えるためのUI要素と、選択された音源で音符を再生するデモコードが追加された状態。
+     期待する出力: `tonejs-json-sequencer` および `tonejs-mml-to-json` の調査結果をまとめたmarkdown形式のレポートを出力してください。レポートには、各ライブラリの現状、利用可否、および「待ち」状態解除に向けた具体的な提言を含めてください。
      ```
 
 ---
-Generated at: 2026-02-13 07:07:36 JST
+Generated at: 2026-03-02 07:03:24 JST
