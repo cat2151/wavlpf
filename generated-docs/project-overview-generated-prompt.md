@@ -1,4 +1,4 @@
-Last updated: 2026-03-02
+Last updated: 2026-03-03
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -349,6 +349,9 @@ MIT
   📘 realtime-analysis.ts
   📘 settings.test.ts
   📘 settings.ts
+  🎨 styles.css
+  📘 synth-display.ts
+  📘 synth-ui-setup.ts
   📘 synth.ts
   📘 timing.test.ts
   📘 timing.ts
@@ -370,7 +373,7 @@ MIT
 📄 waveform-gh.png
 
 ## ファイル詳細分析
-**index.html** (576行, 15801バイト)
+**index.html** (180行, 7170バイト)
   - 関数: なし
   - インポート: なし
 
@@ -454,8 +457,20 @@ MIT
   - 関数: validateSettings, loadSettings, saveSettings, exportSettingsToFile, importSettingsFromFile, if, catch
   - インポート: なし
 
-**src/synth.ts** (626行, 18489バイト)
-  - 関数: getCurrentSettings, displayOscilloscopeError, readParameters, renderAudio, playAudioWav, playAudioSeq, playAudio, handleModeSwitch, init, scheduleNextPlay, updateStatusDisplay, updateGenerationTimeDisplay, dispose, handleInputChange, handleClick, if, catch
+**src/styles.css** (396行, 7123バイト)
+  - 関数: なし
+  - インポート: なし
+
+**src/synth-display.ts** (76行, 2401バイト)
+  - 関数: displayOscilloscopeError, updateStatusDisplay, updateGenerationTimeDisplay, if
+  - インポート: ./playback-mode, ./timing
+
+**src/synth-ui-setup.ts** (117行, 3278バイト)
+  - 関数: setupExportSettingsButton, setupImportSettingsButton, setupTabHandlers, setupMouseAndInputHandlers, handleInputChange, if
+  - インポート: ./settings, ./playback-mode
+
+**src/synth.ts** (494行, 14395バイト)
+  - 関数: getCurrentSettings, readParameters, renderAudio, playAudioWav, playAudioSeq, playAudio, handleModeSwitch, init, scheduleNextPlay, dispose, handleClick, if, catch
   - インポート: ./wav, ./wasmAudio, ./timing
 
 **src/timing.test.ts** (43行, 1500バイト)
@@ -527,8 +542,6 @@ MIT
       - clearFullWaveform ()
       - isFullWaveformDisplayInitialized ()
       - createPerformanceStats (src/performance-stats.ts)
-      - addPerformanceSample ()
-      - calculatePerformanceStats ()
       - getCurrentMode (src/playback-mode.ts)
       - switchMode ()
       - initRealtimeAnalysis (src/realtime-analysis.ts)
@@ -536,8 +549,14 @@ MIT
       - stopRealtimeVisualization ()
       - isRealtimeAnalysisInitialized ()
       - disposeRealtimeAnalysis ()
-      - getCurrentSettings (src/synth.ts)
-      - displayOscilloscopeError ()
+      - displayOscilloscopeError (src/synth-display.ts)
+      - updateStatusDisplay ()
+      - updateGenerationTimeDisplay ()
+      - setupExportSettingsButton (src/synth-ui-setup.ts)
+      - setupImportSettingsButton ()
+      - setupTabHandlers ()
+      - setupMouseAndInputHandlers ()
+      - getCurrentSettings ()
       - readParameters ()
       - renderAudio ()
       - playAudioWav ()
@@ -546,8 +565,6 @@ MIT
       - handleModeSwitch ()
       - init ()
       - scheduleNextPlay ()
-      - updateStatusDisplay ()
-      - updateGenerationTimeDisplay ()
       - calculateDuration ()
       - readParametersFromUI ()
       - updateUIFields ()
@@ -560,7 +577,9 @@ MIT
       - createWavBlobUrl ()
   - disposeFullWaveformDisplay ()
   - canvasSupported (src/oscilloscope.test.ts)
-  - resetPerformanceStats ()
+  - addPerformanceSample ()
+    - calculatePerformanceStats ()
+      - resetPerformanceStats ()
   - updateModeUI ()
   - animate ()
     - drawFFT ()
@@ -568,7 +587,7 @@ MIT
   - readNumericParameter (src/ui-params.ts)
   - writeString ()
 - for (scripts/setup-cat-oscilloscope-wasm.js)
-- handleInputChange (src/synth.ts)
+- handleInputChange (src/synth-ui-setup.ts)
 - handleClick (src/synth.ts)
 
 
@@ -615,4 +634,4 @@ tsconfig.json
 
 
 ---
-Generated at: 2026-03-02 07:03:03 JST
+Generated at: 2026-03-03 07:06:24 JST

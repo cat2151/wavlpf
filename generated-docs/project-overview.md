@@ -1,45 +1,40 @@
-Last updated: 2026-03-02
+Last updated: 2026-03-03
 
 # Project Overview
 
 ## プロジェクト概要
-- Rust WASM技術を核とした、ブラウザで動作するシンプルなソフトウェアシンセサイザーです。
-- インタラクティブなBiquadローパスフィルターとリアルタイム波形ビジュアライゼーションを提供します。
-- 非リアルタイムレンダリングによるWAVファイル生成や設定の永続化機能を備えています。
+- `wavlpf`は、RustとWebAssembly（WASM）で実装された高性能なソフトウェアシンセサイザーです。
+- 直感的なマウス操作で、ローパスフィルターやノコギリ波/パルス波形をリアルタイムで制御できます。
+- リアルタイムオシロスコープ表示、WAVファイル出力、設定の保存・読み込み機能も備えています。
 
 ## 技術スタック
-使用している技術をカテゴリ別に整理して説明します。
-- フロントエンド: 
-  - **Vite**: 高速な開発サーバーとモダンなフロントエンドのビルドを可能にするツールです。
-  - **TypeScript**: JavaScriptに静的型付けを追加した言語で、大規模なアプリケーション開発の堅牢性を高めます。
-  - **HTML**: Webインターフェースの構造を定義するために使用されます。
-  - **cat-oscilloscope**: リアルタイムでオーディオ波形を表示するための高性能なビジュアライゼーションライブラリです。
-- 音楽・オーディオ: 
-  - **Rust WASM**: 高速なデジタル信号処理（DSP）をブラウザで実行するためにRustで実装され、WebAssemblyにコンパイルされています。オシレーターやフィルター処理の中核を担います。
-  - **Tone.js**: WebAudio APIを抽象化し、オーディオ再生、シーケンシング、エフェクト処理を容易にするJavaScriptフレームワークです。
-- 開発ツール: 
-  - **Node.js**: JavaScriptの実行環境で、ビルドツールやスクリプトの実行に使用されます。
-  - **npm**: Node.jsのパッケージマネージャーで、プロジェクトの依存関係の管理に使用されます。
-  - **wasm-pack**: RustコードをWebAssemblyにコンパイルし、JavaScriptから利用可能なパッケージを生成するためのツールです。
-  - **Rust**: 高性能なシステムプログラミング言語で、オーディオ信号処理ロジックの実装に使用されています。
-- テスト: 
-  - **Vitest**: 高速で機能豊富なJavaScript/TypeScriptのテストフレームワークです。
-  - **happy-dom**: Vitestで使用されるJSDOMの代替となるテスト環境で、ブラウザのようなDOM環境をシミュレートします。
-  - **Playwright**: 各種ブラウザを自動操作し、エンドツーエンドテストやスクリーンショット取得などに利用されるフレームワークです。
-- ビルドツール: 
-  - **Vite**: フロントエンドのJavaScript/TypeScriptコードのバンドルと最適化を行います。
-  - **wasm-pack**: RustからWASMモジュールをビルドします。
-  - **cargo**: Rustのビルドシステムおよびパッケージマネージャーで、`wasm-audio`クレートのビルドに使用されます。
-  - **wasm-opt**: WebAssemblyバイナリのサイズと実行速度を最適化するためのツールです。
-- 言語機能: 
-  - **Rust**: WASMモジュールによる高性能なオーディオ信号処理ロジックを実装するために使用されています。
-  - **TypeScript**: アプリケーションのフロントエンドロジック全般を記述するために使用されています。
-- 自動化・CI/CD: 
-  - **GitHub Actions**: リポジトリへの変更（`main`ブランチへのプッシュなど）をトリガーとして、自動的にテスト実行やGitHub Pagesへのデプロイを行うためのCI/CDワークフローです。
-  - **Bashスクリプト**: `wasm-pack`のインストールやデプロイ検証など、各種開発・運用タスクを自動化するために使用されます。
-- 開発標準: 
-  - **TypeScript**: 型定義により、コードの品質と保守性を向上させます。
-  - **copilot-instructions.md**: AIアシスタント（GitHub Copilotなど）に対する指示を記述し、開発効率とコードの一貫性を保つためのガイドラインです。
+- フロントエンド:
+    - **Vite**: 高速な開発サーバーとモダンなビルドツールを提供し、フロントエンド開発を効率化します。
+    - **TypeScript**: JavaScriptに静的型付けを導入し、大規模なアプリケーション開発におけるコードの品質と保守性を向上させます。
+    - **HTML/CSS**: アプリケーションのユーザーインターフェースを構築するための標準的なマークアップ言語とスタイルシート言語です。
+    - **cat-oscilloscope**: リアルタイムで波形を表示するための高性能なWASMベースのオシロスコープライブラリです。
+    - **Tone.js**: Web Audio APIを抽象化し、オーディオ再生や音楽的なロジックを容易にするJavaScriptフレームワークです。
+- 音楽・オーディオ:
+    - **Rust WASM (WebAssembly)**: 信号処理の中核を担い、高性能なオーディオ波形生成とフィルター処理をブラウザ上で実現します。
+    - **Biquadフィルター**: ローパス、ハイパス、バンドパスなど、さまざまなタイプのオーディオフィルターを実装するためのアルゴリズムです。
+    - **Tone.js**: Web Audio API を活用し、クリーンなオーディオ再生とシーケンス制御を提供します。
+- 開発ツール:
+    - **Node.js & npm**: JavaScriptの実行環境およびパッケージマネージャーで、プロジェクトの依存関係管理とスクリプト実行に使用されます。
+    - **wasm-pack**: RustコードをWebAssemblyにコンパイルし、Webアプリケーションで利用可能なJavaScriptバインディングを生成するためのツールです。
+- テスト:
+    - **Vitest**: 高速なユニットテストおよびコンポーネントテストフレームワークで、開発中のコードの品質を保証します。
+    - **Playwright**: ブラウザの自動化ライブラリで、エンドツーエンドテストやデプロイ後の動作検証に使用されます。
+- ビルドツール:
+    - **wasm-pack**: Rustで書かれたDSPコードをWebAssemblyモジュールに変換します。
+    - **Vite**: フロントエンドのTypeScript/JavaScriptコードをバンドルし、プロダクションビルドを生成します。
+- 言語機能:
+    - **Rust**: 高いパフォーマンスとメモリ安全性を特徴とし、オーディオ信号処理などの計算負荷の高い部分に採用されています。
+    - **TypeScript**: JavaScriptに型安全性をもたらし、大規模なフロントエンドアプリケーションの開発を堅牢にします。
+    - **JavaScript**: ブラウザ上で動作する主要なプログラミング言語で、Webアプリケーションのロジックを実装します。
+- 自動化・CI/CD:
+    - **GitHub Actions**: コードの変更がリポジトリにプッシュされるたびに、テストの実行、ビルド、GitHub Pagesへの自動デプロイを行うための継続的インテグレーション/デプロイメント（CI/CD）プラットフォームです。
+- 開発標準:
+    - **wasm-opt**: WebAssemblyバイナリを最適化し、ファイルサイズを削減し実行速度を向上させるためのツールです。
 
 ## ファイル階層ツリー
 ```
@@ -77,7 +72,7 @@ Last updated: 2026-03-02
   📜 screenshot-github-pages.js
   📜 setup-cat-oscilloscope-wasm.js
   📜 test-console-logs.js
-  📜 test-pr-changes-locally.sh
+  📄 test-pr-changes-locally.sh
   📜 test-waveform-screenshot.js
   📜 verify-deployment.js
 📁 src/
@@ -94,6 +89,9 @@ Last updated: 2026-03-02
   📘 realtime-analysis.ts
   📘 settings.test.ts
   📘 settings.ts
+  🎨 styles.css
+  📘 synth-display.ts
+  📘 synth-ui-setup.ts
   📘 synth.ts
   📘 timing.test.ts
   📘 timing.ts
@@ -116,62 +114,188 @@ Last updated: 2026-03-02
 ```
 
 ## ファイル詳細説明
--   **index.html**: アプリケーションのエントリーポイントとなるHTMLファイルです。Webインターフェースの基本構造を定義し、JavaScriptバンドルをロードしてアプリケーションを起動します。
--   **src/index.ts**: TypeScriptアプリケーションのメインエントリーポイントです。`src/synth.ts`モジュールをインポートし、シンセサイザーの初期化処理を呼び出します。
--   **src/synth.ts**: シンセサイザーの主要なロジックを管理します。UIからの入力（マウス操作、設定変更）を処理し、WASMオーディオ処理のトリガー、オーディオ再生（Tone.js経由）、およびパフォーマンス統計の更新を行います。
--   **src/wasmAudio.ts**: RustでビルドされたWebAssembly (WASM) モジュールを動的にロードし、TypeScriptアプリケーションからその機能（オーディオレンダリングなど）を呼び出すためのラッパーを提供します。WASM処理のパフォーマンス測定も担当します。
--   **wasm-audio/src/lib.rs**: Rustで実装されたWASMオーディオプロセッサのコアライブラリです。オシレーター（ノコギリ波、パルス波）生成、Biquadローパスフィルター処理、カットオフ減衰を含むオーディオレンダリングの全体的なパイプラインが含まれています。
--   **wasm-audio/src/oscillator.rs**: さまざまな波形（ノコギリ波、パルス波など）を生成するオシレーターの実装が含まれており、WASMオーディオプロセッサの音源部を構成します。
--   **wasm-audio/src/filter.rs**: RBJ Audio EQ Cookbookの公式に基づいたBiquadローパスフィルターの実装と、他のフィルタータイプ（HPF、BPFなど）のロジックが含まれています。
--   **src/wav.ts**: 処理済みのオーディオデータをWAVファイル形式に変換し、ブラウザでダウンロード可能なBLOB URLを生成する機能を提供します。
--   **src/settings.ts**: アプリケーションの設定（波形タイプ、BPM、Q最大値、カットオフ周波数最大値など）を管理します。これらの設定をLocalStorageに保存して永続化し、JSONファイルとしてインポート/エクスポートする機能も提供します。
--   **src/oscilloscope.ts**: `cat-oscilloscope`ライブラリを利用して、リアルタイムでオーディオ波形を表示するオシロスコープ機能を提供します。デバッグオーバーレイの更新なども行います。
--   **src/audio-player.ts**: `Tone.js`ライブラリをラップし、WebAudioコンテキストの開始/停止、WAV URLの再生、およびオーディオ再生後のリソースクリーンアップを管理します。
--   **src/ui-params.ts**: ユーザーインターフェースからの数値パラメータを読み取り、マウスのX/Y座標をフィルターのカットオフ周波数とQ値にマッピングするロジックを提供します。UI要素の更新も行います。
--   **scripts/install-wasm-pack.sh**: Rustの`wasm-pack`ツールを自動的にインストールするためのシェルスクリプトです。前提条件の確認やインストールの検証も行います。
--   **DEVELOPMENT.md**: プロジェクトの開発フレームワーク、テスト戦略、および開発プロセスの詳細に関する情報が記載されたドキュメントです。
+- **index.html**: アプリケーションのエントリーポイントとなるHTMLファイルで、シンセサイザーのユーザーインターフェースとJavaScriptアプリケーションをロードします。
+- **scripts/investigate-404.js**: GitHub Pagesでの404エラーを調査するためのPlaywrightスクリプトです。
+- **scripts/investigate-cat-oscilloscope.js**: `cat-oscilloscope`リポジトリの状態を調査するためのスクリプトです。
+- **scripts/screenshot-github-pages.js**: GitHub Pagesのデプロイ後にウェブサイトのスクリーンショットを自動で撮影するためのPlaywrightスクリプトです。
+- **scripts/setup-cat-oscilloscope-wasm.js**: `cat-oscilloscope` WASMモジュールのセットアップを自動化するためのスクリプトです。
+- **scripts/test-console-logs.js**: デプロイされたアプリケーションのコンソールログをテストするためのPlaywrightスクリプトです。
+- **scripts/test-waveform-screenshot.js**: 波形ビジュアライゼーションが正しく表示されていることを確認するためのPlaywrightスクリプトです。
+- **scripts/verify-deployment.js**: GitHub Pagesへのデプロイが成功したことを検証するためのPlaywrightスクリプトです。
+- **src/audio-player.ts**: `Tone.js`ライブラリをラップし、オーディオコンテキストの管理やWAVファイルの再生機能を提供します。
+- **src/full-waveform-display.test.ts**: 生成されたオーディオの全波形表示コンポーネントのテストコードです。
+- **src/full-waveform-display.ts**: 生成されたオーディオの全波形を視覚化するためのロジックと描画機能を提供します。
+- **src/index.ts**: アプリケーションのメインエントリーポイントで、シンセサイザーの初期化処理を呼び出します。
+- **src/oscilloscope.test.ts**: リアルタイムオシロスコープ表示のテストコードです。
+- **src/oscilloscope.ts**: `cat-oscilloscope`ライブラリを統合し、リアルタイムでの波形表示とデバッグオーバーレイの更新を管理します。
+- **src/performance-stats.test.ts**: パフォーマンス統計収集機能のテストコードです。
+- **src/performance-stats.ts**: オーディオ生成時間のパフォーマンスサンプルを収集し、統計情報を計算する機能を提供します。
+- **src/playback-mode.ts**: アプリケーションの再生モード（リアルタイム/非リアルタイム）を管理し、UIを更新します。
+- **src/realtime-analysis.test.ts**: リアルタイムオーディオ分析機能のテストコードです。
+- **src/realtime-analysis.ts**: Tone.jsの分析ツールを利用して、リアルタイムでオーディオのFFT（高速フーリエ変換）と波形を視覚化します。
+- **src/settings.test.ts**: 設定の保存・読み込み機能のテストコードです。
+- **src/settings.ts**: アプリケーションの設定の検証、保存（localStorage）、読み込み、そしてJSONファイルとしてのインポート/エクスポート機能を提供します。
+- **src/styles.css**: アプリケーションのユーザーインターフェースにスタイルを適用するためのCSSファイルです。
+- **src/synth-display.ts**: シンセサイザーのステータス、生成時間、オシロスコープのエラーメッセージなどをUIに表示する役割を担います。
+- **src/synth-ui-setup.ts**: 設定のエクスポート/インポートボタン、タブ切り替え、マウスと入力ハンドラの初期化など、シンセサイザーのユーザーインターフェース関連のセットアップを行います。
+- **src/synth.ts**: シンセサイザーの主要なロジックを含み、オーディオのレンダリング、再生、モード管理、UIイベントハンドリングなどを行います。
+- **src/timing.test.ts**: オーディオのタイミング計算機能のテストコードです。
+- **src/timing.ts**: BPMとビート数に基づいてオーディオの持続時間などを計算するユーティリティ機能を提供します。
+- **src/ui-params.test.ts**: UIパラメータの読み込みとマッピング機能のテストコードです。
+- **src/ui-params.ts**: UI要素からシンセサイザーのパラメータを読み込み、マウス座標をフィルターパラメータにマッピングする機能を提供します。
+- **src/wasmAudio.ts**: Rustで実装されたWASMオーディオモジュールのTypeScriptラッパーで、動的なWASMロードとオーディオレンダリングのインターフェースを提供します。
+- **src/wav.test.ts**: WAVファイル生成機能のテストコードです。
+- **src/wav.ts**: 生のオーディオデータをWAVファイルフォーマットに変換し、ダウンロード可能なURLを生成する機能を提供します。
+- **tsconfig.json**: TypeScriptコンパイラの設定ファイルで、プロジェクトのTypeScriptファイルのコンパイル方法を定義します。
+- **vite.config.ts**: Viteビルドツールの設定ファイルで、開発サーバーの挙動やビルドプロセスを構成します。
+- **wasm-audio/Cargo.toml**: RustのWASMオーディオクレートの設定ファイルで、依存関係やビルド設定を定義します。
+- **wasm-audio/README.md**: WASMオーディオクレートに関する説明ドキュメントです。
+- **wasm-audio/src/audio_renderer.rs**: Rust WASMモジュール内でオーディオサンプルをレンダリングするロジックを実装しています。
+- **wasm-audio/src/filter.rs**: Rust WASMモジュール内でBiquadフィルターの実装を提供し、オーディオ信号にフィルター処理を適用します。
+- **wasm-audio/src/lib.rs**: Rust WASMオーディオクレートのメインライブラリファイルで、シンセサイザーの主要な信号処理パイプライン（オシレーター生成、フィルター処理、レンダリング）をJavaScriptから呼び出せるように公開します。
+- **wasm-audio/src/oscillator.rs**: Rust WASMモジュール内でノコギリ波やパルス波などの波形を生成するオシレーターロジックを実装しています。
 
 ## 関数詳細説明
--   **`initWasm()`** (src/wasmAudio.ts)
-    -   **役割**: WebAssembly (WASM) モジュールをロードし、初期化します。
-    -   **引数**: なし
-    -   **戻り値**: `Promise<void>` (非同期処理の完了を待機するためのプロミス)
-    -   **機能**: WASMモジュールがまだロードされていない場合に、動的にロード処理を実行し、その準備が完了するまで待機します。
--   **`renderAudioWasm(settings: SynthSettings)`** (src/wasmAudio.ts)
-    -   **役割**: 指定されたシンセサイザー設定に基づいて、WASMモジュール経由でオーディオデータをレンダリングします。
-    -   **引数**: `settings` (オブジェクト): 波形タイプ、デューティー比、フィルター設定、周波数などのシンセサイザーの現在のパラメータを含むオブジェクト。
-    -   **戻り値**: `Float32Array` (生成されたオーディオデータの配列)
-    -   **機能**: Rust WASM側の信号処理パイプラインを呼び出し、オシレーター生成、フィルター適用などを行い、結果として得られるオーディオバッファ（Float32Array形式）をJavaScript側に返します。
--   **`init(settings: SynthSettings)`** (src/synth.ts)
-    -   **役割**: シンセサイザーアプリケーション全体の初期化処理を実行します。
-    -   **引数**: `settings` (オブジェクト): アプリケーションの初期設定。
-    -   **戻り値**: `Promise<void>`
-    -   **機能**: WASMオーディオモジュールの初期化、UI要素へのイベントリスナー設定、オシロスコープやパフォーマンス統計表示の初期化、現在の設定の適用など、アプリケーションを起動可能な状態にするためのすべての準備を行います。
--   **`renderAudio(settings: SynthSettings)`** (src/synth.ts)
-    -   **役割**: アプリケーションの設定に基づいてオーディオデータをレンダリングし、その処理にかかった時間を測定します。
-    -   **引数**: `settings` (オブジェクト): 現在のシンセサイザー設定。
-    -   **戻り値**: `Float32Array` (レンダリングされたオーディオデータ)
-    -   **機能**: `renderAudioWasm`を呼び出して実際のオーディオデータを生成させ、その実行にかかるミリ秒単位の時間を計測し、パフォーマンス統計に記録・表示します。
--   **`playAudioWav(audioBuffer: Float32Array, sampleRate: number)`** (src/synth.ts)
-    -   **役割**: 生成されたオーディオバッファをWAV形式に変換し、ブラウザで再生します。
-    -   **引数**: `audioBuffer` (Float32Array): 再生するオーディオデータ。`sampleRate` (number): オーディオのサンプルレート。
-    -   **戻り値**: `Promise<void>`
-    -   **機能**: 提供されたオーディオバッファから一時的なWAV形式のURLを生成し、`Tone.js`の機能を利用してそのURLからオーディオを再生します。
--   **`generateWav(audioBuffer: Float32Array, sampleRate: number)`** (src/wav.ts)
-    -   **役割**: 生のオーディオデータ（Float32Array）をWAVファイル形式のバイナリデータに変換します。
-    -   **引数**: `audioBuffer` (Float32Array): WAVに変換するオーディオデータ。`sampleRate` (number): オーディオのサンプルレート。
-    -   **戻り値**: `Blob` (MIMEタイプ `audio/wav` のバイナリデータ)
-    -   **機能**: WAVファイルのヘッダー情報と実際のオーディオデータを組み合わせ、ブラウザでダウンロード可能なWAVファイルのBlobオブジェクトを生成します。
--   **`loadSettings()`** (src/settings.ts)
-    -   **役割**: ブラウザのLocalStorageからアプリケーションの設定をロードします。
-    -   **引数**: なし
-    -   **戻り値**: `SynthSettings` (ロードされた設定オブジェクト)
-    -   **機能**: LocalStorageに保存されている設定があればそれをパースし、存在しない場合や無効な場合はデフォルト設定とマージして、一貫性のある設定オブジェクトを返します。
--   **`mapMouseToFilterParams(mouseX: number, mouseY: number)`** (src/ui-params.ts)
-    -   **役割**: ユーザーインターフェース上のマウスのXおよびY座標を、フィルターのカットオフ周波数とQ値にマッピングします。
-    -   **引数**: `mouseX` (number): マウスの水平位置。`mouseY` (number): マウスの垂直位置。
-    -   **戻り値**: `object` (`cutoffHz`: カットオフ周波数[Hz], `qValue`: Q値[レゾナンス])
-    -   **機能**: UIで設定された最大カットオフ周波数と最大Q値に基づき、マウスの座標をリニアまたは対数的に変換して、リアルタイムでフィルターパラメータを制御するための数値を計算します。
+- **`scripts/investigate-404.js`内の関数**:
+    - `investigate404()`: GitHub Pagesで発生する404エラーの原因を調査するための処理を実行します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`scripts/investigate-cat-oscilloscope.js`内の関数**:
+    - `checkGitHubRepo()`: 特定のGitHubリポジトリの状態を確認する処理を実行します。
+    - `investigate()`: 何らかの事象を調査するメインの処理を実行します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`scripts/screenshot-github-pages.js`内の関数**:
+    - `takeScreenshot()`: GitHub Pagesのウェブサイトのスクリーンショットを撮影する処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`scripts/setup-cat-oscilloscope-wasm.js`内の関数**:
+    - `for()`: ループ処理を実行します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`scripts/test-console-logs.js`内の関数**:
+    - `testConsoleLogs()`: デプロイされたアプリケーションのコンソールログをテストする処理を実行します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`scripts/test-waveform-screenshot.js`内の関数**:
+    - `testWaveformVisualization()`: 波形ビジュアライゼーションが正しく動作しているかをテストする処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `for()`: ループ処理を実行します。
+- **`scripts/verify-deployment.js`内の関数**:
+    - `verifyDeployment()`: GitHub Pagesへのデプロイが正常に行われたかを検証する処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `for()`: ループ処理を実行します。
+- **`src/audio-player.ts`内の関数**:
+    - `loadTone()`: `Tone.js`ライブラリをロードし、オーディオエンジンを準備します。
+    - `isToneLoaded()`: `Tone.js`がロード済みかどうかを判定します。
+    - `getTone()`: ロード済みの`Tone.js`インスタンスを返します。
+    - `startAudioContext()`: Web Audio APIのオーディオコンテキストを開始します。
+    - `isAudioContextRunning()`: オーディオコンテキストが動作中かどうかを判定します。
+    - `playWavUrl(url: string)`: 指定されたURLのWAVファイルを再生します。
+    - `stopAndCleanup()`: 現在再生中のオーディオを停止し、関連リソースをクリーンアップします。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`src/full-waveform-display.ts`内の関数**:
+    - `initFullWaveformDisplay()`: 全波形表示のキャンバスを初期化し、描画準備を行います。
+    - `drawFullWaveform(audioBuffer: Float32Array)`: 与えられたオーディオバッファ全体を描画します。
+    - `clearFullWaveform()`: 全波形表示のキャンバスをクリアします。
+    - `disposeFullWaveformDisplay()`: 全波形表示に関連するリソースを解放します。
+    - `isFullWaveformDisplayInitialized()`: 全波形表示が初期化済みかどうかを判定します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `for()`: ループ処理を実行します。
+- **`src/index.ts`内の関数**:
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/oscilloscope.ts`内の関数**:
+    - `initOscilloscope()`: `cat-oscilloscope`を初期化し、リアルタイム波形表示をセットアップします。
+    - `startDebugOverlayUpdates()`: デバッグ情報のオーバーレイ表示の更新を開始します。
+    - `stopDebugOverlayUpdates()`: デバッグ情報のオーバーレイ表示の更新を停止します。
+    - `frequencyToNote(frequency: number)`: 周波数を音名に変換します。
+    - `validateInputs()`: オシロスコープの入力パラメータを検証します。
+    - `updateOscilloscope(data: Float32Array)`: オシロスコープに新しいオーディオデータを渡し、表示を更新します。
+    - `stopOscilloscope()`: オシロスコープの表示を停止し、関連リソースをクリーンアップします。
+    - `isOscilloscopeInitialized()`: オシロスコープが初期化済みかどうかを判定します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`src/performance-stats.ts`内の関数**:
+    - `createPerformanceStats()`: パフォーマンス統計を格納するためのオブジェクトを初期化します。
+    - `addPerformanceSample(sample: number)`: 新しいパフォーマンス測定値を統計に追加します。
+    - `calculatePerformanceStats()`: 収集されたパフォーマンスデータに基づいて平均、最大、最小などの統計を計算します。
+    - `resetPerformanceStats()`: 収集されたパフォーマンス統計をリセットします。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/playback-mode.ts`内の関数**:
+    - `getCurrentMode()`: 現在の再生モードを返します。
+    - `updateModeUI()`: 現在の再生モードに合わせてユーザーインターフェースを更新します。
+    - `switchMode(mode: string)`: 再生モードを切り替えます。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/realtime-analysis.ts`内の関数**:
+    - `initRealtimeAnalysis()`: リアルタイムオーディオ分析のためのキャンバスとTone.jsアナライザーを初期化します。
+    - `startRealtimeVisualization()`: リアルタイムのFFTおよび波形ビジュアライゼーションを開始します。
+    - `stopRealtimeVisualization()`: リアルタイムのビジュアライゼーションを停止します。
+    - `animate()`: アニメーションフレームごとにFFTと波形を描画するループを管理します。
+    - `drawFFT(analyser: AnalyserNode, canvasCtx: CanvasRenderingContext2D, width: number, height: number)`: 周波数スペクトル（FFT）をキャンバスに描画します。
+    - `drawWaveform(analyser: AnalyserNode, canvasCtx: CanvasRenderingContext2D, width: number, height: number)`: オーディオの波形をキャンバスに描画します。
+    - `isRealtimeAnalysisInitialized()`: リアルタイム分析機能が初期化済みかどうかを判定します。
+    - `disposeRealtimeAnalysis()`: リアルタイム分析に関連するリソースを解放します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `for()`: ループ処理を実行します。
+- **`src/settings.ts`内の関数**:
+    - `validateSettings(settings: object)`: 提供された設定オブジェクトの内容を検証します。
+    - `loadSettings()`: ローカルストレージから設定を読み込みます。
+    - `saveSettings(settings: object)`: 現在の設定をローカルストレージに保存します。
+    - `exportSettingsToFile(settings: object)`: 現在の設定をJSONファイルとしてエクスポートします。
+    - `importSettingsFromFile(file: File)`: JSONファイルから設定をインポートします。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`src/synth-display.ts`内の関数**:
+    - `displayOscilloscopeError(errorMessage: string)`: オシロスコープ関連のエラーメッセージをUIに表示します。
+    - `updateStatusDisplay(message: string)`: アプリケーションのステータス情報をUIに表示します。
+    - `updateGenerationTimeDisplay(time: number)`: オーディオ生成にかかった時間をUIに表示します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/synth-ui-setup.ts`内の関数**:
+    - `setupExportSettingsButton()`: 設定エクスポートボタンのイベントリスナーを設定します。
+    - `setupImportSettingsButton()`: 設定インポートボタンのイベントリスナーを設定します。
+    - `setupTabHandlers()`: UIのタブ切り替え機能を設定します。
+    - `setupMouseAndInputHandlers()`: マウスの動きやUI入力要素のイベントハンドラを設定し、シンセサイザーのパラメータ制御を可能にします。
+    - `handleInputChange()`: UIの入力要素が変更された際の処理を実行します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/synth.ts`内の関数**:
+    - `getCurrentSettings()`: 現在のシンセサイザー設定を取得します。
+    - `readParameters()`: UIからシンセサイザーのパラメータを読み取ります。
+    - `renderAudio(settings: object, duration: number)`: 指定された設定と期間に基づいてオーディオをレンダリングします。
+    - `playAudioWav(audioBuffer: Float32Array, duration: number)`: 生成されたオーディオバッファをWAV形式で再生します。
+    - `playAudioSeq(audioBuffer: Float32Array, duration: number)`: 生成されたオーディオバッファをシーケンスとして再生します。
+    - `playAudio(audioBuffer: Float32Array, duration: number)`: オーディオバッファを再生します。現在の再生モードによってWAVまたはシーケンス再生を呼び出します。
+    - `handleModeSwitch()`: 再生モードが切り替わった際の処理を実行します。
+    - `init()`: シンセサイザーアプリケーション全体を初期化します。
+    - `scheduleNextPlay(interval: number)`: 指定された間隔で次のオーディオ再生をスケジュールします。
+    - `dispose()`: シンセサイザーと関連リソースを解放します。
+    - `handleClick(event: MouseEvent)`: ユーザーがページをクリックした際のオーディオコンテキスト開始などの処理を実行します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`src/timing.ts`内の関数**:
+    - `calculateDuration(bpm: number, beats: number)`: BPMとビート数に基づいてオーディオの持続時間（秒）を計算します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/ui-params.ts`内の関数**:
+    - `readNumericParameter(elementId: string)`: 指定されたIDのUI要素から数値パラメータを読み取ります。
+    - `readParametersFromUI()`: UI上のすべてのシンセサイザーパラメータを読み取り、オブジェクトとして返します。
+    - `updateUIFields(settings: object)`: 提供された設定オブジェクトに基づいてUIの入力フィールドを更新します。
+    - `mapMouseToFilterParams(mouseX: number, mouseY: number, element: HTMLElement)`: マウスのX/Y座標をフィルターのカットオフ周波数とQ値にマッピングします。
+    - `updateMousePositionDisplay(mouseX: number, mouseY: number)`: UI上にマウスの現在位置とそれに対応するフィルターパラメータを表示します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+- **`src/wasmAudio.ts`内の関数**:
+    - `initWasm()`: WebAssemblyモジュールを初期化し、Rustで実装されたDSP機能へのアクセスを確立します。
+    - `isWasmInitialized()`: WASMモジュールが初期化済みかどうかを判定します。
+    - `renderAudioWasm(settings: object, bufferSize: number)`: WASMモジュールを呼び出してオーディオデータをレンダリングします。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `catch()`: エラーが発生した場合に、そのエラーを捕捉し処理します。
+- **`src/wav.ts`内の関数**:
+    - `generateWav(audioBuffer: Float32Array, sampleRate: number)`: 生のオーディオバッファからWAVファイルフォーマットの`ArrayBuffer`を生成します。
+    - `writeString(view: DataView, offset: number, string: string)`: DataViewに文字列を書き込みます。
+    - `createWavBlobUrl(wavBlob: Blob)`: WAV Blobからダウンロード可能なURLを生成します。
+    - `if()`: 条件分岐により、特定の状況下で処理を実行します。
+    - `for()`: ループ処理を実行します。
 
 ## 関数呼び出し階層ツリー
 ```
@@ -211,8 +335,6 @@ Last updated: 2026-03-02
       - clearFullWaveform ()
       - isFullWaveformDisplayInitialized ()
       - createPerformanceStats (src/performance-stats.ts)
-      - addPerformanceSample ()
-      - calculatePerformanceStats ()
       - getCurrentMode (src/playback-mode.ts)
       - switchMode ()
       - initRealtimeAnalysis (src/realtime-analysis.ts)
@@ -220,8 +342,14 @@ Last updated: 2026-03-02
       - stopRealtimeVisualization ()
       - isRealtimeAnalysisInitialized ()
       - disposeRealtimeAnalysis ()
-      - getCurrentSettings (src/synth.ts)
-      - displayOscilloscopeError ()
+      - displayOscilloscopeError (src/synth-display.ts)
+      - updateStatusDisplay ()
+      - updateGenerationTimeDisplay ()
+      - setupExportSettingsButton (src/synth-ui-setup.ts)
+      - setupImportSettingsButton ()
+      - setupTabHandlers ()
+      - setupMouseAndInputHandlers ()
+      - getCurrentSettings ()
       - readParameters ()
       - renderAudio ()
       - playAudioWav ()
@@ -230,8 +358,6 @@ Last updated: 2026-03-02
       - handleModeSwitch ()
       - init ()
       - scheduleNextPlay ()
-      - updateStatusDisplay ()
-      - updateGenerationTimeDisplay ()
       - calculateDuration ()
       - readParametersFromUI ()
       - updateUIFields ()
@@ -244,7 +370,9 @@ Last updated: 2026-03-02
       - createWavBlobUrl ()
   - disposeFullWaveformDisplay ()
   - canvasSupported (src/oscilloscope.test.ts)
-  - resetPerformanceStats ()
+  - addPerformanceSample ()
+    - calculatePerformanceStats ()
+      - resetPerformanceStats ()
   - updateModeUI ()
   - animate ()
     - drawFFT ()
@@ -252,8 +380,8 @@ Last updated: 2026-03-02
   - readNumericParameter (src/ui-params.ts)
   - writeString ()
 - for (scripts/setup-cat-oscilloscope-wasm.js)
-- handleInputChange (src/synth.ts)
+- handleInputChange (src/synth-ui-setup.ts)
 - handleClick (src/synth.ts)
 
 ---
-Generated at: 2026-03-02 07:03:33 JST
+Generated at: 2026-03-03 07:07:15 JST

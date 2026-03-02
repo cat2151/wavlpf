@@ -1,63 +1,50 @@
-Last updated: 2026-03-02
+Last updated: 2026-03-03
 
 # Development Status
 
 ## 現在のIssues
-- [Issue #124](../issue-notes/124.md) は、`src/synth.ts`と`index.html`が500行を超えており、コード品質改善のためのリファクタリングが推奨されています。
-- [Issue #113](../issue-notes/113.md) と [Issue #112](../issue-notes/112.md) は、Tone.js関連ライブラリ（`tonejs-mml-to-json`、`tonejs-json-sequencer`）の利用を前提としたMMLと複数音符の演奏機能実装について、ライブラリの準備が整うまで「待ち」の状態です。
-- [Issue #52](../issue-notes/52.md) は、シーケンス機能実装後にTone.jsや自前レンダリングを用いた多様な演奏/分析オプションをユーザーに提供するもので、これも先行issueの完了を「待ち」の状態です。
+- `tonejs-json-sequencer` のライブラリ利用版を待ちつつ、MMLから複数音符を演奏する機能（[Issue #112](../issue-notes/112.md), [Issue #113](../issue-notes/113.md)）の実装が保留されています。
+- シーケンサー機能実装後、Tone.jsによる演奏と自前実装レンダリングを比較するUI（[Issue #52](../issue-notes/52.md)）の開発が予定されています。
+- これらはいずれもMMLベースの音楽シーケンスとレンダリングに関する機能拡張であり、相互に依存しています。
 
 ## 次の一手候補
-1. [Issue #124](../issue-notes/124.md): `src/synth.ts` の機能分割と可読性向上
-   - 最初の小さな一歩: `src/synth.ts` を開き、初期化、UI操作、オーディオ処理、WAV生成、モード切り替えなど、主要な機能ブロックを特定し、コメントで区切る。
-   - Agent実行プロンプ:
-     ```
-     対象ファイル: src/synth.ts
+1.  [Issue #112](../issue-notes/112.md) 依存ライブラリ `tonejs-json-sequencer` の進捗調査
+    -   最初の小さな一歩: `tonejs-json-sequencer` のGitHubリポジトリを確認し、`stream demoのライブラリ利用版` の現状と利用可能性に関する情報を収集する。
+    -   Agent実行プロンプ:
+        ```
+        対象ファイル: `package.json` (プロジェクトの依存関係確認のため)
 
-     実行内容: `src/synth.ts` ファイルを分析し、以下の観点から機能分割の提案をmarkdown形式で出力してください：
-     1) ファイル内で定義されている主要な関数、クラス、グローバル変数を列挙する。
-     2) それらがどの機能（UI操作、オーディオレンダリング、WAV生成、設定管理、モード管理、パフォーマンス統計、リアルタイム分析、オシロスコープ表示など）に属するかを特定する。
-     3) 各機能ブロックを独立したモジュールとして分割した場合のメリットとデメリットを記述する。
-     4) 特に、`init()`, `playAudio()`, `renderAudio()` 関数が関与する責務を明確にし、肥大化している部分を特定する。
+        実行内容: `tonejs-json-sequencer` およびそれが依存する `stream demoのライブラリ利用版` の最新のステータス、特にライブラリとして利用可能になっているか、または今後のロードマップについて調査してください。関連するGitHubリポジトリのREADME、issue、commit history、および公開されているドキュメントを分析してください。
 
-     確認事項: `src/index.ts` や他の関連ファイルが `src/synth.ts` の機能にどのように依存しているかを確認し、分割がこれらの依存関係に与える影響を考慮してください。
+        確認事項: 該当ライブラリが公開されているGitHubリポジトリのURL、ドキュメントの場所、現在のバージョン。
 
-     期待する出力: `src/synth.ts` の機能分割に関する分析レポートをmarkdown形式で出力してください。レポートには、提案される新しいモジュール構造、各モジュールの責務、および分割によって影響を受ける既存の依存関係に関する考察を含めてください。
-     ```
+        期待する出力: 調査結果をMarkdown形式で出力してください。具体的には、ライブラリの利用可能性、進捗状況、関連するコード例やドキュメントへのリンク、及び `wavlpf` プロジェクトで利用する上での障壁や次のアクションの提案を含めてください。
+        ```
 
-2. [Issue #124](../issue-notes/124.md): `index.html` のCSS分離による軽量化
-   - 最初の小さな一歩: `index.html` を開き、`<style>` タグ内のCSSルールを新しい `style.css` ファイルに移動するための計画を立てる。
-   - Agent実行プロンプ:
-     ```
-     対象ファイル: index.html
+2.  [Issue #113](../issue-notes/113.md) `tonejs-mml-to-json` の出力JSON形式と互換性の事前検討
+    -   最初の小さな一歩: `tonejs-mml-to-json` のGitHubリポジトリやドキュメントを調査し、MML入力から生成されるJSON構造の例を確認する。
+    -   Agent実行プロンプト:
+        ```
+        対象ファイル: `tonejs-mml-to-json` のGitHubリポジトリ上のドキュメントやコード例
 
-     実行内容: `index.html` ファイルを分析し、`<style>` タグ内のCSSを外部CSSファイルに分離するための具体的な手順と、その影響をmarkdown形式で出力してください：
-     1) `<style>` タグ内の全CSSルールを抽出する。
-     2) 抽出したCSSを `style.css` という新しいファイルとして作成する。
-     3) `index.html` から `<style>` タグを削除し、代わりに `style.css` を読み込む `<link>` タグを追加する。
-     4) 分離による潜在的な表示崩れやパスの問題がないかを確認する。
+        実行内容: `tonejs-mml-to-json` がMMLをどのようなJSON形式に変換するかを分析し、そのJSON形式が `tonejs-json-sequencer` で利用可能な形式であるかを評価してください。互換性がない場合は、どのような変換ブリッジが必要になるかを検討してください。
 
-     確認事項: CSSの分離が、GitHub Pagesでのデプロイやローカル開発環境での表示に影響を与えないことを確認してください。また、既存のJavaScriptコードがインラインスタイルに直接アクセスしている箇所がないか、あるいは分離されたスタイルシートに依存する他の問題がないかを確認してください。
+        確認事項: `tonejs-mml-to-json` が想定するMML入力と出力されるJSONの仕様、`tonejs-json-sequencer` が期待する入力JSON形式の仕様。
 
-     期待する出力: `index.html` からCSSを分離するための具体的な変更計画をmarkdown形式で出力してください。変更計画には、新しい `style.css` の内容、`index.html` の修正内容、および確認すべき事項のチェックリストを含めてください。
-     ```
+        期待する出力: `tonejs-mml-to-json` の出力JSON形式の例、`tonejs-json-sequencer` が期待する入力JSON形式の仕様、そして両者の互換性に関する分析結果をMarkdown形式で出力してください。必要であれば、互換性を持たせるための変換ロジックの概要も提案してください。
+        ```
 
-3. [Issue #112](../issue-notes/112.md), [Issue #113](../issue-notes/113.md): `tonejs-json-sequencer` と `tonejs-mml-to-json` の「待ち」状態解除のための調査
-   - 最初の小さな一歩: `tonejs-json-sequencer` と `tonejs-mml-to-json` のGitHubリポジトリやドキュメントを訪問し、`stream demo` や `ライブラリ利用版` の提供状況、またはそれに代わる進捗がないか確認する。
-   - Agent実行プロンプ:
-     ```
-     対象ファイル: なし
+3.  [Issue #52](../issue-notes/52.md) シーケンサー機能選択UIの仮設計
+    -   最初の小さな一歩: `index.html` と `src/synth-ui-setup.ts` を参照し、新しいシーケンサー機能選択用のタブまたはプルダウンメニューをどこに追加すべきか、および必要なDOM要素の構成を検討する。
+    -   Agent実行プロンプト:
+        ```
+        対象ファイル: `index.html`, `src/styles.css`, `src/synth-ui-setup.ts`
 
-     実行内容: 以下のTone.js関連ライブラリの最新の開発状況および利用可能性についてインターネットで調査し、markdown形式でレポートしてください：
-     1) `tonejs-json-sequencer`: 「stream demoのライブラリ利用版」が提供されているか、またはそれに代わるシーケンス機能が安定して利用可能か。
-     2) `tonejs-mml-to-json`: MMLをJSON形式に変換する機能が安定しており、ライブラリとして利用可能か。
-     3) これらのライブラリをプロジェクトに導入するために必要な前提条件、または障壁となっている点（もしあれば）。
-     4) 調査結果に基づき、[Issue #112](../issue-notes/112.md) と [Issue #113](../issue-notes/113.md) の「待ち」状態を解除できる可能性について考察する。
+        実行内容: [Issue #52](../issue-notes/52.md)で求められている「Tone.js instrument sampler による演奏」「wavにprerenderしてから演奏」「自前実装seq & rendererでWebAudio非依存renderした演奏」の3つの選択肢を切り替えるためのUI要素（例えばプルダウンメニューや新しいタブ）の仮設計を行ってください。既存のUIコンポーネントとの統合方法やデザイン面での考慮事項を分析してください。
 
-     確認事項: 公式ドキュメント、GitHubリポジトリのREADME、最新のリリースノート、または関連する開発コミュニティの議論を参照し、正確かつ最新の情報を収集してください。
+        確認事項: 既存のUIコンポーネントの構造、`src/synth-ui-setup.ts` におけるUI要素の操作方法、`src/styles.css` でのスタイリング規則、ユーザーが切り替えやすいUX。
 
-     期待する出力: `tonejs-json-sequencer` および `tonejs-mml-to-json` の調査結果をまとめたmarkdown形式のレポートを出力してください。レポートには、各ライブラリの現状、利用可否、および「待ち」状態解除に向けた具体的な提言を含めてください。
-     ```
+        期待する出力: Markdown形式でUIの仮設計案を記述してください。具体的には、`index.html` に追加するHTML要素の構造の概要、`src/styles.css` に追加するCSSの概要、`src/synth-ui-setup.ts` でのイベントハンドリングやDOM操作の骨子を含めてください。
 
 ---
-Generated at: 2026-03-02 07:03:24 JST
+Generated at: 2026-03-03 07:06:41 JST
