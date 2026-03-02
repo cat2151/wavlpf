@@ -3,14 +3,10 @@ import {
   Settings,
   loadSettings,
   saveSettings,
-  exportSettingsToFile,
-  importSettingsFromFile,
 } from './settings';
 import { initWasm, isWasmInitialized, renderAudioWasm } from './wasmAudio';
 import {
   createPerformanceStats,
-  addPerformanceSample,
-  calculatePerformanceStats,
   type PerformanceStats,
 } from './performance-stats';
 import { calculateDuration } from './timing';
@@ -53,6 +49,17 @@ import {
   clearFullWaveform,
   isFullWaveformDisplayInitialized,
 } from './full-waveform-display';
+import {
+  displayOscilloscopeError,
+  updateStatusDisplay,
+  updateGenerationTimeDisplay,
+} from './synth-display';
+import {
+  setupExportSettingsButton,
+  setupImportSettingsButton,
+  setupTabHandlers,
+  setupMouseAndInputHandlers,
+} from './synth-ui-setup';
 
 // Global storage for the most recently generated WAV
 let lastGeneratedWavUrl: string | null = null;
@@ -106,33 +113,6 @@ let scheduleNextPlayFn: (() => void) | null = null;
 
 // パフォーマンス統計トラッキング
 const performanceStats: PerformanceStats = createPerformanceStats(10);
-
-/**
- * Display oscilloscope error message to the user
- * @param message - Error message to display
- */
-function displayOscilloscopeError(message: string): void {
-  const container = document.querySelector('.oscilloscope-container');
-  if (!container) return;
-
-  // Remove any existing error message
-  const existingError = container.querySelector('.oscilloscope-error');
-  if (existingError) {
-    existingError.remove();
-  }
-
-  // Create error message element
-  const errorDiv = document.createElement('div');
-  errorDiv.className = 'oscilloscope-error';
-  errorDiv.textContent = message;
-
-  container.appendChild(errorDiv);
-
-  // Auto-remove error after 5 seconds
-  setTimeout(() => {
-    errorDiv.remove();
-  }, 5000);
-}
 
 /**
  * UIからパラメータを読み込む
@@ -228,7 +208,7 @@ async function playAudioWav(): Promise<void> {
   await playWavUrl(wavUrl);
 
   // Update generation time display
-  updateGenerationTimeDisplay(generationTimeMs);
+  updateGenerationTimeDisplay(generationTimeMs, performanceStats);
 }
 
 /**
@@ -298,7 +278,7 @@ async function handleModeSwitch(mode: PlaybackMode): Promise<void> {
     }
     
     // Update status display
-    updateStatusDisplay();
+    updateStatusDisplay(bpm, beat);
   });
 }
 
@@ -350,82 +330,39 @@ export async function init(): Promise<void> {
     console.warn('Full waveform canvas element not found. Full waveform display will not be available.');
   }
 
-  // マウス位置を追跡
-  document.addEventListener('mousemove', (e) => {
-    mousePosition = {
-      x: e.clientX / window.innerWidth,
-      y: e.clientY / window.innerHeight,
-    };
-    
-    // 表示を更新
-    updateMousePositionDisplay(mousePosition, cutoffMax, qMax);
-  });
-  
-  // パラメータ変更のための入力イベントリスナーを追加(デバウンス処理)
-  let inputDebounceTimer: number | null = null;
-  const handleInputChange = () => {
-    if (inputDebounceTimer !== null) {
-      clearTimeout(inputDebounceTimer);
-    }
-    inputDebounceTimer = window.setTimeout(() => {
+  // マウス位置を追跡 + 入力変更ハンドラを設定
+  setupMouseAndInputHandlers(
+    (x, y) => {
+      mousePosition = { x, y };
+      updateMousePositionDisplay(mousePosition, cutoffMax, qMax);
+    },
+    () => {
       readParameters();
       updateUIFields(getCurrentSettings()); // 検証された値でUIを更新し、無効な入力との不一致を防ぐ
-      updateStatusDisplay();
-      
+      updateStatusDisplay(bpm, beat);
+
       // パラメータ変更時に既存の再生スケジュールをキャンセルして再スケジュール
       if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
         clearTimeout(playbackTimeoutId);
         const duration = calculateDuration(bpm, beat);
         playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
       }
-    }, 150);
-  };
-  
-  const inputs = ['bpm', 'beat', 'qMax', 'cutoffMax', 'decayUnit', 'decayRate', 'waveformType', 'dutyRatio', 'filterType'];
-  inputs.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.addEventListener('input', handleInputChange);
-    }
-  });
-  
+    },
+  );
+
   // UIフィールドを保存済み設定で初期化
   updateUIFields(getCurrentSettings());
   
   // パラメータの初期読み込み
   readParameters();
-  updateStatusDisplay();
+  updateStatusDisplay(bpm, beat);
   
   // Export settings button handler
-  const exportBtn = document.getElementById('exportSettings');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      exportSettingsToFile(getCurrentSettings());
-    });
-  }
+  setupExportSettingsButton(getCurrentSettings);
   
   // Import settings button handler
-  const importBtn = document.getElementById('importSettings');
-  if (importBtn) {
-    importBtn.addEventListener('click', async () => {
-      const importedSettings = await importSettingsFromFile();
-      
-      if (!importedSettings) {
-        // User cancelled or error occurred
-        const statusEl = document.getElementById('status');
-        if (statusEl) {
-          const originalText = statusEl.textContent;
-          statusEl.textContent = '設定のインポートに失敗しました。ファイル形式を確認してください。';
-          setTimeout(() => {
-            if (statusEl.textContent?.includes('インポートに失敗')) {
-              statusEl.textContent = originalText;
-            }
-          }, 3000);
-        }
-        return;
-      }
-      
-      // Update state
+  setupImportSettingsButton(
+    (importedSettings) => {
       bpm = importedSettings.bpm;
       beat = importedSettings.beat;
       qMax = importedSettings.qMax;
@@ -435,50 +372,21 @@ export async function init(): Promise<void> {
       waveformType = importedSettings.waveformType;
       dutyRatio = importedSettings.dutyRatio;
       filterType = importedSettings.filterType;
-      
-      // Update UI
       updateUIFields(importedSettings);
-      updateStatusDisplay();
-      
-      // Save to localStorage
+      updateStatusDisplay(bpm, beat);
       saveSettings(importedSettings);
-      
-      // Show success feedback
-      const statusEl = document.getElementById('status');
-      if (statusEl) {
-        const originalText = statusEl.textContent;
-        statusEl.textContent = '設定をインポートしました。';
-        setTimeout(() => {
-          if (statusEl.textContent?.includes('インポートしました')) {
-            statusEl.textContent = originalText;
-          }
-        }, 3000);
-      }
-      
-      // Reschedule playback if already playing
+    },
+    () => {
       if (isPlaybackLoopStarted && playbackTimeoutId !== null) {
         clearTimeout(playbackTimeoutId);
         const duration = calculateDuration(bpm, beat);
         playbackTimeoutId = setTimeout(scheduleNextPlay, duration * 1000);
       }
-    });
-  }
+    },
+  );
   
   // Tab switching handlers
-  const tabWav = document.getElementById('tabWav');
-  const tabSeq = document.getElementById('tabSeq');
-  
-  if (tabWav) {
-    tabWav.addEventListener('click', async () => {
-      await handleModeSwitch('wav');
-    });
-  }
-  
-  if (tabSeq) {
-    tabSeq.addEventListener('click', async () => {
-      await handleModeSwitch('seq');
-    });
-  }
+  setupTabHandlers(handleModeSwitch);
   
   // 計算された再生周期に基づいてオーディオを再生(再帰的setTimeoutでエラーハンドリング)
   function scheduleNextPlay() {
@@ -552,46 +460,6 @@ export async function init(): Promise<void> {
   // Touch events use { passive: false } since preventDefault() is called in the handler
   document.addEventListener('click', handleClick);
   document.addEventListener('touchstart', handleClick, { passive: false });
-}
-
-/**
- * 現在の設定でステータス表示を更新
- */
-function updateStatusDisplay(): void {
-  const statusEl = document.getElementById('status');
-  if (statusEl) {
-    const mode = getCurrentMode();
-    if (mode === 'wav') {
-      const duration = calculateDuration(bpm, beat);
-      statusEl.textContent = `New audio generated every ${(duration * 1000).toFixed(0)}ms (BPM: ${bpm}, Beat: ${beat})`;
-    } else {
-      statusEl.textContent = 'Seq Mode: Playing stored WAV every 1 second';
-    }
-  }
-}
-
-/**
- * 波形生成時間を表示
- * @param generationTimeMs - 生成時間(ミリ秒)
- */
-function updateGenerationTimeDisplay(generationTimeMs: number): void {
-  // この計測値を統計に追加
-  addPerformanceSample(performanceStats, generationTimeMs);
-  
-  const genTimeEl = document.getElementById('generationTime');
-  if (genTimeEl) {
-    const stats = calculatePerformanceStats(performanceStats);
-    
-    if (stats && stats.count > 1) {
-      // 複数のサンプルがある場合は詳細な統計情報を表示
-      const currentText = `Generation time (Rust WASM): ${stats.current.toFixed(2)}ms`;
-      const statsText = `[n=${stats.count}, min=${stats.min.toFixed(2)}ms, max=${stats.max.toFixed(2)}ms, avg=${stats.avg.toFixed(2)}ms]`;
-      genTimeEl.textContent = `${currentText} ${statsText}`;
-    } else {
-      // 初回計測では単純表示
-      genTimeEl.textContent = `Generation time (Rust WASM): ${generationTimeMs.toFixed(2)}ms`;
-    }
-  }
 }
 
 /**
