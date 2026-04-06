@@ -1,4 +1,4 @@
-Last updated: 2026-03-03
+Last updated: 2026-04-07
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -107,6 +107,8 @@ Last updated: 2026-03-03
 - .github/actions-tmp/.github/workflows/call-check-large-files.yml
 - .github/actions-tmp/.github/workflows/call-daily-project-summary.yml
 - .github/actions-tmp/.github/workflows/call-issue-note.yml
+- .github/actions-tmp/.github/workflows/call-rust-fmt-commit.yml
+- .github/actions-tmp/.github/workflows/call-rust-windows-cargo-check.yml
 - .github/actions-tmp/.github/workflows/call-rust-windows-check.yml
 - .github/actions-tmp/.github/workflows/call-translate-readme.yml
 - .github/actions-tmp/.github/workflows/callgraph.yml
@@ -114,6 +116,8 @@ Last updated: 2026-03-03
 - .github/actions-tmp/.github/workflows/check-recent-human-commit.yml
 - .github/actions-tmp/.github/workflows/daily-project-summary.yml
 - .github/actions-tmp/.github/workflows/issue-note.yml
+- .github/actions-tmp/.github/workflows/rust-fmt-commit.yml
+- .github/actions-tmp/.github/workflows/rust-windows-cargo-check.yml
 - .github/actions-tmp/.github/workflows/rust-windows-check.yml
 - .github/actions-tmp/.github/workflows/translate-readme.yml
 - .github/actions-tmp/.github_automation/callgraph/codeql-queries/callgraph.ql
@@ -157,6 +161,7 @@ Last updated: 2026-03-03
 - .github/actions-tmp/.github_automation/translate/scripts/translate-readme.cjs
 - .github/actions-tmp/.gitignore
 - .github/actions-tmp/.vscode/settings.json
+- .github/actions-tmp/AGENTS.md
 - .github/actions-tmp/LICENSE
 - .github/actions-tmp/README.ja.md
 - .github/actions-tmp/README.md
@@ -197,7 +202,8 @@ Last updated: 2026-03-03
 - .github/actions-tmp/issue-notes/4.md
 - .github/actions-tmp/issue-notes/40.md
 - .github/actions-tmp/issue-notes/44.md
-- .github/actions-tmp/issue-notes/49.md
+- .github/actions-tmp/issue-notes/57.md
+- .github/actions-tmp/issue-notes/67.md
 - .github/actions-tmp/issue-notes/7.md
 - .github/actions-tmp/issue-notes/8.md
 - .github/actions-tmp/issue-notes/9.md
@@ -661,65 +667,16 @@ env: で値を渡し、process.env で参照するのが正しい
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-db23852 Merge pull request #125 from cat2151/copilot/refactor-large-files-detected
-db1c9b8 リファクタリング: synth.tsとindex.htmlを500行未満に分割
-abded18 Initial plan for refactoring large files
-6767aa8 Initial plan
-b1345c9 Update project summaries (overview & development status) [auto]
-78d6ee4 check large files
+c6ebaf2 Jekyll設定
 
 ### 変更されたファイル:
 .github/workflows/call-check-large-files.yml
+_config.yml
 generated-docs/development-status-generated-prompt.md
 generated-docs/development-status.md
 generated-docs/project-overview-generated-prompt.md
 generated-docs/project-overview.md
 index.html
-issue-notes/100.md
-issue-notes/102.md
-issue-notes/104.md
-issue-notes/105.md
-issue-notes/106.md
-issue-notes/109.md
-issue-notes/111.md
-issue-notes/114.md
-issue-notes/116.md
-issue-notes/118.md
-issue-notes/122.md
-issue-notes/21.md
-issue-notes/24.md
-issue-notes/25.md
-issue-notes/28.md
-issue-notes/30.md
-issue-notes/31.md
-issue-notes/33.md
-issue-notes/35.md
-issue-notes/37.md
-issue-notes/41.md
-issue-notes/44.md
-issue-notes/46.md
-issue-notes/48.md
-issue-notes/50.md
-issue-notes/53.md
-issue-notes/55.md
-issue-notes/57.md
-issue-notes/58.md
-issue-notes/59.md
-issue-notes/61.md
-issue-notes/63.md
-issue-notes/66.md
-issue-notes/68.md
-issue-notes/70.md
-issue-notes/74.md
-issue-notes/82.md
-issue-notes/84.md
-issue-notes/86.md
-issue-notes/88.md
-issue-notes/90.md
-issue-notes/92.md
-issue-notes/94.md
-issue-notes/96.md
-issue-notes/98.md
 package-lock.json
 src/full-waveform-display.test.ts
 src/full-waveform-display.ts
@@ -731,4 +688,4 @@ waveform-gh.png
 
 
 ---
-Generated at: 2026-03-03 07:06:24 JST
+Generated at: 2026-04-07 07:08:19 JST
